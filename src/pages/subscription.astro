@@ -1,0 +1,24 @@
+---
+import { PricingTable } from "@clerk/astro/components";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Subscribe — PULSE+"
+  description="Unlock unlimited access to PULSE+ premium reporting, exclusive investigations and the analysis our subscribers pay for."
+>
+  <section class="container-page py-14 max-[720px]:py-10">
+    <div class="mx-auto max-w-[640px] text-center">
+      <span class="eyebrow eyebrow-accent" style="color: var(--color-premium-gold)">PULSE+ Premium</span>
+      <h1 class="section-title mt-2 text-[clamp(30px,5vw,44px)]">Go further with PULSE+</h1>
+      <p class="mt-4 text-[15px] leading-relaxed text-ink-3">
+        Long-form reporting, exclusive investigations and the analysis our subscribers pay for.
+        Pick the plan that works for you.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-10 max-w-[880px]">
+      <PricingTable />
+    </div>
+  </section>
+</Layout>
