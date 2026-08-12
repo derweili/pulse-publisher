@@ -2,6 +2,7 @@
 import { sections, sectionPath } from "../data";
 import SearchTrigger from "./SearchTrigger.tsx";
 import MobileMenu from "./MobileMenu.tsx";
+import { Show, SignInButton, UserButton } from "@clerk/astro/components";
 
 const navSections = sections;
 ---
@@ -40,6 +41,15 @@ const navSections = sections;
         class="rounded-full bg-ink px-4 py-2.5 text-[13px] font-bold tracking-[0.02em] text-white transition-all duration-200 ease-brand hover:-translate-y-px hover:bg-primary max-[960px]:hidden"
         >Subscribe</a
       >
+      <Show when="signed-out">
+        <SignInButton
+          mode="modal"
+          class="rounded-full border border-border bg-transparent px-4 py-2.5 text-[13px] font-bold tracking-[0.02em] text-ink transition-all duration-200 ease-brand hover:-translate-y-px hover:border-ink"
+        />
+      </Show>
+      <Show when="signed-in">
+        <UserButton />
+      </Show>
       <button
         class="hidden max-[960px]:flex h-10 w-10 flex-col justify-center gap-1.5 rounded border border-border bg-transparent px-[9px] py-2.5"
         id="menu-open-btn"
