@@ -1,0 +1,6 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "pulse-today"
+compatibility_date = "2026-08-12"
+
+[assets]
+directory = "./dist"
