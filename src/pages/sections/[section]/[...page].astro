@@ -3,6 +3,7 @@ import AdSlot from "../../../components/AdSlot.astro";
 import ArticleCard from "../../../components/ArticleCard.astro";
 import Newsletter from "../../../components/Newsletter.astro";
 import Pagination from "../../../components/Pagination.astro";
+import StructuredData from "../../../components/StructuredData.astro";
 import Layout from "../../../layouts/Layout.astro";
 import { PER_PAGE, paginate } from "../../../lib/format";
 import { sectionPath } from "../../../lib/paths";
@@ -33,9 +34,26 @@ if (requestedPage > pages) {
 const highlight = all[0];
 const restHighlights = all.slice(1, 3);
 const listing = page === 1 ? all.slice(3) : items;
+
+const siteOrigin = (Astro.site ?? Astro.url).origin;
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: siteOrigin },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: section.title,
+      item: new URL(sectionPath(section.slug), siteOrigin).toString(),
+    },
+  ],
+};
 ---
 
 <Layout title={`${section.title} — PULSE`} description={section.tagline} activeSection={section.slug}>
+  <StructuredData data={breadcrumbSchema} />
+
   <div class="container-page-wide flex justify-center pt-4 pb-2">
     <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
   </div>

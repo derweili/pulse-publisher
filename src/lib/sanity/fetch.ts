@@ -37,7 +37,15 @@ export type ArticleCardData = ArticlesInSectionQueryResult[number];
 export type ArticleDetail = NonNullable<ArticleBySlugQueryResult>;
 export type SectionData = NonNullable<SectionBySlugQueryResult>;
 export type AuthorData = NonNullable<AuthorBySlugQueryResult>;
-export type SiteSettingsData = Extract<SiteSettingsQueryResult, { defaultSeo: object }>;
+// `breakingNews` is intersected in rather than added to the generated
+// `SiteSettingsQueryResult` union directly: that union has one branch per
+// historical combination of optional fields (as produced by `sanity
+// typegen` against a live dataset), and hand-editing every branch for a
+// field typegen hasn't seen yet is impractical. Re-running
+// `npm run studio:typegen` will fold this into the union properly.
+export type SiteSettingsData = Extract<SiteSettingsQueryResult, { defaultSeo: object }> & {
+  breakingNews: { active: boolean | null; headline: string | null; href: string | null } | null;
+};
 
 // Every helper below takes the request's Sanity client explicitly (see
 // `getSanityClient` in `./client.ts`) rather than importing a singleton,

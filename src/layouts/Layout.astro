@@ -1,8 +1,13 @@
 ---
 import "../styles/global.css";
-import Header from "../components/Header.astro";
+import BreakingNewsBanner from "../components/BreakingNewsBanner.astro";
 import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
 import StickyAd from "../components/StickyAd.astro";
+import StructuredData from "../components/StructuredData.astro";
+import { getSanityClient } from "../lib/sanity/client";
+import { urlFor } from "../lib/sanity/image";
+import { getSiteSettings } from "../lib/sanity/fetch";
 
 interface Props {
   title?: string;
@@ -19,6 +24,24 @@ const {
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
+
+const client = getSanityClient(Astro.locals.runtime.env);
+const settings = await getSiteSettings(client);
+const siteOrigin = (Astro.site ?? Astro.url).origin;
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: settings.title,
+  description: settings.tagline,
+  url: siteOrigin,
+};
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: settings.title,
+  url: siteOrigin,
+  ...(settings.logo && { logo: urlFor(settings.logo).width(512).height(512).fit("crop").url() }),
+};
 ---
 
 <!doctype html>
@@ -50,6 +73,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
       rel="stylesheet"
     />
     <title>{title}</title>
+    <StructuredData data={[websiteSchema, organizationSchema]} />
   </head>
   <body class="m-0 text-base leading-normal antialiased">
     <a
@@ -57,6 +81,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
       class="absolute left-4 -top-12 z-[200] rounded-[8px] bg-ink px-4 py-2.5 text-[13px] font-bold text-white transition-[top] duration-200 focus:top-4"
       >Skip to content</a
     >
+    {settings.breakingNews?.active && settings.breakingNews.headline && (
+      <BreakingNewsBanner headline={settings.breakingNews.headline} href={settings.breakingNews.href} />
+    )}
     <Header activeSection={activeSection} />
     <main id="main">
       <slot />

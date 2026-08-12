@@ -6,12 +6,13 @@ import Newsletter from "../../components/Newsletter.astro";
 import PortableText from "../../components/portable-text/PortableText.astro";
 import RelatedRail from "../../components/RelatedRail.astro";
 import ShareButtons from "../../components/ShareButtons.astro";
+import StructuredData from "../../components/StructuredData.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate } from "../../lib/format";
 import { articlePath, authorPath, sectionPath, tagPath } from "../../lib/paths";
 import { getSanityClient } from "../../lib/sanity/client";
 import { urlFor } from "../../lib/sanity/image";
-import { getArticleBySlug, getArticlesInSection } from "../../lib/sanity/fetch";
+import { getArticleBySlug, getArticlesInSection, getSiteSettings } from "../../lib/sanity/fetch";
 
 const { slug } = Astro.params;
 const client = getSanityClient(Astro.locals.runtime.env);
@@ -22,9 +23,11 @@ if (!article) {
 
 const section = article.section;
 const articleAuthors = article.authors ?? [];
-const sameSection = (await getArticlesInSection(client, section.slug))
-  .filter((a) => a.slug !== article.slug)
-  .slice(0, 4);
+const [sameSectionAll, settings] = await Promise.all([
+  getArticlesInSection(client, section.slug),
+  getSiteSettings(client),
+]);
+const sameSection = sameSectionAll.filter((a) => a.slug !== article.slug).slice(0, 4);
 const isPremium = article.premium ?? false;
 
 const blocks = article.body;
@@ -32,11 +35,48 @@ const midIdx = Math.floor(blocks.length / 2);
 const firstHalf = blocks.slice(0, midIdx);
 const secondHalf = blocks.slice(midIdx);
 
+const siteOrigin = (Astro.site ?? Astro.url).origin;
 const articleUrl = new URL(articlePath(article.slug), Astro.url).toString();
 const heroImageUrl = urlFor(article.hero).width(1600).height(900).fit("crop").url();
 const ogImageUrl = article.seo?.ogImage
   ? urlFor(article.seo.ogImage).width(1200).height(630).fit("crop").url()
   : urlFor(article.hero).width(1200).height(630).fit("crop").url();
+
+const newsArticleSchema = {
+  "@context": "https://schema.org",
+  "@type": "NewsArticle",
+  headline: article.title,
+  description: article.dek,
+  image: [heroImageUrl],
+  datePublished: article.publishedAt,
+  dateModified: article.publishedAt,
+  mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
+  articleSection: section.title,
+  author: articleAuthors.map((a) => ({
+    "@type": "Person",
+    name: a.name,
+    url: new URL(authorPath(a.slug), siteOrigin).toString(),
+  })),
+  publisher: {
+    "@type": "Organization",
+    name: settings.title,
+    logo: { "@type": "ImageObject", url: new URL("/favicon.svg", siteOrigin).toString() },
+  },
+};
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: siteOrigin },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: section.title,
+      item: new URL(sectionPath(section.slug), siteOrigin).toString(),
+    },
+    { "@type": "ListItem", position: 3, name: article.title, item: articleUrl },
+  ],
+};
 ---
 
 <Layout
@@ -45,6 +85,8 @@ const ogImageUrl = article.seo?.ogImage
   activeSection={section.slug}
   ogImageUrl={ogImageUrl}
 >
+  <StructuredData data={[newsArticleSchema, breadcrumbSchema]} />
+
   <div class="container-page-wide">
     <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
   </div>

@@ -41,7 +41,8 @@ export const siteSettingsQuery = defineQuery(`
       }
     },
     socialLinks[]{ platform, url },
-    copyrightText
+    copyrightText,
+    breakingNews{ active, headline, href }
   }
 `);
 
