@@ -67,6 +67,7 @@ To enable it, add these repository secrets under **Settings → Secrets and vari
 | :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CLOUDFLARE_API_TOKEN`  | An API token with **Workers Scripts: Edit** permission for the target account. Create one at [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) using the "Edit Cloudflare Workers" template (or a custom token scoped to `Account.Workers Scripts:Edit`). |
 | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID, found on the right-hand sidebar of the [Workers & Pages dashboard](https://dash.cloudflare.com) overview page, or by running `npx wrangler whoami`.                |
+| `PUBLIC_CLERK_PUBLISHABLE_KEY` | Your [Clerk](https://dashboard.clerk.com) publishable key. The site is static, so Clerk auth (sign-in button, user profile) runs client-side — this key gets baked into the build output, so it must be set for the **Build** step. Not a secret value, but stored as an Actions secret here for convenience. |
 
 No other configuration is needed — `wrangler.toml` already defines the Worker name, compatibility date, and assets directory.
 
