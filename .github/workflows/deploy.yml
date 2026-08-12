@@ -31,8 +31,11 @@ jobs:
           PUBLIC_SANITY_PROJECT_ID: ${{ secrets.PUBLIC_SANITY_PROJECT_ID }}
           PUBLIC_SANITY_DATASET: ${{ secrets.PUBLIC_SANITY_DATASET }}
           PUBLIC_SANITY_API_VERSION: ${{ secrets.PUBLIC_SANITY_API_VERSION }}
-          SANITY_API_READ_TOKEN: ${{ secrets.SANITY_API_READ_TOKEN }}
 
+      # SANITY_API_READ_TOKEN is a Cloudflare Worker runtime secret, not a
+      # build-time env var (pages fetch Sanity live, per request) — it's set
+      # once per environment with `wrangler secret put`, not on every deploy.
+      # See the README's Deploying to Cloudflare Workers section.
       - name: Deploy
         uses: cloudflare/wrangler-action@v4
         with:

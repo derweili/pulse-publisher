@@ -6,26 +6,21 @@ import Pagination from "../../components/Pagination.astro";
 import Layout from "../../layouts/Layout.astro";
 import { PER_PAGE } from "../../lib/format";
 import { authorPath } from "../../lib/paths";
+import { getSanityClient } from "../../lib/sanity/client";
 import { urlFor } from "../../lib/sanity/image";
 import { getArticlesByAuthor, getAuthors } from "../../lib/sanity/fetch";
 
-export async function getStaticPaths() {
-  const authors = await getAuthors();
-  return Promise.all(
-    authors.map(async (author) => {
-      const all = await getArticlesByAuthor(author.slug);
-      const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
-      return {
-        params: { author: author.slug },
-        props: { authorSlug: author.slug, authors, pages, total: all.length },
-      };
-    })
-  );
+const authorSlug = Astro.params.author;
+const client = getSanityClient(Astro.locals.runtime.env);
+const authors = await getAuthors(client);
+const author = authorSlug ? authors.find((a) => a.slug === authorSlug) : undefined;
+if (!author) {
+  return new Response(null, { status: 404 });
 }
 
-const { authorSlug, authors, pages, total } = Astro.props;
-const author = authors.find((a) => a.slug === authorSlug)!;
-const all = await getArticlesByAuthor(authorSlug);
+const all = await getArticlesByAuthor(client, authorSlug!);
+const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
+const total = all.length;
 const top = all[0];
 const rest = all.slice(1);
 ---

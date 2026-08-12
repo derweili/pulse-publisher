@@ -1,12 +1,14 @@
 ---
 import { authorPath, sectionPath } from "../lib/paths";
+import { getSanityClient } from "../lib/sanity/client";
 import { getAuthors, getSections, getSiteSettings } from "../lib/sanity/fetch";
 import Newsletter from "./Newsletter.astro";
 
+const client = getSanityClient(Astro.locals.runtime.env);
 const [sections, authors, settings] = await Promise.all([
-  getSections(),
-  getAuthors(),
-  getSiteSettings(),
+  getSections(client),
+  getAuthors(client),
+  getSiteSettings(client),
 ]);
 
 const year = new Date().getFullYear();

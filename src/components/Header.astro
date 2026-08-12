@@ -1,12 +1,14 @@
 ---
 import { Show, SignInButton, UserButton } from "@clerk/astro/components";
 import { sectionPath } from "../lib/paths";
+import { getSanityClient } from "../lib/sanity/client";
 import { getSections, getSiteSettings } from "../lib/sanity/fetch";
 import MobileMenu from "./MobileMenu.tsx";
 import SearchTrigger from "./SearchTrigger.tsx";
 
-const navSections = await getSections();
-const settings = await getSiteSettings();
+const client = getSanityClient(Astro.locals.runtime.env);
+const navSections = await getSections(client);
+const settings = await getSiteSettings(client);
 const extraNavLinks = (settings.mainNav ?? []).map((link) => ({
   label: link.label,
   href: link.linkType === "internal" && link.internalHref ? sectionPath(link.internalHref) : (link.externalUrl ?? "#"),

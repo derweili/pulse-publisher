@@ -8,27 +8,20 @@ import RelatedRail from "../../components/RelatedRail.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate } from "../../lib/format";
 import { authorPath, sectionPath } from "../../lib/paths";
+import { getSanityClient } from "../../lib/sanity/client";
 import { urlFor } from "../../lib/sanity/image";
-import {
-  getArticleBySlug,
-  getArticleSlugs,
-  getArticlesInSection,
-} from "../../lib/sanity/fetch";
-
-export async function getStaticPaths() {
-  const slugs = await getArticleSlugs();
-  return slugs.map(({ slug }) => ({ params: { slug } }));
-}
+import { getArticleBySlug, getArticlesInSection } from "../../lib/sanity/fetch";
 
 const { slug } = Astro.params;
-const article = await getArticleBySlug(slug);
+const client = getSanityClient(Astro.locals.runtime.env);
+const article = slug ? await getArticleBySlug(client, slug) : null;
 if (!article) {
-  throw new Error(`Article not found for slug "${slug}"`);
+  return new Response(null, { status: 404 });
 }
 
 const section = article.section;
 const articleAuthors = article.authors ?? [];
-const sameSection = (await getArticlesInSection(section.slug))
+const sameSection = (await getArticlesInSection(client, section.slug))
   .filter((a) => a.slug !== article.slug)
   .slice(0, 4);
 const isPremium = article.premium ?? false;

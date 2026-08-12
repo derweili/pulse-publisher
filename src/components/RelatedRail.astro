@@ -1,5 +1,6 @@
 ---
 import { articlePath } from "../lib/paths";
+import { getSanityClient } from "../lib/sanity/client";
 import { urlFor } from "../lib/sanity/image";
 import { getRelatedArticles, type ArticleDetail } from "../lib/sanity/fetch";
 
@@ -9,7 +10,8 @@ interface Props {
   limit?: number;
 }
 const { article, title = "More from this section", limit = 4 } = Astro.props;
-const related = await getRelatedArticles(article, limit);
+const client = getSanityClient(Astro.locals.runtime.env);
+const related = await getRelatedArticles(client, article, limit);
 ---
 
 {related.length > 0 && (
