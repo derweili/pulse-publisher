@@ -26,6 +26,17 @@ const s = sizeMap[format] ?? sizeMap.rectangle;
 const outerClasses: Record<string, string> = {
   skyscraper: "max-md:hidden",
 };
+// Kept in sync with innerClasses below (min-height only) so the <aside> always
+// reserves its own layout space instead of depending on the inner box to size it.
+const outerMinHeightClasses: Record<string, string> = {
+  leaderboard: "min-h-[90px] max-md:min-h-[100px]",
+  mpu: "min-h-[250px]",
+  rectangle: "min-h-[250px]",
+  "in-article": "min-h-[120px] max-md:min-h-[200px]",
+  "native-in-feed": "min-h-0",
+  skyscraper: "min-h-[600px]",
+  sticky: "min-h-[50px]",
+};
 const innerClasses: Record<string, string> = {
   leaderboard: "w-[728px] h-[90px] min-h-[90px] max-md:w-full max-md:h-[100px]",
   mpu: "w-[300px] h-[250px] min-h-[250px]",
@@ -38,13 +49,13 @@ const innerClasses: Record<string, string> = {
 ---
 
 <aside
-  class={`flex w-full items-center justify-center mx-auto ${innerClasses[format] ? "" : "min-h-[250px]"} ${outerClasses[format] ?? ""} ${className}`}
-  data-ad-slot={slot}
+  class={`flex w-full items-center justify-center mx-auto ${outerMinHeightClasses[format] ?? "min-h-[250px]"} ${outerClasses[format] ?? ""} ${className}`}
+  data-pulse-slot={slot}
   role="complementary"
   aria-label={label}
 >
   <div
-    class={`ad-inner flex max-w-full flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border-strong bg-[repeating-linear-gradient(45deg,var(--color-bg-soft),var(--color-bg-soft)_10px,var(--color-bg-muted)_10px,var(--color-bg-muted)_20px)] p-3.5 text-center text-ink-4 ${innerClasses[format] ?? innerClasses.rectangle}`}
+    class={`pulse-slot-inner flex max-w-full flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border-strong bg-[repeating-linear-gradient(45deg,var(--color-bg-soft),var(--color-bg-soft)_10px,var(--color-bg-muted)_10px,var(--color-bg-muted)_20px)] p-3.5 text-center text-ink-4 ${innerClasses[format] ?? innerClasses.rectangle}`}
   >
     <span class="text-[9px] font-bold tracking-[0.14em] text-ink-5 uppercase">{label}</span>
     <span class="rounded-[4px] bg-white/70 px-1.5 py-0.5 font-mono text-[10px] text-ink-5">{slot}</span>
