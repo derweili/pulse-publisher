@@ -89,6 +89,9 @@ const resolveHref = (link: { linkType: "internal" | "external"; internalHref: st
 
   <div class="container-page-wide flex items-center justify-between gap-4 border-t border-[#22232a] py-5 text-xs text-[#6b7280] max-[480px]:flex-col max-[480px]:items-start max-[480px]:gap-1.5">
     <p>{copyright}</p>
-    <p>Made with bold caffeine.</p>
+    <div class="flex items-center gap-4">
+      <a href="/rss.xml" class="font-semibold uppercase tracking-[0.08em] transition-colors duration-200 ease-brand hover:text-primary">RSS</a>
+      <p>Made with bold caffeine.</p>
+    </div>
   </div>
 </footer>

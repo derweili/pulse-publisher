@@ -76,7 +76,7 @@ export default function MobileMenu({ sections }: Props) {
               </nav>
               <div className="mt-auto flex flex-col gap-3">
                 <a
-                  href="/subscribe"
+                  href="/subscription"
                   className="rounded-full bg-ink px-5 py-3 text-center text-sm font-bold tracking-[0.02em] text-white transition-colors duration-200 hover:bg-primary"
                   onClick={() => setOpen(false)}
                 >

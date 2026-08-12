@@ -30,6 +30,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
+    <link rel="alternate" type="application/rss+xml" title={title} href="/rss.xml" />
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />

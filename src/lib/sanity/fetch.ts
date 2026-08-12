@@ -4,6 +4,7 @@ import {
   articleBySlugQuery,
   articleSlugsQuery,
   articlesByAuthorQuery,
+  articlesByTagQuery,
   articlesInSectionQuery,
   authorBySlugQuery,
   authorsQuery,
@@ -19,6 +20,7 @@ import type {
   ArticleBySlugQueryResult,
   ArticleSlugsQueryResult,
   ArticlesByAuthorQueryResult,
+  ArticlesByTagQueryResult,
   ArticlesInSectionQueryResult,
   AuthorBySlugQueryResult,
   AuthorsQueryResult,
@@ -85,6 +87,26 @@ export const getArticlesByAuthor = (
   authorSlug: string
 ): Promise<ArticlesByAuthorQueryResult> =>
   client.fetch(articlesByAuthorQuery, { authorSlug });
+
+// `client.fetch`'s overloads resolve params/result types by looking up the
+// exact query string in the generated `SanityQueries` map; that lookup
+// (and the constraint-checking around it) only works cleanly for queries
+// typegen itself produced. `articlesByTagQuery`'s type includes
+// `${cardProjection}` — a non-literal interpolation — which the generated
+// map can't key on, so the overloads can't be satisfied without fighting
+// unrelated type machinery. Cast `fetch` to the shape we actually need;
+// re-running `npm run studio:typegen` against a live dataset would let this
+// resolve normally, with the same result type either way.
+export const getArticlesByTag = (
+  client: SanityClient,
+  tag: string
+): Promise<ArticlesByTagQueryResult> => {
+  const fetchWithParams = client.fetch as unknown as (
+    query: string,
+    params: Record<string, unknown>
+  ) => Promise<ArticlesByTagQueryResult>;
+  return fetchWithParams(articlesByTagQuery, { tag });
+};
 
 export const getPremiumArticles = (client: SanityClient): Promise<PremiumArticlesQueryResult> =>
   client.fetch(premiumArticlesQuery);
