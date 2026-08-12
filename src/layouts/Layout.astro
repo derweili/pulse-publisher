@@ -35,32 +35,17 @@ const {
     />
     <title>{title}</title>
   </head>
-  <body>
-    <a href="#main" class="skip-link">Skip to content</a>
+  <body class="m-0 text-base leading-normal antialiased">
+    <a
+      href="#main"
+      class="absolute left-4 -top-12 z-[200] rounded-[8px] bg-ink px-4 py-2.5 text-[13px] font-bold text-white transition-[top] duration-200 focus:top-4"
+      >Skip to content</a
+    >
     <Header activeSection={activeSection} />
     <main id="main">
       <slot />
     </main>
     <Footer />
     <StickyAd />
-
-    <style>
-      .skip-link {
-        position: absolute;
-        left: 16px;
-        top: -48px;
-        z-index: 200;
-        background: var(--color-ink);
-        color: #fff;
-        padding: 10px 16px;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 13px;
-        transition: top 0.2s;
-      }
-      .skip-link:focus {
-        top: 16px;
-      }
-    </style>
   </body>
 </html>

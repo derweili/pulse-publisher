@@ -6,161 +6,51 @@ import MobileMenu from "./MobileMenu.tsx";
 const navSections = sections;
 ---
 
-<header class="site-header" id="site-header">
-  <div class="header-inner">
-    <div class="header-left">
-      <a href="/" class="logo" aria-label="PULSE home">
-        <span class="logo-mark">P</span>
-        <span class="logo-text">PULSE</span>
+<header
+  class="sticky top-0 z-[100] border-b border-border bg-white/92 backdrop-blur-[14px] backdrop-saturate-[180%]"
+  id="site-header"
+>
+  <div
+    class="container-page-wide flex h-header items-center gap-5"
+  >
+    <div class="shrink-0 max-[960px]:flex-1">
+      <a href="/" class="inline-flex items-center gap-2 font-display text-[26px] leading-none tracking-[0.02em]" aria-label="PULSE home">
+        <span class="grid size-[30px] max-[480px]:size-[26px] place-items-center rounded-sm bg-primary text-[20px] max-[480px]:text-[17px] text-white">P</span>
+        <span class="text-ink max-[480px]:text-[22px]">PULSE</span>
       </a>
     </div>
 
-    <nav class="primary-nav" aria-label="Sections">
-      <a href="/" class="nav-link">Home</a>
+    <nav class="mx-auto flex items-center gap-1 max-[960px]:hidden" aria-label="Sections">
+      <a href="/" class="rounded-[8px] px-3 py-2 text-sm font-bold tracking-[0.02em] text-ink-2 transition-colors duration-200 ease-brand hover:bg-primary-soft hover:text-primary">Home</a>
       {navSections.map((s) => (
-        <a href={sectionPath(s.slug)} class="nav-link" data-section={s.slug}>
+        <a
+          href={sectionPath(s.slug)}
+          class="rounded-[8px] px-3 py-2 text-sm font-bold tracking-[0.02em] text-ink-2 transition-colors duration-200 ease-brand hover:bg-primary-soft hover:text-primary"
+          data-section={s.slug}
+        >
           {s.name}
         </a>
       ))}
     </nav>
 
-    <div class="header-right">
-      <SearchTrigger sections={navSections} />
-      <a href="/subscribe" class="subscribe-btn">Subscribe</a>
-      <button class="menu-btn" id="menu-open-btn" aria-label="Open menu" aria-controls="mobile-menu">
-        <span></span><span></span><span></span>
+    <div class="flex shrink-0 items-center gap-2.5">
+      <SearchTrigger sections={navSections} client:idle />
+      <a
+        href="/subscribe"
+        class="rounded-full bg-ink px-4 py-2.5 text-[13px] font-bold tracking-[0.02em] text-white transition-all duration-200 ease-brand hover:-translate-y-px hover:bg-primary max-[960px]:hidden"
+        >Subscribe</a
+      >
+      <button
+        class="hidden max-[960px]:flex h-10 w-10 flex-col justify-center gap-1.5 rounded border border-border bg-transparent px-[9px] py-2.5"
+        id="menu-open-btn"
+        aria-label="Open menu"
+        aria-controls="mobile-menu"
+      >
+        <span class="h-0.5 rounded-[2px] bg-ink transition-all duration-200 ease-brand"></span>
+        <span class="h-0.5 rounded-[2px] bg-ink transition-all duration-200 ease-brand"></span>
+        <span class="h-0.5 rounded-[2px] bg-ink transition-all duration-200 ease-brand"></span>
       </button>
     </div>
   </div>
-  <MobileMenu sections={navSections} />
+  <MobileMenu sections={navSections} client:idle />
 </header>
-
-<style>
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: saturate(180%) blur(14px);
-    border-bottom: 1px solid var(--color-border);
-  }
-  .header-inner {
-    max-width: var(--container-wide);
-    margin-inline: auto;
-    height: var(--header-h);
-    padding-inline: var(--gutter);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-  .header-left {
-    flex-shrink: 0;
-  }
-  .logo {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--font-display);
-    font-size: 26px;
-    letter-spacing: 0.02em;
-    line-height: 1;
-  }
-  .logo-mark {
-    display: inline-grid;
-    place-items: center;
-    width: 30px;
-    height: 30px;
-    background: var(--color-primary);
-    color: #fff;
-    border-radius: 6px;
-    font-size: 20px;
-  }
-  .logo-text {
-    color: var(--color-ink);
-  }
-  .primary-nav {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-inline: auto;
-  }
-  .nav-link {
-    padding: 8px 12px;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    color: var(--color-ink-2);
-    border-radius: 8px;
-    transition: color var(--transition), background var(--transition);
-  }
-  .nav-link:hover {
-    color: var(--color-primary);
-    background: var(--color-primary-soft);
-  }
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-  }
-  .subscribe-btn {
-    padding: 9px 16px;
-    background: var(--color-ink);
-    color: #fff;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    transition: background var(--transition), transform var(--transition);
-  }
-  .subscribe-btn:hover {
-    background: var(--color-primary);
-    transform: translateY(-1px);
-  }
-  .menu-btn {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    width: 40px;
-    height: 40px;
-    background: transparent;
-    border: 1px solid var(--color-border);
-    border-radius: 10px;
-    padding: 10px 9px;
-  }
-  .menu-btn span {
-    height: 2px;
-    background: var(--color-ink);
-    border-radius: 2px;
-    transition: var(--transition);
-  }
-
-  @media (max-width: 960px) {
-    .primary-nav {
-      display: none;
-    }
-    .subscribe-btn {
-      display: none;
-    }
-    .menu-btn {
-      display: flex;
-    }
-    .header-left {
-      flex: 1;
-    }
-    .header-right {
-      flex-shrink: 0;
-    }
-  }
-  @media (max-width: 480px) {
-    .logo-text {
-      font-size: 22px;
-    }
-    .logo-mark {
-      width: 26px;
-      height: 26px;
-      font-size: 17px;
-    }
-  }
-</style>
