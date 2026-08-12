@@ -1,0 +1,115 @@
+---
+import AdSlot from "./AdSlot.astro";
+---
+
+<script>
+  const STICKY_AD_SLOT_NAME = "sticky-footer";
+
+  function setupStickyAd() {
+    const ad = document.querySelector<HTMLElement>("[data-sticky-ad]");
+    const sentinel = document.querySelector<HTMLElement>("[data-sticky-ad-sentinel]");
+    const closeBtn = document.querySelector<HTMLButtonElement>("[data-sticky-ad-close]");
+    if (!ad || !sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            ad.dataset.visible = "false";
+          } else {
+            if (sessionStorage.getItem(`ad-dismissed-${STICKY_AD_SLOT_NAME}`) === "1") return;
+            ad.dataset.visible = "true";
+          }
+        });
+      },
+      { rootMargin: "0px", threshold: 0 }
+    );
+    observer.observe(sentinel);
+
+    closeBtn?.addEventListener("click", () => {
+      ad.dataset.visible = "false";
+      sessionStorage.setItem(`ad-dismissed-${STICKY_AD_SLOT_NAME}`, "1");
+    });
+  }
+
+  setupStickyAd();
+</script>
+
+<div class="sticky-ad-sentinel" data-sticky-ad-sentinel></div>
+<div class="sticky-ad" data-sticky-ad data-visible="false">
+  <div class="sticky-ad-inner">
+    <button class="sticky-ad-close" data-sticky-ad-close aria-label="Close ad">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+    <div class="sticky-ad-content">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .sticky-ad-sentinel {
+    position: relative;
+    height: 1px;
+    width: 100%;
+    margin-bottom: -1px;
+  }
+  .sticky-ad {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 90;
+    transform: translateY(110%);
+    transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+    pointer-events: none;
+  }
+  .sticky-ad[data-visible="true"] {
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .sticky-ad-inner {
+    position: relative;
+    max-width: var(--container);
+    margin-inline: auto;
+    padding: 8px 16px;
+    padding-left: calc(16px + env(safe-area-inset-left, 0px));
+    padding-right: calc(16px + env(safe-area-inset-right, 0px));
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+  .sticky-ad-content {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
+  }
+  .sticky-ad-content :global(.ad-inner) {
+    width: 100% !important;
+    height: 60px !important;
+    min-height: 60px !important;
+    border: none;
+    background: var(--color-bg-soft);
+  }
+  .sticky-ad-close {
+    position: absolute;
+    top: -6px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    background: var(--color-ink);
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    z-index: 2;
+  }
+  @media (max-width: 768px) {
+    .sticky-ad-content :global(.ad-inner) {
+      height: 56px !important;
+    }
+  }
+</style>

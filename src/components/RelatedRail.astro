@@ -1,0 +1,96 @@
+---
+import {
+  type Article,
+  relatedArticles,
+  articlePath,
+  getAuthor,
+  getSection,
+} from "../data";
+
+interface Props {
+  article: Article;
+  title?: string;
+  limit?: number;
+}
+const { article, title = "More from this section", limit = 4 } = Astro.props;
+const related = relatedArticles(article, limit);
+---
+
+{related.length > 0 && (
+  <aside class="related-rail">
+    <h4 class="rail-title">{title}</h4>
+    <ul class="rail-list">
+      {related.map((r) => {
+        const a = getAuthor(r.authors[0]);
+        return (
+          <li>
+            <a href={articlePath(r.slug)} class="rail-item">
+              <div class="rail-thumb">
+                <img src={r.hero} alt={r.heroAlt} loading="lazy" width="120" height="80" />
+              </div>
+              <div class="rail-meta">
+                <span class="rail-section">{getSection(r.section)?.name}</span>
+                <span class="rail-headline">{r.title}</span>
+                <span class="rail-byline">
+                  {a?.name} · {r.readTime}m
+                </span>
+              </div>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </aside>
+)}
+
+<script is:inline define:vars={{}}>
+  // no-op
+</script>
+
+<style>
+  .related-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .rail-title {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--color-ink);
+  }
+  .rail-list { display: flex; flex-direction: column; gap: 14px; }
+  .rail-item {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .rail-thumb {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--color-bg-muted);
+  }
+  .rail-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+  .rail-item:hover .rail-thumb img { transform: scale(1.06); }
+  .rail-meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .rail-section {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+  }
+  .rail-headline {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-ink);
+  }
+  .rail-item:hover .rail-headline { color: var(--color-primary); }
+  .rail-byline { font-size: 11px; color: var(--color-ink-4); }
+</style>

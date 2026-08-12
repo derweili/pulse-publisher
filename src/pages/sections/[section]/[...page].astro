@@ -1,0 +1,252 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import ArticleCard from "../../../components/ArticleCard.astro";
+import AdSlot from "../../../components/AdSlot.astro";
+import Newsletter from "../../../components/Newsletter.astro";
+import Pagination from "../../../components/Pagination.astro";
+import {
+  sections,
+  articlesInSection,
+  paginate,
+  sectionPath,
+  PER_PAGE,
+} from "../../../data";
+
+export function getStaticPaths() {
+  const paths = [];
+  for (const section of sections) {
+    const all = articlesInSection(section.slug);
+    const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
+    for (let page = 1; page <= pages; page++) {
+      paths.push({
+        params: { section: section.slug, page: page === 1 ? undefined : String(page) },
+        props: { sectionSlug: section.slug, page, pages, total: all.length },
+      });
+    }
+  }
+  return paths;
+}
+
+const { sectionSlug, page, pages, total } = Astro.props;
+const section = sections.find((s) => s.slug === sectionSlug)!;
+const all = articlesInSection(sectionSlug);
+const { items } = paginate(all, page, PER_PAGE);
+
+const highlight = all[0];
+const restHighlights = all.slice(1, 3);
+const listing = page === 1 ? all.slice(3) : items;
+---
+
+<Layout title={`${section.name} — PULSE`} description={section.tagline} activeSection={section.slug}>
+  <div class="leaderboard-wrap container-wide">
+    <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
+  </div>
+
+  <section class="container section-hero">
+    <span class="eyebrow" style={`color:${section.accent}`}>Section</span>
+    <h1 class="section-title section-hero-title">{section.name}</h1>
+    <p class="section-tagline">{section.tagline}</p>
+    <div class="section-nav-pills">
+      {sections.map((s) => (
+        <a
+          href={sectionPath(s.slug)}
+          class={`sec-pill ${s.slug === section.slug ? "active" : ""}`}
+        >{s.name}</a>
+      ))}
+    </div>
+  </section>
+
+  {page === 1 && (
+    <section class="container">
+      <div class="hl-grid">
+        <ArticleCard article={highlight} variant="hero" />
+        <div class="hl-side">
+          {restHighlights.map((a) => (
+            <ArticleCard article={a} variant="list" />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <div class="container section-layout">
+    <div class="section-listing">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow eyebrow-accent">Latest in {section.name}</span>
+          <h2 class="section-title">All stories</h2>
+        </div>
+        <span class="result-count">{total} articles</span>
+      </div>
+
+      <div class="listing-grid">
+        {listing.map((a, i) => (
+          <>
+            <ArticleCard article={a} variant="default" />
+            {i === 2 && page === 1 && (
+              <div class="in-feed-card">
+                <AdSlot slot="native-in-feed" format="native-in-feed" label="Sponsored" />
+              </div>
+            )}
+          </>
+        ))}
+      </div>
+
+      <Pagination
+        page={page}
+        pages={pages}
+        basePath={sectionPath(section.slug)}
+      />
+    </div>
+
+    <aside class="section-rail">
+      <AdSlot slot="mpu-rail" format="mpu" label="Advertisement" class="rail-mpu" />
+      <div class="rail-block">
+        <h4 class="rail-title">Most read in {section.name}</h4>
+        <ol class="rail-ranked">
+          {all.slice(0, 5).map((a, i) => (
+            <li>
+              <a href={`/articles/${a.slug}`} class="ranked-item">
+                <span class="rank-num">{i + 1}</span>
+                <span class="rank-title">{a.title}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div class="rail-nl">
+        <Newsletter
+          title={`Never miss a ${section.name} story`}
+          subtitle={`Get the best of ${section.name} in your inbox.`}
+          variant="compact"
+        />
+      </div>
+    </aside>
+  </div>
+</Layout>
+
+<style>
+  .leaderboard-wrap {
+    padding-top: 16px;
+    padding-bottom: 8px;
+    display: flex;
+    justify-content: center;
+  }
+  .section-hero { padding-top: 28px; padding-bottom: 8px; }
+  .section-hero-title { margin-top: 8px; }
+  .section-tagline {
+    margin-top: 10px;
+    font-size: 17px;
+    color: var(--color-ink-3);
+    max-width: 50ch;
+  }
+  .section-nav-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .sec-pill {
+    padding: 7px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-ink-2);
+    transition: all var(--transition);
+  }
+  .sec-pill:hover { border-color: var(--color-ink); }
+  .sec-pill.active {
+    background: var(--color-ink);
+    color: #fff;
+    border-color: var(--color-ink);
+  }
+  .hl-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 32px;
+    align-items: start;
+    margin-top: 32px;
+  }
+  .hl-side { display: flex; flex-direction: column; gap: 4px; }
+  .section-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 40px;
+    margin-top: 48px;
+    align-items: start;
+  }
+  .result-count {
+    font-size: 13px;
+    color: var(--color-ink-4);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .listing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .in-feed-card {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: 12px 0;
+    margin: 4px 0;
+  }
+  .section-rail {
+    position: sticky;
+    top: calc(var(--header-h) + 16px);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .rail-mpu { position: sticky; top: 80px; }
+  .rail-block {
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+  }
+  .rail-title {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--color-ink);
+    margin-bottom: 14px;
+  }
+  .rail-ranked { display: flex; flex-direction: column; gap: 14px; counter-reset: rank; }
+  .ranked-item {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .rank-num {
+    font-family: var(--font-display);
+    font-size: 22px;
+    line-height: 1;
+    color: var(--color-primary);
+  }
+  .rank-title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--color-ink);
+  }
+  .ranked-item:hover .rank-title { color: var(--color-primary); }
+  .rail-nl :global(.newsletter) { border-radius: var(--radius-lg); }
+
+  @media (max-width: 960px) {
+    .hl-grid { grid-template-columns: 1fr; gap: 24px; }
+    .section-layout { grid-template-columns: 1fr; gap: 32px; }
+    .section-rail { position: static; }
+    .listing-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 560px) {
+    .listing-grid { grid-template-columns: 1fr; }
+  }
+</style>

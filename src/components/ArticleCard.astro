@@ -1,0 +1,356 @@
+---
+import {
+  type Article,
+  getSection,
+  getAuthor,
+  formatDate,
+  sectionPath,
+  articlePath,
+  authorPath,
+} from "../data";
+
+interface Props {
+  article: Article;
+  variant?: "default" | "hero" | "compact" | "list" | "premium" | "feed";
+  showSection?: boolean;
+  showDek?: boolean;
+}
+
+const {
+  article,
+  variant = "default",
+  showSection = true,
+  showDek = true,
+} = Astro.props;
+
+const section = getSection(article.section);
+const primaryAuthor = getAuthor(article.authors[0]);
+const isPremium = article.premium;
+---
+
+{variant === "hero" && (
+  <article class={`card card-hero ${isPremium ? "is-premium" : ""}`}>
+    <a href={articlePath(article.slug)} class="card-hero-media">
+      <img src={article.hero} alt={article.heroAlt} loading="eager" width="1200" height="750" />
+      <span class="card-grad"></span>
+      {showSection && section && (
+        <span class="card-section-pill">{section.name}</span>
+      )}
+      {isPremium && <span class="card-premium-pill">Premium</span>}
+    </a>
+    <div class="card-hero-body">
+      <h2 class="card-hero-title">
+        <a href={articlePath(article.slug)}>{article.title}</a>
+      </h2>
+      {showDek && <p class="card-hero-dek">{article.dek}</p>}
+      <div class="card-meta">
+        {primaryAuthor && (
+          <a href={authorPath(primaryAuthor.slug)} class="byline">
+            <img src={primaryAuthor.avatar} alt="" class="avatar" width="28" height="28" loading="lazy" />
+            <span class="name">{primaryAuthor.name}</span>
+          </a>
+        )}
+        <span class="dot"></span>
+        <span>{formatDate(article.date)}</span>
+        <span class="dot"></span>
+        <span>{article.readTime} min</span>
+      </div>
+    </div>
+  </article>
+)}
+
+{variant === "default" && (
+  <article class={`card card-default ${isPremium ? "is-premium" : ""}`}>
+    <a href={articlePath(article.slug)} class="card-media">
+      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="800" height="500" />
+      {isPremium && <span class="card-premium-corner">Premium</span>}
+    </a>
+    <div class="card-body">
+      {showSection && section && (
+        <a href={sectionPath(section.slug)} class="card-section" style={`--sec:${section.accent}`}>
+          {section.name}
+        </a>
+      )}
+      <h3 class="card-title">
+        <a href={articlePath(article.slug)}>{article.title}</a>
+      </h3>
+      {showDek && <p class="card-dek">{article.dek}</p>}
+      <div class="card-meta">
+        {primaryAuthor && <span class="name">{primaryAuthor.name}</span>}
+        <span class="dot"></span>
+        <span>{article.readTime} min</span>
+      </div>
+    </div>
+  </article>
+)}
+
+{variant === "compact" && (
+  <article class={`card card-compact ${isPremium ? "is-premium" : ""}`}>
+    <a href={articlePath(article.slug)} class="card-compact-media">
+      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="200" height="200" />
+      {isPremium && <span class="card-premium-corner small">Premium</span>}
+    </a>
+    <div class="card-compact-body">
+      {showSection && section && (
+        <a href={sectionPath(section.slug)} class="card-section small" style={`--sec:${section.accent}`}>
+          {section.name}
+        </a>
+      )}
+      <h4 class="card-compact-title">
+        <a href={articlePath(article.slug)}>{article.title}</a>
+      </h4>
+      <div class="card-meta small">
+        <span>{article.readTime} min</span>
+      </div>
+    </div>
+  </article>
+)}
+
+{variant === "list" && (
+  <article class={`card card-list ${isPremium ? "is-premium" : ""}`}>
+    <a href={articlePath(article.slug)} class="card-list-media">
+      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="240" height="160" />
+      {isPremium && <span class="card-premium-corner small">Premium</span>}
+    </a>
+    <div class="card-list-body">
+      {showSection && section && (
+        <a href={sectionPath(section.slug)} class="card-section small" style={`--sec:${section.accent}`}>
+          {section.name}
+        </a>
+      )}
+      <h3 class="card-list-title">
+        <a href={articlePath(article.slug)}>{article.title}</a>
+      </h3>
+      {showDek && <p class="card-dek">{article.dek}</p>}
+      <div class="card-meta">
+        {primaryAuthor && <span class="name">{primaryAuthor.name}</span>}
+        <span class="dot"></span>
+        <span>{formatDate(article.date)}</span>
+        <span class="dot"></span>
+        <span>{article.readTime} min</span>
+      </div>
+    </div>
+  </article>
+)}
+
+{variant === "feed" && (
+  <article class={`card card-feed ${isPremium ? "is-premium" : ""}`}>
+    {showSection && section && (
+      <a href={sectionPath(section.slug)} class="card-section small" style={`--sec:${section.accent}`}>
+        {section.name}
+      </a>
+    )}
+    <h3 class="card-feed-title">
+      <a href={articlePath(article.slug)}>{article.title}</a>
+    </h3>
+    <div class="card-meta">
+      {primaryAuthor && <span class="name">{primaryAuthor.name}</span>}
+      <span class="dot"></span>
+      <span>{article.readTime} min</span>
+    </div>
+  </article>
+)}
+
+{variant === "premium" && (
+  <a href={articlePath(article.slug)} class={`card card-premium ${isPremium ? "" : "is-premium"}`}>
+    <div class="card-premium-media">
+      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="800" height="500" />
+      <span class="card-premium-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.5L21 9.2l-5 4.3 1.6 6.8L12 16.9 6.4 20.3 8 13.5 3 9.2l6.6-.7L12 2z"/></svg>
+        Premium
+      </span>
+    </div>
+    <div class="card-premium-body">
+      {showSection && section && (
+        <span class="card-premium-section">{section.name}</span>
+      )}
+      <h3 class="card-premium-title">{article.title}</h3>
+      {showDek && <p class="card-premium-dek">{article.dek}</p>}
+      <div class="card-premium-meta">
+        {primaryAuthor && <span>{primaryAuthor.name}</span>}
+        <span class="dot"></span>
+        <span>{article.readTime} min read</span>
+      </div>
+      <span class="card-premium-cta">Read with PULSE+</span>
+    </div>
+  </a>
+)}
+
+<style is:global>
+  .card { display: block; }
+  .card a { text-decoration: none; }
+
+  /* HERO */
+  .card-hero { position: relative; display: flex; flex-direction: column; }
+  .card-hero-media {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-muted);
+  }
+  .card-hero-media img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.2,0.7,0.2,1);
+  }
+  .card-hero-media:hover img { transform: scale(1.04); }
+  .card-grad {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.5));
+  }
+  .card-section-pill {
+    position: absolute; top: 16px; left: 16px;
+    padding: 6px 12px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    border-radius: 6px;
+  }
+  .card-premium-pill {
+    position: absolute; top: 16px; right: 16px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    background: var(--color-premium-gold);
+    color: #2a1d00;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    border-radius: 6px;
+  }
+  .card-hero-body { padding: 20px 4px 0; }
+  .card-hero-title {
+    font-size: clamp(24px, 3vw, 36px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .card-hero-title a:hover { color: var(--color-primary); }
+  .card-hero-dek {
+    margin-top: 12px;
+    font-size: 16px;
+    color: var(--color-ink-3);
+    line-height: 1.5;
+    max-width: 60ch;
+  }
+  .card-hero.is-premium .card-hero-title a {
+    background: linear-gradient(90deg, var(--color-ink), var(--color-ink-2));
+    -webkit-background-clip: text; background-clip: text;
+  }
+
+  /* DEFAULT */
+  .card-default {
+    display: flex; flex-direction: column;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  }
+  .card-default:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--color-border-strong); }
+  .card-media {
+    display: block; aspect-ratio: 16 / 10; overflow: hidden; position: relative; background: var(--color-bg-muted);
+  }
+  .card-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.2,0.7,0.2,1); }
+  .card-default:hover .card-media img { transform: scale(1.05); }
+  .card-premium-corner {
+    position: absolute; top: 12px; right: 12px;
+    padding: 5px 9px;
+    background: var(--color-premium-gold);
+    color: #2a1d00;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    border-radius: 5px;
+  }
+  .card-premium-corner.small { padding: 4px 8px; font-size: 9px; }
+  .card-body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .card-section {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--sec, var(--color-primary));
+    width: fit-content;
+  }
+  .card-section.small { font-size: 10px; }
+  .card-section:hover { text-decoration: underline; }
+  .card-title { font-size: 19px; line-height: 1.2; letter-spacing: -0.01em; }
+  .card-title a:hover { color: var(--color-primary); }
+  .card-dek { font-size: 14px; color: var(--color-ink-3); line-height: 1.5; }
+  .card-meta {
+    display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px;
+    font-size: 12px; color: var(--color-ink-4); font-weight: 500;
+    margin-top: auto;
+  }
+  .card-meta.small { font-size: 11px; gap: 6px; }
+  .card-meta .name { font-weight: 700; color: var(--color-ink-2); }
+  .card-meta .name:hover { color: var(--color-primary); }
+  .card-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+
+  /* COMPACT */
+  .card-compact { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: start; }
+  .card-compact-media { display: block; aspect-ratio: 1; overflow: hidden; border-radius: var(--radius); background: var(--color-bg-muted); position: relative; }
+  .card-compact-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+  .card-compact-media:hover img { transform: scale(1.05); }
+  .card-compact-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .card-compact-title { font-size: 15px; line-height: 1.25; }
+  .card-compact-title a:hover { color: var(--color-primary); }
+
+  /* LIST */
+  .card-list { display: grid; grid-template-columns: 200px 1fr; gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--color-border); }
+  .card-list-media { display: block; aspect-ratio: 3 / 2; overflow: hidden; border-radius: var(--radius); background: var(--color-bg-muted); position: relative; }
+  .card-list-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+  .card-list-media:hover img { transform: scale(1.04); }
+  .card-list-body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .card-list-title { font-size: 20px; line-height: 1.2; }
+  .card-list-title a:hover { color: var(--color-primary); }
+
+  /* FEED */
+  .card-feed { display: flex; flex-direction: column; gap: 8px; padding: 16px 0; border-bottom: 1px solid var(--color-border); }
+  .card-feed-title { font-size: 17px; line-height: 1.25; }
+  .card-feed-title a:hover { color: var(--color-primary); }
+
+  /* PREMIUM */
+  .card-premium {
+    display: flex; flex-direction: column;
+    background: var(--color-premium);
+    color: #fff;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid #22232a;
+    position: relative;
+    transition: transform var(--transition), box-shadow var(--transition);
+  }
+  .card-premium:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); }
+  .card-premium-media { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: #15161a; }
+  .card-premium-media img { width: 100%; height: 100%; object-fit: cover; opacity: 0.92; transition: transform 0.6s; }
+  .card-premium:hover .card-premium-media img { transform: scale(1.04); }
+  .card-premium-badge {
+    position: absolute; top: 14px; left: 14px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 11px;
+    background: var(--color-premium-gold);
+    color: #2a1d00;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    border-radius: 6px;
+  }
+  .card-premium-body { padding: 22px 22px 24px; display: flex; flex-direction: column; gap: 12px; }
+  .card-premium-section {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--color-premium-gold);
+  }
+  .card-premium-title { font-size: 22px; line-height: 1.2; color: #fff; }
+  .card-premium-dek { font-size: 14px; color: #b8bcc4; line-height: 1.55; }
+  .card-premium-meta { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: #8a8f99; }
+  .card-premium-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+  .card-premium-cta {
+    margin-top: 4px;
+    display: inline-flex; align-items: center; gap: 6px;
+    width: fit-content;
+    padding: 9px 14px;
+    background: var(--color-premium-gold);
+    color: #2a1d00;
+    font-size: 12px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+    border-radius: 999px;
+  }
+
+  @media (max-width: 640px) {
+    .card-hero-dek { font-size: 15px; }
+    .card-list { grid-template-columns: 120px 1fr; gap: 14px; }
+    .card-list-title { font-size: 17px; }
+    .card-compact { grid-template-columns: 80px 1fr; gap: 12px; }
+  }
+</style>

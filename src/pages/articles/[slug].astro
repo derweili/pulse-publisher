@@ -1,0 +1,428 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import AdSlot from "../../components/AdSlot.astro";
+import Newsletter from "../../components/Newsletter.astro";
+import RelatedRail from "../../components/RelatedRail.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import Comments from "../../components/Comments.tsx";
+import { renderBlock } from "./_renderBlock.tsx";
+import {
+  articles,
+  authors,
+  getArticle,
+  getAuthor,
+  getSection,
+  formatDate,
+  sectionPath,
+  articlePath,
+  authorPath,
+  relatedArticles,
+  articlesInSection,
+} from "../../data";
+
+export function getStaticPaths() {
+  return articles.map((a) => ({ params: { slug: a.slug }, props: { article: a } }));
+}
+
+const { article } = Astro.props;
+const section = getSection(article.section)!;
+const articleAuthors = article.authors.map((s) => getAuthor(s)!).filter(Boolean);
+const primaryAuthor = articleAuthors[0];
+const related = relatedArticles(article, 4);
+const sameSection = articlesInSection(article.section)
+  .filter((a) => a.slug !== article.slug)
+  .slice(0, 4);
+const isPremium = article.premium;
+
+const blocks = article.blocks;
+const midIdx = Math.floor(blocks.length / 2);
+const firstHalf = blocks.slice(0, midIdx);
+const secondHalf = blocks.slice(midIdx);
+---
+
+<Layout title={`${article.title} — PULSE`} description={article.dek} activeSection={article.slug}>
+  <div class="container-wide">
+    <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
+  </div>
+
+  <article class={`article ${isPremium ? "is-premium" : ""}`}>
+    <!-- Premium banner -->
+    {isPremium && (
+      <div class="premium-banner">
+        <div class="container premium-banner-inner">
+          <span class="pb-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.5L21 9.2l-5 4.3 1.6 6.8L12 16.9 6.4 20.3 8 13.5 3 9.2l6.6-.7L12 2z"/></svg>
+            PULSE+ Premium
+          </span>
+          <span class="pb-text">This is in-depth reporting for subscribers. Unlock the full archive with PULSE+.</span>
+          <a href="/subscribe" class="pb-cta">Subscribe</a>
+        </div>
+      </div>
+    )}
+
+    <!-- Header -->
+    <header class="container article-head">
+      <a href={sectionPath(section.slug)} class="head-section" style={`--sec:${section.accent}`}>
+        {section.name}
+      </a>
+      <h1 class="article-title">{article.title}</h1>
+      <p class="article-dek">{article.dek}</p>
+      <div class="article-byline">
+        <div class="byline-group">
+          {articleAuthors.map((a, i) => (
+            <a href={authorPath(a.slug)} class="byline" key={a.slug}>
+              <img src={a.avatar} alt="" class="avatar" width="32" height="32" loading="lazy" />
+              <span class="name">{a.name}</span>
+            </a>
+          ))}
+        </div>
+        <div class="meta-row">
+          <span>{formatDate(article.date)}</span>
+          <span class="dot"></span>
+          <span>{article.readTime} min read</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero media -->
+    <figure class="article-hero">
+      <img src={article.hero} alt={article.heroAlt} width="1600" height="900" fetchpriority="high" />
+      <figcaption>{article.heroAlt}</figcaption>
+    </figure>
+
+    <!-- Body + sidebar -->
+    <div class="container article-layout">
+      <div class="article-body">
+        <AdSlot slot="in-article-1" format="in-article" label="Advertisement" class="in-article-ad" />
+
+        {firstHalf.map((b) => <Fragment>{renderBlock(b)}</Fragment>)}
+
+        <AdSlot slot="in-article-2" format="in-article" label="Advertisement" class="in-article-ad" />
+
+        {secondHalf.map((b) => <Fragment>{renderBlock(b)}</Fragment>)}
+
+        <!-- Tags -->
+        <div class="article-tags">
+          <span class="tags-label">Tags</span>
+          <div class="tags-list">
+            {article.tags.map((t) => (
+              <span class="tag">{t}</span>
+            ))}
+          </div>
+        </div>
+
+        <!-- Authors footer -->
+        <div class="authors-footer">
+          {articleAuthors.map((a) => (
+            <div class="author-card-mini">
+              <img src={a.avatar} alt={a.name} class="author-avatar" width="64" height="64" loading="lazy" />
+              <div>
+                <a href={authorPath(a.slug)} class="acm-name">{a.name}</a>
+                <span class="acm-role">{a.role}</span>
+                <p class="acm-bio">{a.bio}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <!-- Comments placeholder -->
+        <section class="comments-section">
+          <Comments articleTitle={article.title} />
+        </section>
+      </div>
+
+      <aside class="article-rail">
+        <AdSlot slot="mpu-rail" format="mpu" label="Advertisement" class="rail-mpu" />
+        <div class="rail-sticky">
+          <RelatedRail article={article} title="Related stories" limit={4} />
+          <Newsletter
+            title="The morning PULSE"
+            subtitle="One email. Every weekday. Free."
+            variant="compact"
+          />
+        </div>
+      </aside>
+    </div>
+
+    <!-- Footer related -->
+    <section class="container article-footer-related">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow eyebrow-accent">Keep reading</span>
+          <h2 class="section-title">More from {section.name}</h2>
+        </div>
+        <a href={sectionPath(section.slug)} class="more-link">All {section.name} →</a>
+      </div>
+      <div class="footer-related-grid">
+        {sameSection.map((a) => (
+          <ArticleCard article={a} variant="default" />
+        ))}
+      </div>
+    </section>
+
+    <section class="container">
+      <Newsletter
+        title="One more thing"
+        subtitle="Weekend edition: one long read, every Saturday. Free."
+        variant="inline"
+      />
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .article.is-premium {
+    --body-bg: #0a0a0b;
+  }
+  .premium-banner {
+    background: var(--color-premium-gold);
+    color: #2a1d00;
+  }
+  .premium-banner-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-block: 12px;
+    flex-wrap: wrap;
+  }
+  .pb-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: #2a1d00;
+    color: var(--color-premium-gold);
+    padding: 5px 10px;
+    border-radius: 6px;
+  }
+  .pb-text { font-size: 14px; font-weight: 600; flex: 1; min-width: 200px; }
+  .pb-cta {
+    background: #2a1d00;
+    color: var(--color-premium-gold);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 13px;
+  }
+
+  .article-head { padding-top: 28px; max-width: 760px; }
+  .head-section {
+    font-size: 12px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--sec, var(--color-primary));
+  }
+  .article-title {
+    font-size: clamp(30px, 5vw, 52px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-top: 10px;
+  }
+  .article-dek {
+    margin-top: 16px;
+    font-size: clamp(17px, 2vw, 21px);
+    line-height: 1.5;
+    color: var(--color-ink-3);
+  }
+  .article-byline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+  }
+  .byline-group { display: flex; gap: 16px; flex-wrap: wrap; }
+  .byline .avatar { width: 32px; height: 32px; }
+
+  .article-hero {
+    margin: 28px auto 0;
+    max-width: var(--container-wide);
+    padding-inline: var(--gutter);
+  }
+  .article-hero img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-muted);
+  }
+  .article-hero figcaption {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--color-ink-4);
+    max-width: var(--container);
+    margin-inline: auto;
+  }
+
+  .article-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 48px;
+    margin-top: 40px;
+    align-items: start;
+  }
+  .article-body {
+    max-width: 680px;
+    width: 100%;
+  }
+  .article-body :global(p) {
+    font-size: 18px;
+    line-height: 1.7;
+    color: var(--color-ink-2);
+    margin-block: 1.2em;
+  }
+  .article-body :global(h2) {
+    font-size: 26px;
+    margin-top: 1.8em;
+    margin-bottom: 0.6em;
+    letter-spacing: -0.01em;
+  }
+  .article-body :global(blockquote) {
+    margin: 1.8em 0;
+    padding: 0 0 0 24px;
+    border-left: 4px solid var(--color-primary);
+    font-size: 22px;
+    line-height: 1.4;
+    font-weight: 600;
+    color: var(--color-ink);
+    font-style: italic;
+  }
+  .article-body :global(figure) { margin: 1.8em 0; }
+  .article-body :global(figimg) {
+    width: 100%;
+    border-radius: var(--radius);
+  }
+  .article-body :global(figcaption) {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--color-ink-4);
+  }
+  .article-body :global(ul.list) {
+    margin: 1.4em 0;
+    padding-left: 0;
+    list-style: none;
+  }
+  .article-body :global(ul.list li) {
+    position: relative;
+    padding-left: 26px;
+    margin-bottom: 10px;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--color-ink-2);
+  }
+  .article-body :global(ul.list li::before) {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 14px;
+    height: 2px;
+    background: var(--color-primary);
+  }
+  .article-body :global(.video-embed) {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: 1.8em 0;
+    background: var(--color-ink);
+  }
+  .article-body :global(.video-embed iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .in-article-ad { margin: 2em 0; }
+
+  .article-tags {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border);
+  }
+  .tags-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-4);
+    display: block;
+    margin-bottom: 12px;
+  }
+  .tags-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    padding: 7px 13px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-ink-2);
+    transition: all var(--transition);
+    cursor: pointer;
+  }
+  .tag:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+  .authors-footer {
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .author-card-mini {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .author-avatar { border-radius: 50%; object-fit: cover; }
+  .acm-name { font-size: 16px; font-weight: 800; color: var(--color-ink); display: block; }
+  .acm-name:hover { color: var(--color-primary); }
+  .acm-role { font-size: 12px; color: var(--color-ink-4); display: block; margin-bottom: 6px; }
+  .acm-bio { font-size: 14px; color: var(--color-ink-3); line-height: 1.55; }
+
+  .comments-section { margin-top: 48px; }
+
+  .article-rail {
+    position: sticky;
+    top: calc(var(--header-h) + 16px);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-self: start;
+  }
+  .rail-mpu { margin-bottom: 4px; }
+  .rail-sticky {
+    position: sticky;
+    top: calc(var(--header-h) + 280px);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .article-footer-related { margin-top: 72px; }
+  .footer-related-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  @media (max-width: 960px) {
+    .article-layout { grid-template-columns: 1fr; gap: 32px; }
+    .article-rail { position: static; }
+    .rail-sticky { position: static; }
+    .footer-related-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .article-body :global(p) { font-size: 17px; }
+    .article-body :global(blockquote) { font-size: 19px; }
+    .article-hero img { border-radius: var(--radius); }
+    .footer-related-grid { grid-template-columns: 1fr; }
+  }
+</style>

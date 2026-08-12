@@ -1,0 +1,234 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import AdSlot from "../../components/AdSlot.astro";
+import Newsletter from "../../components/Newsletter.astro";
+import Pagination from "../../components/Pagination.astro";
+import {
+  articles,
+  articlesByAuthor,
+  authors,
+  formatDate,
+  getAuthor,
+  paginate,
+  sectionPath,
+  PER_PAGE,
+} from "../../data";
+
+export function getStaticPaths() {
+  return authors.map((author) => {
+    const all = articlesByAuthor(author.slug);
+    const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
+    return {
+      params: { author: author.slug },
+      props: { authorSlug: author.slug, pages, total: all.length },
+    };
+  });
+}
+
+const { authorSlug, pages, total } = Astro.props;
+const author = authors.find((a) => a.slug === authorSlug)!;
+const all = articlesByAuthor(authorSlug);
+const page = 1;
+const { items } = paginate(all, page, PER_PAGE);
+const top = all[0];
+const rest = all.slice(1);
+---
+
+<Layout title={`${author.name} — PULSE`} description={author.bio}>
+  <div class="container-wide">
+    <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
+  </div>
+
+  <section class="container author-hero">
+    <div class="author-card">
+      <img src={author.avatar} alt={author.name} class="author-avatar" width="120" height="120" />
+      <div class="author-meta">
+        <span class="eyebrow eyebrow-accent">{author.role}</span>
+        <h1 class="author-name">{author.name}</h1>
+        <p class="author-bio">{author.bio}</p>
+        <div class="author-stats">
+          <span><strong>{all.length}</strong> articles</span>
+          {author.twitter && (
+            <a href={`https://twitter.com/${author.twitter}`} class="author-twitter" target="_blank" rel="noopener noreferrer">
+              @{author.twitter}
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {top && (
+    <section class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow eyebrow-accent">Top story</span>
+          <h2 class="section-title">Featured</h2>
+        </div>
+      </div>
+      <ArticleCard article={top} variant="hero" />
+    </section>
+  )}
+
+  <div class="container author-layout">
+    <div class="author-listing">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow eyebrow-accent">More from {author.name}</span>
+          <h2 class="section-title">All articles</h2>
+        </div>
+        <span class="result-count">{total} articles</span>
+      </div>
+
+      <div class="listing-grid">
+        {rest.map((a, i) => (
+          <>
+            <ArticleCard article={a} variant="default" />
+            {i === 1 && (
+              <div class="in-feed-card">
+                <AdSlot slot="native-in-feed" format="native-in-feed" label="Sponsored" />
+              </div>
+            )}
+          </>
+        ))}
+      </div>
+
+      {pages > 1 && (
+        <Pagination page={1} pages={pages} basePath={`/authors/${author.slug}`} />
+      )}
+    </div>
+
+    <aside class="author-rail">
+      <AdSlot slot="mpu-rail" format="mpu" label="Advertisement" />
+      <div class="rail-block">
+        <h4 class="rail-title">More voices</h4>
+        <ul class="voice-list">
+          {authors.filter((a) => a.slug !== author.slug).slice(0, 4).map((a) => (
+            <li>
+              <a href={`/authors/${a.slug}`} class="voice-item">
+                <img src={a.avatar} alt="" class="voice-avatar" width="44" height="44" loading="lazy" />
+                <div>
+                  <span class="voice-name">{a.name}</span>
+                  <span class="voice-role">{a.role}</span>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <Newsletter
+        title={`Follow ${author.name}`}
+        subtitle={`Get their next story in your inbox.`}
+        variant="compact"
+      />
+    </aside>
+  </div>
+</Layout>
+
+<style>
+  .author-hero { padding-top: 32px; }
+  .author-card {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 28px;
+    align-items: center;
+    padding: 32px;
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+  }
+  .author-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: var(--shadow);
+  }
+  .author-name {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 44px);
+    margin-top: 8px;
+    line-height: 1;
+    letter-spacing: 0.01em;
+  }
+  .author-bio {
+    margin-top: 12px;
+    font-size: 15px;
+    color: var(--color-ink-3);
+    max-width: 60ch;
+    line-height: 1.6;
+  }
+  .author-stats {
+    display: flex;
+    gap: 18px;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--color-ink-4);
+  }
+  .author-stats strong { color: var(--color-ink); }
+  .author-twitter { color: var(--color-primary); font-weight: 700; }
+
+  .author-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 40px;
+    margin-top: 48px;
+    align-items: start;
+  }
+  .result-count { font-size: 13px; color: var(--color-ink-4); font-weight: 600; white-space: nowrap; }
+  .listing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .in-feed-card {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: 12px 0;
+    margin: 4px 0;
+  }
+  .author-rail {
+    position: sticky;
+    top: calc(var(--header-h) + 16px);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .rail-block {
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+  }
+  .rail-title {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--color-ink);
+    margin-bottom: 14px;
+  }
+  .voice-list { display: flex; flex-direction: column; gap: 14px; }
+  .voice-item { display: flex; gap: 12px; align-items: center; }
+  .voice-avatar { border-radius: 50%; object-fit: cover; }
+  .voice-name { display: block; font-size: 14px; font-weight: 700; color: var(--color-ink); }
+  .voice-item:hover .voice-name { color: var(--color-primary); }
+  .voice-role { display: block; font-size: 11px; color: var(--color-ink-4); }
+
+  @media (max-width: 960px) {
+    .author-layout { grid-template-columns: 1fr; gap: 32px; }
+    .author-rail { position: static; }
+  }
+  @media (max-width: 640px) {
+    .author-card { grid-template-columns: 1fr; text-align: center; justify-items: center; padding: 24px; }
+    .author-avatar { margin-inline: auto; }
+    .author-bio { margin-inline: auto; }
+    .author-stats { justify-content: center; }
+    .listing-grid { grid-template-columns: 1fr; }
+  }
+</style>

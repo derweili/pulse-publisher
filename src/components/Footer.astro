@@ -1,0 +1,167 @@
+---
+import { sections, sectionPath, authors, authorPath } from "../data";
+import Newsletter from "./Newsletter.astro";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="footer-newsletter">
+    <div class="container">
+      <Newsletter
+        title="The daily dispatch"
+        subtitle="One email each morning. The stories that matter, the ones that are about to. Free."
+        variant="footer"
+      />
+    </div>
+  </div>
+
+  <div class="footer-main container-wide">
+    <div class="footer-brand">
+      <a href="/" class="footer-logo">
+        <span class="footer-mark">P</span>
+        <span>PULSE</span>
+      </a>
+      <p class="footer-tagline">
+        Modern news, bold takes. Built for people who'd rather think than scroll.
+      </p>
+    </div>
+
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h4>Sections</h4>
+        <ul>
+          {sections.map((s) => (
+            <li><a href={sectionPath(s.slug)}>{s.name}</a></li>
+          ))}
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Voice</h4>
+        <ul>
+          {authors.slice(0, 4).map((a) => (
+            <li><a href={authorPath(a.slug)}>{a.name}</a></li>
+          ))}
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="/advertise">Advertise</a></li>
+          <li><a href="/subscribe">Subscribe</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="/privacy">Privacy</a></li>
+          <li><a href="/terms">Terms</a></li>
+          <li><a href="/cookies">Cookies</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom container-wide">
+    <p>© {year} PULSE Media. All rights reserved.</p>
+    <p class="footer-made">Made with bold caffeine.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 64px;
+    background: var(--color-ink);
+    color: #d7dadf;
+  }
+  .footer-newsletter {
+    padding: 56px 0;
+    background: linear-gradient(180deg, #15161a, #0a0a0b);
+    border-bottom: 1px solid #22232a;
+  }
+  .footer-main {
+    display: grid;
+    grid-template-columns: 1.2fr 2fr;
+    gap: 48px;
+    padding: 56px var(--gutter);
+  }
+  .footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: #fff;
+    letter-spacing: 0.02em;
+  }
+  .footer-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    background: var(--color-primary);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 20px;
+  }
+  .footer-tagline {
+    margin-top: 16px;
+    max-width: 340px;
+    color: #9aa0a8;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .footer-cols {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .footer-col h4 {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  .footer-col li {
+    margin-bottom: 10px;
+  }
+  .footer-col a {
+    font-size: 14px;
+    color: #9aa0a8;
+    transition: color var(--transition);
+  }
+  .footer-col a:hover {
+    color: var(--color-primary);
+  }
+  .footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px var(--gutter);
+    border-top: 1px solid #22232a;
+    font-size: 12px;
+    color: #6b7280;
+  }
+  @media (max-width: 860px) {
+    .footer-main {
+      grid-template-columns: 1fr;
+      gap: 36px;
+    }
+    .footer-cols {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px 20px;
+    }
+  }
+  @media (max-width: 480px) {
+    .footer-bottom {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+  }
+</style>

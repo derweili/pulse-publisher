@@ -1,0 +1,222 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ArticleCard from "../components/ArticleCard.astro";
+import AdSlot from "../components/AdSlot.astro";
+import Newsletter from "../components/Newsletter.astro";
+import {
+  articles,
+  featuredArticles,
+  premiumArticles,
+  sections,
+  articlesInSection,
+  sectionPath,
+  articlePath,
+  authorPath,
+  getAuthor,
+  formatDate,
+} from "../data";
+
+const featured = featuredArticles();
+const heroArticle = featured[0];
+const heroSecondary = featured.slice(1, 3);
+const restFeatured = featured.slice(3, 5);
+
+const premiums = premiumArticles().slice(0, 3);
+
+const sectionsForHome = sections.slice(0, 4);
+---
+
+<Layout>
+  <div class="leaderboard-wrap container-wide">
+    <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
+  </div>
+
+  <!-- HERO -->
+  <section class="container hero-section">
+    <div class="hero-grid">
+      <div class="hero-main">
+        <ArticleCard article={heroArticle} variant="hero" />
+      </div>
+      <div class="hero-side">
+        {heroSecondary.map((a) => (
+          <ArticleCard article={a} variant="default" showDek={false} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick newsletter -->
+  <section class="container">
+    <Newsletter
+      title="The morning PULSE"
+      subtitle="Five stories, every weekday, that are actually worth your attention."
+      variant="inline"
+    />
+  </section>
+
+  <!-- Featured by section -->
+  {sectionsForHome.map((section, idx) => {
+    const sectionArticles = articlesInSection(section.slug);
+    const lead = sectionArticles[0];
+    const rest = sectionArticles.slice(1, 5);
+    return (
+      <section class="container section-block">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow" style={`color:${section.accent}`}>Section</span>
+            <h2 class="section-title">{section.name}</h2>
+          </div>
+          <a href={sectionPath(section.slug)} class="more-link">All {section.name} →</a>
+        </div>
+        <div class={`section-featured-grid section-featured-grid-${idx % 2}`}>
+          <div class="sfg-lead">
+            <ArticleCard article={lead} variant="default" />
+          </div>
+          <div class="sfg-rest">
+            {rest.map((a) => (
+              <ArticleCard article={a} variant="compact" />
+            ))}
+          </div>
+        </div>
+        {idx === 1 && (
+          <div class="in-feed-ad">
+            <AdSlot slot="native-in-feed" format="native-in-feed" label="Sponsored content" />
+          </div>
+        )}
+      </section>
+    );
+  })}
+
+  <!-- PREMIUM SECTION -->
+  <section class="container premium-block">
+    <div class="section-head premium-head">
+      <div>
+        <span class="eyebrow" style="color: var(--color-premium-gold)">PULSE+ Premium</span>
+        <h2 class="section-title">Read deeper. Go further.</h2>
+      </div>
+      <a href="/subscribe" class="more-link premium-cta">Unlock all of PULSE+ →</a>
+    </div>
+    <p class="premium-intro">
+      Long-form reporting, exclusive investigations and the analysis our subscribers pay for.
+      These are the stories that don't disappear in 24 hours.
+    </p>
+    <div class="premium-grid">
+      {premiums.map((a) => (
+        <ArticleCard article={a} variant="premium" />
+      ))}
+    </div>
+  </section>
+
+  <!-- More featured -->
+  <section class="container section-block">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow eyebrow-accent">Editor's picks</span>
+        <h2 class="section-title">Worth your time</h2>
+      </div>
+    </div>
+    <div class="editor-grid">
+      {restFeatured.map((a) => (
+        <ArticleCard article={a} variant="default" />
+      ))}
+      {articles.filter(a => !a.featured).slice(0, 2).map((a) => (
+        <ArticleCard article={a} variant="default" />
+      ))}
+    </div>
+  </section>
+
+  <section class="container">
+    <Newsletter
+      title="One more thing"
+      subtitle="Weekend edition: one long read, delivered every Saturday morning. Free for subscribers."
+      variant="inline"
+    />
+  </section>
+</Layout>
+
+<style>
+  .leaderboard-wrap {
+    padding-top: 16px;
+    padding-bottom: 8px;
+    display: flex;
+    justify-content: center;
+  }
+  .hero-section { padding-top: 24px; }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .hero-side {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .section-block { margin-top: 64px; }
+  .section-featured-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .section-featured-grid-1 {
+    grid-template-columns: 1fr 1.4fr;
+  }
+  .sfg-rest {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .in-feed-ad {
+    margin-top: 24px;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: 12px 0;
+  }
+  .premium-block {
+    margin-top: 72px;
+    padding: 40px;
+    background: var(--color-ink);
+    border-radius: var(--radius-xl);
+    color: #fff;
+  }
+  .premium-head { border-bottom-color: #2a2b33; }
+  .premium-intro {
+    margin-top: -12px;
+    margin-bottom: 28px;
+    color: #b8bcc4;
+    max-width: 60ch;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .premium-cta { color: var(--color-premium-gold) !important; }
+  .premium-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .editor-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  @media (max-width: 960px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 24px; }
+    .hero-side { grid-template-columns: 1fr 1fr; }
+    .section-featured-grid,
+    .section-featured-grid-1 { grid-template-columns: 1fr; gap: 24px; }
+    .sfg-rest { grid-template-columns: 1fr 1fr; display: grid; }
+    .premium-grid { grid-template-columns: 1fr 1fr; }
+    .editor-grid { grid-template-columns: 1fr 1fr; }
+    .premium-block { padding: 24px; }
+  }
+  @media (max-width: 560px) {
+    .hero-side { grid-template-columns: 1fr; }
+    .sfg-rest { grid-template-columns: 1fr; }
+    .premium-grid { grid-template-columns: 1fr; }
+    .editor-grid { grid-template-columns: 1fr; }
+    .premium-block { padding: 20px; border-radius: var(--radius-lg); }
+  }
+</style>

@@ -1,0 +1,143 @@
+---
+interface Props {
+  page: number;
+  pages: number;
+  basePath: string;
+  queryKey?: string;
+}
+const { page, pages, basePath, queryKey = "page" } = Astro.props;
+
+const max = pages;
+const cur = page;
+const range: (number | "…")[] = [];
+if (max <= 7) {
+  for (let i = 1; i <= max; i++) range.push(i);
+} else {
+  range.push(1);
+  if (cur > 3) range.push("…");
+  const start = Math.max(2, cur - 1);
+  const end = Math.min(max - 1, cur + 1);
+  for (let i = start; i <= end; i++) range.push(i);
+  if (cur < max - 2) range.push("…");
+  range.push(max);
+}
+
+const href = (p: number) =>
+  p === 1 ? basePath : `${basePath}${basePath.includes("?") ? "&" : "?"}${queryKey}=${p}`;
+
+const prev = cur > 1 ? href(cur - 1) : null;
+const next = cur < max ? href(cur + 1) : null;
+---
+
+{max > 1 && (
+  <nav class="pagination" aria-label="Pagination">
+    {prev ? (
+      <a class="pg-edge pg-prev" href={prev} rel="prev">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span>Prev</span>
+      </a>
+    ) : (
+      <span class="pg-edge disabled" aria-disabled="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span>Prev</span>
+      </span>
+    )}
+
+    <ul class="pg-numbers">
+      {range.map((r) =>
+        r === "…" ? (
+          <li class="pg-ellipsis">…</li>
+        ) : r === cur ? (
+          <li><span class="pg-current" aria-current="page">{r}</span></li>
+        ) : (
+          <li><a class="pg-link" href={href(r)}>{r}</a></li>
+        )
+      )}
+    </ul>
+
+    {next ? (
+      <a class="pg-edge pg-next" href={next} rel="next">
+        <span>Next</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+      </a>
+    ) : (
+      <span class="pg-edge disabled" aria-disabled="true">
+        <span>Next</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+      </span>
+    )}
+  </nav>
+)}
+
+<style>
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+  .pg-numbers {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .pg-link,
+  .pg-current,
+  .pg-ellipsis {
+    display: inline-grid;
+    place-items: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 10px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 10px;
+  }
+  .pg-link {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-ink-2);
+    transition: all var(--transition);
+  }
+  .pg-link:hover {
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+    color: #fff;
+  }
+  .pg-current {
+    background: var(--color-primary);
+    color: #fff;
+  }
+  .pg-ellipsis { color: var(--color-ink-4); }
+  .pg-edge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px;
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--color-surface);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-ink-2);
+    transition: all var(--transition);
+  }
+  .pg-edge:hover:not(.disabled) {
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+    color: #fff;
+  }
+  .pg-edge.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  @media (max-width: 560px) {
+    .pg-numbers { gap: 2px; }
+    .pg-link, .pg-current, .pg-ellipsis { min-width: 36px; height: 36px; font-size: 13px; }
+    .pg-edge { padding: 0 10px; }
+    .pg-prev span, .pg-next span { display: none; }
+  }
+</style>
