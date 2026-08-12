@@ -1,0 +1,84 @@
+---
+interface Props {
+  slug: string;
+  variant?: "icon" | "full";
+  class?: string;
+}
+const { slug, variant = "icon", class: className = "" } = Astro.props;
+---
+
+<button
+  type="button"
+  class={`inline-flex items-center gap-1.5 rounded-full border border-border text-ink-3 transition-colors duration-200 ease-brand hover:border-ink hover:text-ink aria-pressed:border-primary aria-pressed:text-primary ${
+    variant === "full" ? "px-3.5 py-2 text-[13px] font-bold" : "grid size-9 shrink-0 place-items-center"
+  } ${className}`}
+  data-save-button
+  data-slug={slug}
+  aria-pressed="false"
+  aria-label="Save article for later"
+>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-save-icon-outline>
+    <path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4-7 4V4.5a1 1 0 0 1 1-1Z" />
+  </svg>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="hidden" data-save-icon-filled>
+    <path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4-7 4V4.5a1 1 0 0 1 1-1Z" />
+  </svg>
+  {variant === "full" && <span data-save-label>Save</span>}
+</button>
+
+<script>
+  import { $clerkStore, $userStore } from "@clerk/astro/client";
+
+  const METADATA_KEY = "savedArticleSlugs";
+
+  function getSavedSlugs(): string[] {
+    const user = $userStore.get();
+    const saved = (user?.unsafeMetadata as Record<string, unknown> | undefined)?.[METADATA_KEY];
+    return Array.isArray(saved) ? (saved as string[]) : [];
+  }
+
+  function renderButton(btn: HTMLButtonElement, saved: boolean) {
+    btn.setAttribute("aria-pressed", String(saved));
+    btn.querySelector<SVGElement>("[data-save-icon-outline]")?.classList.toggle("hidden", saved);
+    btn.querySelector<SVGElement>("[data-save-icon-filled]")?.classList.toggle("hidden", !saved);
+    const label = btn.querySelector<HTMLElement>("[data-save-label]");
+    if (label) label.textContent = saved ? "Saved" : "Save";
+    btn.setAttribute("aria-label", saved ? "Remove from saved articles" : "Save article for later");
+  }
+
+  function syncAllButtons() {
+    const saved = new Set(getSavedSlugs());
+    document.querySelectorAll<HTMLButtonElement>("[data-save-button]").forEach((btn) => {
+      renderButton(btn, saved.has(btn.dataset.slug ?? ""));
+    });
+  }
+
+  async function toggleSave(btn: HTMLButtonElement) {
+    const clerk = $clerkStore.get();
+    const user = $userStore.get();
+    if (!clerk) return;
+    if (!user) {
+      clerk.openSignIn();
+      return;
+    }
+    const slug = btn.dataset.slug ?? "";
+    const current = getSavedSlugs();
+    const next = current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug];
+
+    btn.disabled = true;
+    try {
+      await user.updateMetadata({ unsafeMetadata: { [METADATA_KEY]: next } });
+      syncAllButtons();
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  document.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-save-button]");
+    if (!btn) return;
+    void toggleSave(btn);
+  });
+
+  $userStore.subscribe(syncAllButtons);
+</script>

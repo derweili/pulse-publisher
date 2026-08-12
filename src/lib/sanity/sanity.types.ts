@@ -853,6 +853,12 @@ export type RelatedArticlesQueryResult = Array<{
 // with `npm run studio:typegen` against a live dataset to replace this.
 export type ArticlesByTagQueryResult = AllArticlesQueryResult;
 
+// Variable: articlesBySlugsQuery
+// Query: *[_type == "article" && slug.current in $slugs] | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
+// NOTE: hand-written to match the shared cardProjection shape — regenerate
+// with `npm run studio:typegen` against a live dataset to replace this.
+export type ArticlesBySlugsQueryResult = AllArticlesQueryResult;
+
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {

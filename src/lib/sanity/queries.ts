@@ -152,6 +152,11 @@ export const articlesByTagQuery = defineQuery(`
   | order(publishedAt desc) ${cardProjection}
 `);
 
+export const articlesBySlugsQuery = defineQuery(`
+  *[_type == "article" && slug.current in $slugs]
+  | order(publishedAt desc) ${cardProjection}
+`);
+
 /**
  * Same-section articles first, then articles from other sections that
  * share at least one tag — mirrors the old content.ts `relatedArticles()`

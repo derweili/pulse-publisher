@@ -3,6 +3,7 @@ import { formatDate } from "../lib/format";
 import { articlePath, authorPath, sectionPath } from "../lib/paths";
 import { urlFor } from "../lib/sanity/image";
 import type { ArticleCardData } from "../lib/sanity/fetch";
+import SaveButton from "./SaveButton.astro";
 
 interface Props {
   article: ArticleCardData;
@@ -43,17 +44,20 @@ const isPremium = article.premium ?? false;
         >{article.title}</a>
       </h2>
       {showDek && <p class="mt-3 max-w-[60ch] text-base leading-normal text-ink-3 max-sm:text-[15px]">{article.dek}</p>}
-      <div class="inline-flex flex-wrap items-center gap-2 text-xs font-medium text-ink-4">
-        {primaryAuthor && (
-          <a href={authorPath(primaryAuthor.slug)} class="inline-flex items-center gap-2">
-            <img src={urlFor(primaryAuthor.avatar).width(56).height(56).fit("crop").url()} alt="" class="size-7 rounded-full bg-bg-muted object-cover" width="28" height="28" loading="lazy" />
-            <span class="text-[13px] font-bold text-ink-2 hover:text-primary">{primaryAuthor.name}</span>
-          </a>
-        )}
-        <span class="dot"></span>
-        <span>{formatDate(article.publishedAt)}</span>
-        <span class="dot"></span>
-        <span>{article.readTime} min</span>
+      <div class="mt-1 flex flex-wrap items-center justify-between gap-2">
+        <div class="inline-flex flex-wrap items-center gap-2 text-xs font-medium text-ink-4">
+          {primaryAuthor && (
+            <a href={authorPath(primaryAuthor.slug)} class="inline-flex items-center gap-2">
+              <img src={urlFor(primaryAuthor.avatar).width(56).height(56).fit("crop").url()} alt="" class="size-7 rounded-full bg-bg-muted object-cover" width="28" height="28" loading="lazy" />
+              <span class="text-[13px] font-bold text-ink-2 hover:text-primary">{primaryAuthor.name}</span>
+            </a>
+          )}
+          <span class="dot"></span>
+          <span>{formatDate(article.publishedAt)}</span>
+          <span class="dot"></span>
+          <span>{article.readTime} min</span>
+        </div>
+        <SaveButton slug={article.slug} />
       </div>
     </div>
   </article>
@@ -77,10 +81,13 @@ const isPremium = article.premium ?? false;
         <a href={articlePath(article.slug)} class="hover:text-primary">{article.title}</a>
       </h3>
       {showDek && <p class="text-sm leading-relaxed text-ink-3">{article.dek}</p>}
-      <div class="mt-auto inline-flex flex-wrap items-center gap-2 text-xs font-medium text-ink-4">
-        {primaryAuthor && <span class="font-bold text-ink-2 hover:text-primary">{primaryAuthor.name}</span>}
-        <span class="dot"></span>
-        <span>{article.readTime} min</span>
+      <div class="mt-auto flex flex-wrap items-center justify-between gap-2">
+        <div class="inline-flex flex-wrap items-center gap-2 text-xs font-medium text-ink-4">
+          {primaryAuthor && <span class="font-bold text-ink-2 hover:text-primary">{primaryAuthor.name}</span>}
+          <span class="dot"></span>
+          <span>{article.readTime} min</span>
+        </div>
+        <SaveButton slug={article.slug} />
       </div>
     </div>
   </article>
@@ -128,12 +135,15 @@ const isPremium = article.premium ?? false;
         <a href={articlePath(article.slug)} class="hover:text-primary">{article.title}</a>
       </h3>
       {showDek && <p class="text-sm leading-relaxed text-ink-3">{article.dek}</p>}
-      <div class="inline-flex flex-wrap items-center gap-2 text-xs font-medium text-ink-4">
-        {primaryAuthor && <span class="font-bold text-ink-2 hover:text-primary">{primaryAuthor.name}</span>}
-        <span class="dot"></span>
-        <span>{formatDate(article.publishedAt)}</span>
-        <span class="dot"></span>
-        <span>{article.readTime} min</span>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="inline-flex flex-wrap items-center gap-2 text-xs font-medium text-ink-4">
+          {primaryAuthor && <span class="font-bold text-ink-2 hover:text-primary">{primaryAuthor.name}</span>}
+          <span class="dot"></span>
+          <span>{formatDate(article.publishedAt)}</span>
+          <span class="dot"></span>
+          <span>{article.readTime} min</span>
+        </div>
+        <SaveButton slug={article.slug} />
       </div>
     </div>
   </article>

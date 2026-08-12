@@ -5,6 +5,7 @@ import Comments from "../../components/Comments.tsx";
 import Newsletter from "../../components/Newsletter.astro";
 import PortableText from "../../components/portable-text/PortableText.astro";
 import RelatedRail from "../../components/RelatedRail.astro";
+import SaveButton from "../../components/SaveButton.astro";
 import ShareButtons from "../../components/ShareButtons.astro";
 import StructuredData from "../../components/StructuredData.astro";
 import Layout from "../../layouts/Layout.astro";
@@ -128,8 +129,9 @@ const breadcrumbSchema = {
           <span>{article.readTime} min read</span>
         </div>
       </div>
-      <div class="mt-4">
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
         <ShareButtons url={articleUrl} title={article.title} />
+        <SaveButton slug={article.slug} variant="full" />
       </div>
     </header>
 

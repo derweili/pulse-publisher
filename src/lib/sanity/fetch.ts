@@ -4,6 +4,7 @@ import {
   articleBySlugQuery,
   articleSlugsQuery,
   articlesByAuthorQuery,
+  articlesBySlugsQuery,
   articlesByTagQuery,
   articlesInSectionQuery,
   authorBySlugQuery,
@@ -20,6 +21,7 @@ import type {
   ArticleBySlugQueryResult,
   ArticleSlugsQueryResult,
   ArticlesByAuthorQueryResult,
+  ArticlesBySlugsQueryResult,
   ArticlesByTagQueryResult,
   ArticlesInSectionQueryResult,
   AuthorBySlugQueryResult,
@@ -99,22 +101,35 @@ export const getArticlesByAuthor = (
 // `client.fetch`'s overloads resolve params/result types by looking up the
 // exact query string in the generated `SanityQueries` map; that lookup
 // (and the constraint-checking around it) only works cleanly for queries
-// typegen itself produced. `articlesByTagQuery`'s type includes
+// typegen itself produced. Queries added by hand below interpolate
 // `${cardProjection}` — a non-literal interpolation — which the generated
 // map can't key on, so the overloads can't be satisfied without fighting
-// unrelated type machinery. Cast `fetch` to the shape we actually need;
-// re-running `npm run studio:typegen` against a live dataset would let this
-// resolve normally, with the same result type either way.
-export const getArticlesByTag = (
+// unrelated type machinery. This helper casts `fetch` to the shape we
+// actually need; re-running `npm run studio:typegen` against a live
+// dataset would let these resolve normally, with the same result either way.
+function fetchUntyped<T>(
   client: SanityClient,
-  tag: string
-): Promise<ArticlesByTagQueryResult> => {
+  query: string,
+  params: Record<string, unknown>
+): Promise<T> {
   const fetchWithParams = client.fetch as unknown as (
     query: string,
     params: Record<string, unknown>
-  ) => Promise<ArticlesByTagQueryResult>;
-  return fetchWithParams(articlesByTagQuery, { tag });
-};
+  ) => Promise<T>;
+  return fetchWithParams(query, params);
+}
+
+export const getArticlesByTag = (
+  client: SanityClient,
+  tag: string
+): Promise<ArticlesByTagQueryResult> =>
+  fetchUntyped<ArticlesByTagQueryResult>(client, articlesByTagQuery, { tag });
+
+export const getArticlesBySlugs = (
+  client: SanityClient,
+  slugs: string[]
+): Promise<ArticlesBySlugsQueryResult> =>
+  fetchUntyped<ArticlesBySlugsQueryResult>(client, articlesBySlugsQuery, { slugs });
 
 export const getPremiumArticles = (client: SanityClient): Promise<PremiumArticlesQueryResult> =>
   client.fetch(premiumArticlesQuery);

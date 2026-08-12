@@ -59,6 +59,10 @@ const searchSections = navSections.map((s) => ({ slug: s.slug, name: s.title }))
         />
       </Show>
       <Show when="signed-in">
+        <a
+          href="/saved"
+          class="rounded-[8px] px-3 py-2 text-sm font-bold tracking-[0.02em] text-ink-2 transition-colors duration-200 ease-brand hover:bg-primary-soft hover:text-primary max-[960px]:hidden"
+        >Saved</a>
         <UserButton />
       </Show>
       <button
