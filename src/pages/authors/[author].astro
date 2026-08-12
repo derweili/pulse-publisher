@@ -1,44 +1,47 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import ArticleCard from "../../components/ArticleCard.astro";
 import AdSlot from "../../components/AdSlot.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
 import Newsletter from "../../components/Newsletter.astro";
 import Pagination from "../../components/Pagination.astro";
-import {
-  authors,
-  articlesByAuthor,
-  paginate,
-  PER_PAGE,
-} from "../../data";
+import Layout from "../../layouts/Layout.astro";
+import { PER_PAGE } from "../../lib/format";
+import { authorPath } from "../../lib/paths";
+import { urlFor } from "../../lib/sanity/image";
+import { getArticlesByAuthor, getAuthors } from "../../lib/sanity/fetch";
 
-export function getStaticPaths() {
-  return authors.map((author) => {
-    const all = articlesByAuthor(author.slug);
-    const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
-    return {
-      params: { author: author.slug },
-      props: { authorSlug: author.slug, pages, total: all.length },
-    };
-  });
+export async function getStaticPaths() {
+  const authors = await getAuthors();
+  return Promise.all(
+    authors.map(async (author) => {
+      const all = await getArticlesByAuthor(author.slug);
+      const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
+      return {
+        params: { author: author.slug },
+        props: { authorSlug: author.slug, authors, pages, total: all.length },
+      };
+    })
+  );
 }
 
-const { authorSlug, pages, total } = Astro.props;
+const { authorSlug, authors, pages, total } = Astro.props;
 const author = authors.find((a) => a.slug === authorSlug)!;
-const all = articlesByAuthor(authorSlug);
-const page = 1;
-const { items } = paginate(all, page, PER_PAGE);
+const all = await getArticlesByAuthor(authorSlug);
 const top = all[0];
 const rest = all.slice(1);
 ---
 
-<Layout title={`${author.name} — PULSE`} description={author.bio}>
+<Layout
+  title={author.seo?.metaTitle || `${author.name} — PULSE`}
+  description={author.seo?.metaDescription || author.bio}
+  ogImageUrl={urlFor(author.avatar).width(1200).height(630).fit("crop").url()}
+>
   <div class="container-page-wide">
     <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
   </div>
 
   <section class="container-page pt-8">
     <div class="grid grid-cols-[120px_1fr] items-center gap-7 rounded-xl border border-border bg-bg-soft p-8 max-sm:grid-cols-1 max-sm:justify-items-center max-sm:p-6 max-sm:text-center">
-      <img src={author.avatar} alt={author.name} class="size-[120px] rounded-full border-[3px] border-white object-cover shadow max-sm:mx-auto" width="120" height="120" />
+      <img src={urlFor(author.avatar).width(240).height(240).fit("crop").url()} alt={author.name} class="size-[120px] rounded-full border-[3px] border-white object-cover shadow max-sm:mx-auto" width="120" height="120" />
       <div>
         <span class="eyebrow eyebrow-accent">{author.role}</span>
         <h1 class="mt-2 font-display text-[clamp(28px,4vw,44px)] leading-none tracking-[0.01em]">{author.name}</h1>
@@ -91,7 +94,7 @@ const rest = all.slice(1);
       </div>
 
       {pages > 1 && (
-        <Pagination page={1} pages={pages} basePath={`/authors/${author.slug}`} />
+        <Pagination page={1} pages={pages} basePath={authorPath(author.slug)} />
       )}
     </div>
 
@@ -102,8 +105,8 @@ const rest = all.slice(1);
         <ul class="flex flex-col gap-3.5">
           {authors.filter((a) => a.slug !== author.slug).slice(0, 4).map((a) => (
             <li>
-              <a href={`/authors/${a.slug}`} class="group flex items-center gap-3">
-                <img src={a.avatar} alt="" class="size-11 rounded-full object-cover" width="44" height="44" loading="lazy" />
+              <a href={authorPath(a.slug)} class="group flex items-center gap-3">
+                <img src={urlFor(a.avatar).width(88).height(88).fit("crop").url()} alt="" class="size-11 rounded-full object-cover" width="44" height="44" loading="lazy" />
                 <div>
                   <span class="block text-sm font-bold text-ink group-hover:text-primary">{a.name}</span>
                   <span class="block text-[11px] text-ink-4">{a.role}</span>

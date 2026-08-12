@@ -1,10 +1,17 @@
 ---
-import { sections, sectionPath } from "../data";
-import SearchTrigger from "./SearchTrigger.tsx";
-import MobileMenu from "./MobileMenu.tsx";
 import { Show, SignInButton, UserButton } from "@clerk/astro/components";
+import { sectionPath } from "../lib/paths";
+import { getSections, getSiteSettings } from "../lib/sanity/fetch";
+import MobileMenu from "./MobileMenu.tsx";
+import SearchTrigger from "./SearchTrigger.tsx";
 
-const navSections = sections;
+const navSections = await getSections();
+const settings = await getSiteSettings();
+const extraNavLinks = (settings.mainNav ?? []).map((link) => ({
+  label: link.label,
+  href: link.linkType === "internal" && link.internalHref ? sectionPath(link.internalHref) : (link.externalUrl ?? "#"),
+}));
+const searchSections = navSections.map((s) => ({ slug: s.slug, name: s.title }));
 ---
 
 <header
@@ -15,9 +22,9 @@ const navSections = sections;
     class="container-page-wide flex h-header items-center gap-5"
   >
     <div class="shrink-0 max-[960px]:flex-1">
-      <a href="/" class="inline-flex items-center gap-2 font-display text-[26px] leading-none tracking-[0.02em]" aria-label="PULSE home">
-        <span class="grid size-[30px] max-[480px]:size-[26px] place-items-center rounded-sm bg-primary text-[20px] max-[480px]:text-[17px] text-white">P</span>
-        <span class="text-ink max-[480px]:text-[22px]">PULSE</span>
+      <a href="/" class="inline-flex items-center gap-2 font-display text-[26px] leading-none tracking-[0.02em]" aria-label={`${settings.title} home`}>
+        <span class="grid size-[30px] max-[480px]:size-[26px] place-items-center rounded-sm bg-primary text-[20px] max-[480px]:text-[17px] text-white">{settings.title.charAt(0)}</span>
+        <span class="text-ink max-[480px]:text-[22px]">{settings.title}</span>
       </a>
     </div>
 
@@ -29,18 +36,20 @@ const navSections = sections;
           class="rounded-[8px] px-3 py-2 text-sm font-bold tracking-[0.02em] text-ink-2 transition-colors duration-200 ease-brand hover:bg-primary-soft hover:text-primary"
           data-section={s.slug}
         >
-          {s.name}
+          {s.title}
         </a>
       ))}
     </nav>
 
     <div class="flex shrink-0 items-center gap-2.5">
-      <SearchTrigger sections={navSections} client:idle />
-      <a
-        href="/subscribe"
-        class="rounded-full bg-ink px-4 py-2.5 text-[13px] font-bold tracking-[0.02em] text-white transition-all duration-200 ease-brand hover:-translate-y-px hover:bg-primary max-[960px]:hidden"
-        >Subscribe</a
-      >
+      <SearchTrigger sections={searchSections} client:idle />
+      {extraNavLinks.map((link) => (
+        <a
+          href={link.href}
+          class="rounded-full bg-ink px-4 py-2.5 text-[13px] font-bold tracking-[0.02em] text-white transition-all duration-200 ease-brand hover:-translate-y-px hover:bg-primary max-[960px]:hidden"
+          >{link.label}</a
+        >
+      ))}
       <Show when="signed-out">
         <SignInButton
           mode="modal"
@@ -62,5 +71,5 @@ const navSections = sections;
       </button>
     </div>
   </div>
-  <MobileMenu sections={navSections} client:idle />
+  <MobileMenu sections={searchSections} client:idle />
 </header>

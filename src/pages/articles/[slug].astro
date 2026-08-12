@@ -1,43 +1,55 @@
 ---
-import Layout from "../../layouts/Layout.astro";
 import AdSlot from "../../components/AdSlot.astro";
-import Newsletter from "../../components/Newsletter.astro";
-import RelatedRail from "../../components/RelatedRail.astro";
 import ArticleCard from "../../components/ArticleCard.astro";
 import Comments from "../../components/Comments.tsx";
-import { renderBlock } from "./_renderBlock.tsx";
+import Newsletter from "../../components/Newsletter.astro";
+import PortableText from "../../components/portable-text/PortableText.astro";
+import RelatedRail from "../../components/RelatedRail.astro";
+import Layout from "../../layouts/Layout.astro";
+import { formatDate } from "../../lib/format";
+import { authorPath, sectionPath } from "../../lib/paths";
+import { urlFor } from "../../lib/sanity/image";
 import {
-  articles,
-  getArticle,
-  getAuthor,
-  getSection,
-  formatDate,
-  sectionPath,
-  authorPath,
-  relatedArticles,
-  articlesInSection,
-} from "../../data";
+  getArticleBySlug,
+  getArticleSlugs,
+  getArticlesInSection,
+} from "../../lib/sanity/fetch";
 
-export function getStaticPaths() {
-  return articles.map((a) => ({ params: { slug: a.slug }, props: { article: a } }));
+export async function getStaticPaths() {
+  const slugs = await getArticleSlugs();
+  return slugs.map(({ slug }) => ({ params: { slug } }));
 }
 
-const { article } = Astro.props;
-const section = getSection(article.section)!;
-const articleAuthors = article.authors.map((s) => getAuthor(s)!).filter(Boolean);
-const related = relatedArticles(article, 4);
-const sameSection = articlesInSection(article.section)
+const { slug } = Astro.params;
+const article = await getArticleBySlug(slug);
+if (!article) {
+  throw new Error(`Article not found for slug "${slug}"`);
+}
+
+const section = article.section;
+const articleAuthors = article.authors ?? [];
+const sameSection = (await getArticlesInSection(section.slug))
   .filter((a) => a.slug !== article.slug)
   .slice(0, 4);
-const isPremium = article.premium;
+const isPremium = article.premium ?? false;
 
-const blocks = article.blocks;
+const blocks = article.body;
 const midIdx = Math.floor(blocks.length / 2);
 const firstHalf = blocks.slice(0, midIdx);
 const secondHalf = blocks.slice(midIdx);
+
+const heroImageUrl = urlFor(article.hero).width(1600).height(900).fit("crop").url();
+const ogImageUrl = article.seo?.ogImage
+  ? urlFor(article.seo.ogImage).width(1200).height(630).fit("crop").url()
+  : urlFor(article.hero).width(1200).height(630).fit("crop").url();
 ---
 
-<Layout title={`${article.title} — PULSE`} description={article.dek} activeSection={article.slug}>
+<Layout
+  title={article.seo?.metaTitle || `${article.title} — PULSE`}
+  description={article.seo?.metaDescription || article.dek}
+  activeSection={section.slug}
+  ogImageUrl={ogImageUrl}
+>
   <div class="container-page-wide">
     <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
   </div>
@@ -59,22 +71,22 @@ const secondHalf = blocks.slice(midIdx);
 
     <!-- Header -->
     <header class="container-page max-w-[760px] pt-7">
-      <a href={sectionPath(section.slug)} class="text-xs font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase" style={`--sec:${section.accent}`}>
-        {section.name}
+      <a href={sectionPath(section.slug)} class="text-xs font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase" style={`--sec:${section.accentColor}`}>
+        {section.title}
       </a>
       <h1 class="mt-2.5 text-[clamp(30px,5vw,52px)] leading-[1.05] tracking-[-0.02em]">{article.title}</h1>
       <p class="mt-4 text-[clamp(17px,2vw,21px)] leading-relaxed text-ink-3">{article.dek}</p>
       <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5">
         <div class="flex flex-wrap gap-4">
           {articleAuthors.map((a) => (
-            <a href={authorPath(a.slug)} class="byline" key={a.slug}>
-              <img src={a.avatar} alt="" class="avatar size-8" width="32" height="32" loading="lazy" />
+            <a href={authorPath(a.slug)} class="byline">
+              <img src={urlFor(a.avatar).width(64).height(64).fit("crop").url()} alt="" class="avatar size-8" width="32" height="32" loading="lazy" />
               <span class="name">{a.name}</span>
             </a>
           ))}
         </div>
         <div class="meta-row">
-          <span>{formatDate(article.date)}</span>
+          <span>{formatDate(article.publishedAt)}</span>
           <span class="dot"></span>
           <span>{article.readTime} min read</span>
         </div>
@@ -83,8 +95,8 @@ const secondHalf = blocks.slice(midIdx);
 
     <!-- Hero media -->
     <figure class="container-page-wide mt-7">
-      <img src={article.hero} alt={article.heroAlt} width="1600" height="900" fetchpriority="high" class="aspect-video w-full rounded-lg bg-bg-muted object-cover max-sm:rounded" />
-      <figcaption class="mx-auto mt-2.5 max-w-(--container-content) text-xs text-ink-4">{article.heroAlt}</figcaption>
+      <img src={heroImageUrl} alt={article.hero.alt ?? ""} width="1600" height="900" fetchpriority="high" class="aspect-video w-full rounded-lg bg-bg-muted object-cover max-sm:rounded" />
+      <figcaption class="mx-auto mt-2.5 max-w-(--container-content) text-xs text-ink-4">{article.hero.alt}</figcaption>
     </figure>
 
     <!-- Body + sidebar -->
@@ -92,27 +104,29 @@ const secondHalf = blocks.slice(midIdx);
       <div class="w-full max-w-[680px]">
         <AdSlot slot="in-article-1" format="in-article" label="Advertisement" class="my-[2em]" />
 
-        {firstHalf.map((b) => <Fragment>{renderBlock(b)}</Fragment>)}
+        <PortableText value={firstHalf} />
 
         <AdSlot slot="in-article-2" format="in-article" label="Advertisement" class="my-[2em]" />
 
-        {secondHalf.map((b) => <Fragment>{renderBlock(b)}</Fragment>)}
+        <PortableText value={secondHalf} />
 
         <!-- Tags -->
-        <div class="mt-10 border-t border-border pt-6">
-          <span class="mb-3 block text-[11px] font-extrabold tracking-[0.12em] text-ink-4 uppercase">Tags</span>
-          <div class="flex flex-wrap gap-2">
-            {article.tags.map((t) => (
-              <span class="cursor-pointer rounded-full border border-border px-[13px] py-[7px] text-sm font-semibold text-ink-2 transition-all duration-200 ease-brand hover:border-primary hover:text-primary">{t}</span>
-            ))}
+        {article.tags && article.tags.length > 0 && (
+          <div class="mt-10 border-t border-border pt-6">
+            <span class="mb-3 block text-[11px] font-extrabold tracking-[0.12em] text-ink-4 uppercase">Tags</span>
+            <div class="flex flex-wrap gap-2">
+              {article.tags.map((t) => (
+                <span class="cursor-pointer rounded-full border border-border px-[13px] py-[7px] text-sm font-semibold text-ink-2 transition-all duration-200 ease-brand hover:border-primary hover:text-primary">{t}</span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <!-- Authors footer -->
         <div class="mt-10 flex flex-col gap-6 border-t border-border pt-8">
           {articleAuthors.map((a) => (
             <div class="grid grid-cols-[64px_1fr] items-start gap-4">
-              <img src={a.avatar} alt={a.name} class="size-16 rounded-full object-cover" width="64" height="64" loading="lazy" />
+              <img src={urlFor(a.avatar).width(128).height(128).fit("crop").url()} alt={a.name} class="size-16 rounded-full object-cover" width="64" height="64" loading="lazy" />
               <div>
                 <a href={authorPath(a.slug)} class="block text-base font-extrabold text-ink hover:text-primary">{a.name}</a>
                 <span class="mb-1.5 block text-xs text-ink-4">{a.role}</span>
@@ -146,9 +160,9 @@ const secondHalf = blocks.slice(midIdx);
       <div class="section-head">
         <div>
           <span class="eyebrow eyebrow-accent">Keep reading</span>
-          <h2 class="section-title">More from {section.name}</h2>
+          <h2 class="section-title">More from {section.title}</h2>
         </div>
-        <a href={sectionPath(section.slug)} class="more-link">All {section.name} →</a>
+        <a href={sectionPath(section.slug)} class="more-link">All {section.title} →</a>
       </div>
       <div class="grid grid-cols-4 gap-6 max-[960px]:grid-cols-2 max-sm:grid-cols-1">
         {sameSection.map((a) => (

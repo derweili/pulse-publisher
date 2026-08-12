@@ -1,0 +1,34 @@
+---
+import Block from "./Block.astro";
+import ImageBlock from "./ImageBlock.astro";
+import { groupBlocks, renderInline, type BodyBlock } from "./types";
+import VideoEmbed from "./VideoEmbed.astro";
+
+interface Props {
+  value: BodyBlock[];
+}
+
+const { value } = Astro.props;
+const items = groupBlocks(value);
+---
+
+{
+  items.map((item) => {
+    if (item.kind === "list") {
+      const Tag = item.listItem === "number" ? "ol" : "ul";
+      return (
+        <Tag class="my-[1.4em] list-none pl-0">
+          {item.items.map((block) => (
+            <li
+              class="relative mb-2.5 pl-[26px] text-[17px] leading-relaxed text-ink-2 before:absolute before:top-[11px] before:left-0 before:h-0.5 before:w-3.5 before:bg-primary before:content-['']"
+              set:html={renderInline(block)}
+            />
+          ))}
+        </Tag>
+      );
+    }
+    if (item.kind === "block") return <Block block={item.block} />;
+    if (item.kind === "imageBlock") return <ImageBlock block={item.block} />;
+    return <VideoEmbed block={item.block} />;
+  })
+}
