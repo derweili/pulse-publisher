@@ -95,7 +95,7 @@ const sectionArticleLists = new Map(
           <div>
             <ArticleCard article={lead} variant="default" />
           </div>
-          <div class="flex flex-col gap-[18px] max-[960px]:grid max-[960px]:grid-cols-2">
+          <div class="flex flex-col gap-[18px] max-[960px]:grid max-[960px]:grid-cols-2 max-[560px]:grid-cols-1">
             {rest.map((a) => (
               <ArticleCard article={a} variant="compact" />
             ))}
