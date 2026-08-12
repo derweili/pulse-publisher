@@ -1,35 +1,32 @@
 ---
-import Layout from "../../../layouts/Layout.astro";
-import ArticleCard from "../../../components/ArticleCard.astro";
 import AdSlot from "../../../components/AdSlot.astro";
+import ArticleCard from "../../../components/ArticleCard.astro";
 import Newsletter from "../../../components/Newsletter.astro";
 import Pagination from "../../../components/Pagination.astro";
-import {
-  sections,
-  articlesInSection,
-  paginate,
-  sectionPath,
-  PER_PAGE,
-} from "../../../data";
+import Layout from "../../../layouts/Layout.astro";
+import { PER_PAGE, paginate } from "../../../lib/format";
+import { sectionPath } from "../../../lib/paths";
+import { getArticlesInSection, getSections } from "../../../lib/sanity/fetch";
 
-export function getStaticPaths() {
+export async function getStaticPaths() {
+  const sections = await getSections();
   const paths = [];
   for (const section of sections) {
-    const all = articlesInSection(section.slug);
+    const all = await getArticlesInSection(section.slug);
     const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
     for (let page = 1; page <= pages; page++) {
       paths.push({
         params: { section: section.slug, page: page === 1 ? undefined : String(page) },
-        props: { sectionSlug: section.slug, page, pages, total: all.length },
+        props: { sectionSlug: section.slug, sections, page, pages, total: all.length },
       });
     }
   }
   return paths;
 }
 
-const { sectionSlug, page, pages, total } = Astro.props;
+const { sectionSlug, sections, page, pages, total } = Astro.props;
 const section = sections.find((s) => s.slug === sectionSlug)!;
-const all = articlesInSection(sectionSlug);
+const all = await getArticlesInSection(sectionSlug);
 const { items } = paginate(all, page, PER_PAGE);
 
 const highlight = all[0];
@@ -37,14 +34,14 @@ const restHighlights = all.slice(1, 3);
 const listing = page === 1 ? all.slice(3) : items;
 ---
 
-<Layout title={`${section.name} — PULSE`} description={section.tagline} activeSection={section.slug}>
+<Layout title={`${section.title} — PULSE`} description={section.tagline} activeSection={section.slug}>
   <div class="container-page-wide flex justify-center pt-4 pb-2">
     <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
   </div>
 
   <section class="container-page pt-7 pb-2">
-    <span class="eyebrow" style={`color:${section.accent}`}>Section</span>
-    <h1 class="section-title mt-2">{section.name}</h1>
+    <span class="eyebrow" style={`color:${section.accentColor}`}>Section</span>
+    <h1 class="section-title mt-2">{section.title}</h1>
     <p class="mt-2.5 max-w-[50ch] text-[17px] text-ink-3">{section.tagline}</p>
     <div class="mt-5 flex flex-wrap gap-2">
       {sections.map((s) => (
@@ -55,12 +52,12 @@ const listing = page === 1 ? all.slice(3) : items;
               ? "border-ink bg-ink text-white"
               : "border-border text-ink-2 hover:border-ink"
           }`}
-        >{s.name}</a>
+        >{s.title}</a>
       ))}
     </div>
   </section>
 
-  {page === 1 && (
+  {page === 1 && highlight && (
     <section class="container-page">
       <div class="mt-8 grid grid-cols-[1.5fr_1fr] items-start gap-8 max-[960px]:grid-cols-1 max-[960px]:gap-6">
         <ArticleCard article={highlight} variant="hero" />
@@ -77,7 +74,7 @@ const listing = page === 1 ? all.slice(3) : items;
     <div>
       <div class="section-head">
         <div>
-          <span class="eyebrow eyebrow-accent">Latest in {section.name}</span>
+          <span class="eyebrow eyebrow-accent">Latest in {section.title}</span>
           <h2 class="section-title">All stories</h2>
         </div>
         <span class="text-[13px] font-semibold whitespace-nowrap text-ink-4">{total} articles</span>
@@ -106,7 +103,7 @@ const listing = page === 1 ? all.slice(3) : items;
     <aside class="sticky top-[calc(var(--spacing-header)+16px)] flex flex-col gap-6 max-[960px]:static">
       <AdSlot slot="mpu-rail" format="mpu" label="Advertisement" class="sticky top-20" />
       <div class="rounded-lg border border-border bg-bg-soft p-5">
-        <h4 class="mb-3.5 border-b-2 border-ink pb-2.5 text-xs font-extrabold tracking-[0.12em] text-ink-3 uppercase">Most read in {section.name}</h4>
+        <h4 class="mb-3.5 border-b-2 border-ink pb-2.5 text-xs font-extrabold tracking-[0.12em] text-ink-3 uppercase">Most read in {section.title}</h4>
         <ol class="flex flex-col gap-3.5">
           {all.slice(0, 5).map((a, i) => (
             <li>
@@ -120,8 +117,8 @@ const listing = page === 1 ? all.slice(3) : items;
       </div>
       <div>
         <Newsletter
-          title={`Never miss a ${section.name} story`}
-          subtitle={`Get the best of ${section.name} in your inbox.`}
+          title={`Never miss a ${section.title} story`}
+          subtitle={`Get the best of ${section.title} in your inbox.`}
           variant="compact"
         />
       </div>

@@ -1,19 +1,15 @@
 ---
-import {
-  type Article,
-  relatedArticles,
-  articlePath,
-  getAuthor,
-  getSection,
-} from "../data";
+import { articlePath } from "../lib/paths";
+import { urlFor } from "../lib/sanity/image";
+import { getRelatedArticles, type ArticleDetail } from "../lib/sanity/fetch";
 
 interface Props {
-  article: Article;
+  article: Pick<ArticleDetail, "slug" | "section" | "tags">;
   title?: string;
   limit?: number;
 }
 const { article, title = "More from this section", limit = 4 } = Astro.props;
-const related = relatedArticles(article, limit);
+const related = await getRelatedArticles(article, limit);
 ---
 
 {related.length > 0 && (
@@ -21,15 +17,15 @@ const related = relatedArticles(article, limit);
     <h4 class="border-b-2 border-ink pb-2.5 text-xs font-extrabold tracking-[0.12em] text-ink-3 uppercase">{title}</h4>
     <ul class="flex flex-col gap-3.5">
       {related.map((r) => {
-        const a = getAuthor(r.authors[0]);
+        const a = r.authors?.[0];
         return (
           <li>
             <a href={articlePath(r.slug)} class="group grid grid-cols-[84px_1fr] items-start gap-3">
               <div class="aspect-[4/3] overflow-hidden rounded-[8px] bg-bg-muted">
-                <img src={r.hero} alt={r.heroAlt} loading="lazy" width="120" height="80" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]" />
+                <img src={urlFor(r.hero).width(120).height(90).fit("crop").url()} alt={r.hero.alt ?? ""} loading="lazy" width="120" height="80" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]" />
               </div>
               <div class="flex min-w-0 flex-col gap-1">
-                <span class="text-[10px] font-extrabold tracking-[0.1em] text-primary uppercase">{getSection(r.section)?.name}</span>
+                <span class="text-[10px] font-extrabold tracking-[0.1em] text-primary uppercase">{r.section?.title}</span>
                 <span class="text-sm leading-[1.25] font-bold text-ink group-hover:text-primary">{r.title}</span>
                 <span class="text-[11px] text-ink-4">
                   {a?.name} · {r.readTime}m

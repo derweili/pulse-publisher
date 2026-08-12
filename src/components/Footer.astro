@@ -1,8 +1,19 @@
 ---
-import { sections, sectionPath, authors, authorPath } from "../data";
+import { authorPath, sectionPath } from "../lib/paths";
+import { getAuthors, getSections, getSiteSettings } from "../lib/sanity/fetch";
 import Newsletter from "./Newsletter.astro";
 
+const [sections, authors, settings] = await Promise.all([
+  getSections(),
+  getAuthors(),
+  getSiteSettings(),
+]);
+
 const year = new Date().getFullYear();
+const copyright = settings.copyrightText || `© ${year} ${settings.title}. All rights reserved.`;
+
+const resolveHref = (link: { linkType: "internal" | "external"; internalHref: string | null; externalUrl: string | null }) =>
+  link.linkType === "internal" && link.internalHref ? sectionPath(link.internalHref) : (link.externalUrl ?? "#");
 ---
 
 <footer class="mt-16 bg-ink text-[#d7dadf]">
@@ -19,12 +30,23 @@ const year = new Date().getFullYear();
   <div class="container-page-wide grid grid-cols-[1.2fr_2fr] gap-12 py-14 max-[860px]:grid-cols-1 max-[860px]:gap-9">
     <div>
       <a href="/" class="inline-flex items-center gap-2 font-display text-[28px] tracking-[0.02em] text-white">
-        <span class="grid size-[30px] place-items-center rounded-sm bg-primary text-[20px] text-white">P</span>
-        <span>PULSE</span>
+        <span class="grid size-[30px] place-items-center rounded-sm bg-primary text-[20px] text-white">{settings.title.charAt(0)}</span>
+        <span>{settings.title}</span>
       </a>
       <p class="mt-4 max-w-[340px] text-sm leading-relaxed text-[#9aa0a8]">
-        Modern news, bold takes. Built for people who'd rather think than scroll.
+        {settings.tagline}
       </p>
+      {settings.socialLinks && settings.socialLinks.length > 0 && (
+        <ul class="mt-5 flex flex-wrap gap-3">
+          {settings.socialLinks.map((social) => (
+            <li>
+              <a href={social.url} class="text-xs font-semibold uppercase tracking-[0.08em] text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">
+                {social.platform}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
 
     <div class="grid grid-cols-4 gap-6 max-[860px]:grid-cols-2 max-[860px]:gap-x-5 max-[860px]:gap-y-7">
@@ -33,7 +55,7 @@ const year = new Date().getFullYear();
         <ul>
           {sections.map((s) => (
             <li class="mb-2.5">
-              <a href={sectionPath(s.slug)} class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">{s.name}</a>
+              <a href={sectionPath(s.slug)} class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">{s.title}</a>
             </li>
           ))}
         </ul>
@@ -48,28 +70,23 @@ const year = new Date().getFullYear();
           ))}
         </ul>
       </div>
-      <div>
-        <h4 class="mb-4 text-xs font-extrabold tracking-[0.12em] text-white uppercase">Company</h4>
-        <ul>
-          <li class="mb-2.5"><a href="/about" class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">About</a></li>
-          <li class="mb-2.5"><a href="/contact" class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">Contact</a></li>
-          <li class="mb-2.5"><a href="/advertise" class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">Advertise</a></li>
-          <li class="mb-2.5"><a href="/subscribe" class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">Subscribe</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="mb-4 text-xs font-extrabold tracking-[0.12em] text-white uppercase">Legal</h4>
-        <ul>
-          <li class="mb-2.5"><a href="/privacy" class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">Privacy</a></li>
-          <li class="mb-2.5"><a href="/terms" class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">Terms</a></li>
-          <li class="mb-2.5"><a href="/cookies" class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">Cookies</a></li>
-        </ul>
-      </div>
+      {(settings.footerLinkGroups ?? []).map((group) => (
+        <div>
+          <h4 class="mb-4 text-xs font-extrabold tracking-[0.12em] text-white uppercase">{group.heading}</h4>
+          <ul>
+            {(group.links ?? []).map((link) => (
+              <li class="mb-2.5">
+                <a href={resolveHref(link)} class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">{link.label}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   </div>
 
   <div class="container-page-wide flex items-center justify-between gap-4 border-t border-[#22232a] py-5 text-xs text-[#6b7280] max-[480px]:flex-col max-[480px]:items-start max-[480px]:gap-1.5">
-    <p>© {year} PULSE Media. All rights reserved.</p>
+    <p>{copyright}</p>
     <p>Made with bold caffeine.</p>
   </div>
 </footer>

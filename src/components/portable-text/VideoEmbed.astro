@@ -1,0 +1,18 @@
+---
+import type { VideoEmbedData } from "./types";
+
+interface Props {
+  block: VideoEmbedData;
+}
+
+const { block } = Astro.props;
+---
+
+<div class="relative my-[1.8em] aspect-video overflow-hidden rounded bg-ink">
+  <iframe
+    src={block.url}
+    title="Embedded video"
+    loading="lazy"
+    allowfullscreen
+    class="absolute inset-0 h-full w-full border-0"></iframe>
+</div>

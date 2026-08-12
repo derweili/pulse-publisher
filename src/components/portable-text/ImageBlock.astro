@@ -1,0 +1,16 @@
+---
+import { urlFor } from "../../lib/sanity/image";
+import type { ImageBlockData } from "./types";
+
+interface Props {
+  block: ImageBlockData;
+}
+
+const { block } = Astro.props;
+const src = urlFor(block).width(1200).height(750).fit("crop").url();
+---
+
+<figure class="my-[1.8em]">
+  <img src={src} alt={block.alt ?? ""} loading="lazy" class="w-full rounded" width="1200" height="750" />
+  {block.caption && <figcaption class="mt-2 text-xs text-ink-4">{block.caption}</figcaption>}
+</figure>

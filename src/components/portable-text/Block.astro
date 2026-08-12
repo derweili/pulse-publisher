@@ -1,0 +1,23 @@
+---
+import { renderInline, type TextBlock } from "./types";
+
+interface Props {
+  block: TextBlock;
+}
+
+const { block } = Astro.props;
+const html = renderInline(block);
+---
+
+{
+  block.style === "h2" ? (
+    <h2 class="mt-[1.8em] mb-[0.6em] text-2xl tracking-[-0.01em]" set:html={html} />
+  ) : block.style === "blockquote" ? (
+    <blockquote
+      class="my-[1.8em] border-l-4 border-primary pl-6 text-[22px] leading-[1.4] font-semibold text-ink italic max-sm:text-[19px]"
+      set:html={html}
+    />
+  ) : (
+    <p class="my-[1.2em] text-lg leading-[1.7] text-ink-2 max-sm:text-[17px]" set:html={html} />
+  )
+}

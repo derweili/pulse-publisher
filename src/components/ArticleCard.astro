@@ -1,16 +1,11 @@
 ---
-import {
-  type Article,
-  getSection,
-  getAuthor,
-  formatDate,
-  sectionPath,
-  articlePath,
-  authorPath,
-} from "../data";
+import { formatDate } from "../lib/format";
+import { articlePath, authorPath, sectionPath } from "../lib/paths";
+import { urlFor } from "../lib/sanity/image";
+import type { ArticleCardData } from "../lib/sanity/fetch";
 
 interface Props {
-  article: Article;
+  article: ArticleCardData;
   variant?: "default" | "hero" | "compact" | "list" | "premium" | "feed";
   showSection?: boolean;
   showDek?: boolean;
@@ -23,18 +18,18 @@ const {
   showDek = true,
 } = Astro.props;
 
-const section = getSection(article.section);
-const primaryAuthor = getAuthor(article.authors[0]);
-const isPremium = article.premium;
+const section = article.section;
+const primaryAuthor = article.authors?.[0];
+const isPremium = article.premium ?? false;
 ---
 
 {variant === "hero" && (
   <article class="flex flex-col">
     <a href={articlePath(article.slug)} class="group relative block aspect-video overflow-hidden rounded-lg bg-bg-muted">
-      <img src={article.hero} alt={article.heroAlt} loading="eager" width="1200" height="750" class="h-full w-full object-cover transition-transform duration-[600ms] ease-brand group-hover:scale-[1.04]" />
+      <img src={urlFor(article.hero).width(1200).height(750).fit("crop").url()} alt={article.hero.alt ?? ""} loading="eager" width="1200" height="750" class="h-full w-full object-cover transition-transform duration-[600ms] ease-brand group-hover:scale-[1.04]" />
       <span class="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_40%,rgba(0,0,0,0.5))]"></span>
       {showSection && section && (
-        <span class="absolute top-4 left-4 rounded-sm bg-primary px-3 py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-white uppercase">{section.name}</span>
+        <span class="absolute top-4 left-4 rounded-sm bg-primary px-3 py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-white uppercase">{section.title}</span>
       )}
       {isPremium && (
         <span class="absolute top-4 right-4 inline-flex items-center gap-1.5 rounded-sm bg-premium-gold px-3 py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-[#2a1d00] uppercase">Premium</span>
@@ -51,12 +46,12 @@ const isPremium = article.premium;
       <div class="inline-flex flex-wrap items-center gap-2 text-xs font-medium text-ink-4">
         {primaryAuthor && (
           <a href={authorPath(primaryAuthor.slug)} class="inline-flex items-center gap-2">
-            <img src={primaryAuthor.avatar} alt="" class="size-7 rounded-full bg-bg-muted object-cover" width="28" height="28" loading="lazy" />
+            <img src={urlFor(primaryAuthor.avatar).width(56).height(56).fit("crop").url()} alt="" class="size-7 rounded-full bg-bg-muted object-cover" width="28" height="28" loading="lazy" />
             <span class="text-[13px] font-bold text-ink-2 hover:text-primary">{primaryAuthor.name}</span>
           </a>
         )}
         <span class="dot"></span>
-        <span>{formatDate(article.date)}</span>
+        <span>{formatDate(article.publishedAt)}</span>
         <span class="dot"></span>
         <span>{article.readTime} min</span>
       </div>
@@ -67,15 +62,15 @@ const isPremium = article.premium;
 {variant === "default" && (
   <article class="group flex flex-col overflow-hidden rounded-lg border border-border bg-surface transition-all duration-200 ease-brand hover:-translate-y-1 hover:border-border-strong hover:shadow-lg">
     <a href={articlePath(article.slug)} class="relative block aspect-[16/10] overflow-hidden bg-bg-muted">
-      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="800" height="500" class="h-full w-full object-cover transition-transform duration-[600ms] ease-brand group-hover:scale-105" />
+      <img src={urlFor(article.hero).width(800).height(500).fit("crop").url()} alt={article.hero.alt ?? ""} loading="lazy" width="800" height="500" class="h-full w-full object-cover transition-transform duration-[600ms] ease-brand group-hover:scale-105" />
       {isPremium && (
         <span class="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-[9px] py-[5px] text-[10px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase">Premium</span>
       )}
     </a>
     <div class="flex flex-1 flex-col gap-2.5 px-5 pt-[18px] pb-5">
       {showSection && section && (
-        <a href={sectionPath(section.slug)} class="w-fit text-[11px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accent}`}>
-          {section.name}
+        <a href={sectionPath(section.slug)} class="w-fit text-[11px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accentColor}`}>
+          {section.title}
         </a>
       )}
       <h3 class="text-[19px] leading-[1.2] tracking-[-0.01em]">
@@ -94,15 +89,15 @@ const isPremium = article.premium;
 {variant === "compact" && (
   <article class="group grid grid-cols-[96px_1fr] items-start gap-3.5 max-sm:grid-cols-[80px_1fr] max-sm:gap-3">
     <a href={articlePath(article.slug)} class="relative block aspect-square overflow-hidden rounded bg-bg-muted">
-      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="200" height="200" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+      <img src={urlFor(article.hero).width(200).height(200).fit("crop").url()} alt={article.hero.alt ?? ""} loading="lazy" width="200" height="200" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
       {isPremium && (
         <span class="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-2 py-1 text-[9px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase">Premium</span>
       )}
     </a>
     <div class="flex min-w-0 flex-col gap-1.5">
       {showSection && section && (
-        <a href={sectionPath(section.slug)} class="w-fit text-[10px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accent}`}>
-          {section.name}
+        <a href={sectionPath(section.slug)} class="w-fit text-[10px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accentColor}`}>
+          {section.title}
         </a>
       )}
       <h4 class="text-[15px] leading-[1.25]">
@@ -118,15 +113,15 @@ const isPremium = article.premium;
 {variant === "list" && (
   <article class="group grid grid-cols-[200px_1fr] gap-5 border-b border-border py-4 max-sm:grid-cols-[120px_1fr] max-sm:gap-3.5">
     <a href={articlePath(article.slug)} class="relative block aspect-[3/2] overflow-hidden rounded bg-bg-muted">
-      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="240" height="160" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+      <img src={urlFor(article.hero).width(240).height(160).fit("crop").url()} alt={article.hero.alt ?? ""} loading="lazy" width="240" height="160" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
       {isPremium && (
         <span class="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-2 py-1 text-[9px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase">Premium</span>
       )}
     </a>
     <div class="flex min-w-0 flex-col gap-2">
       {showSection && section && (
-        <a href={sectionPath(section.slug)} class="w-fit text-[10px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accent}`}>
-          {section.name}
+        <a href={sectionPath(section.slug)} class="w-fit text-[10px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accentColor}`}>
+          {section.title}
         </a>
       )}
       <h3 class="text-xl leading-[1.2] max-sm:text-[17px]">
@@ -136,7 +131,7 @@ const isPremium = article.premium;
       <div class="inline-flex flex-wrap items-center gap-2 text-xs font-medium text-ink-4">
         {primaryAuthor && <span class="font-bold text-ink-2 hover:text-primary">{primaryAuthor.name}</span>}
         <span class="dot"></span>
-        <span>{formatDate(article.date)}</span>
+        <span>{formatDate(article.publishedAt)}</span>
         <span class="dot"></span>
         <span>{article.readTime} min</span>
       </div>
@@ -147,8 +142,8 @@ const isPremium = article.premium;
 {variant === "feed" && (
   <article class="flex flex-col gap-2 border-b border-border py-4">
     {showSection && section && (
-      <a href={sectionPath(section.slug)} class="w-fit text-[10px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accent}`}>
-        {section.name}
+      <a href={sectionPath(section.slug)} class="w-fit text-[10px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accentColor}`}>
+        {section.title}
       </a>
     )}
     <h3 class="text-[17px] leading-[1.25]">
@@ -165,7 +160,7 @@ const isPremium = article.premium;
 {variant === "premium" && (
   <a href={articlePath(article.slug)} class="group relative flex flex-col overflow-hidden rounded-lg border border-[#22232a] bg-premium text-white transition-all duration-200 ease-brand hover:-translate-y-1 hover:shadow-xl">
     <div class="relative aspect-[16/10] overflow-hidden bg-[#15161a]">
-      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="800" height="500" class="h-full w-full object-cover opacity-[0.92] transition-transform duration-[600ms] group-hover:scale-[1.04]" />
+      <img src={urlFor(article.hero).width(800).height(500).fit("crop").url()} alt={article.hero.alt ?? ""} loading="lazy" width="800" height="500" class="h-full w-full object-cover opacity-[0.92] transition-transform duration-[600ms] group-hover:scale-[1.04]" />
       <span class="absolute top-3.5 left-3.5 inline-flex items-center gap-1.5 rounded-sm bg-premium-gold px-[11px] py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-[#2a1d00] uppercase">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.5L21 9.2l-5 4.3 1.6 6.8L12 16.9 6.4 20.3 8 13.5 3 9.2l6.6-.7L12 2z"/></svg>
         Premium
@@ -173,7 +168,7 @@ const isPremium = article.premium;
     </div>
     <div class="flex flex-col gap-3 px-[22px] pt-[22px] pb-6">
       {showSection && section && (
-        <span class="text-[11px] font-extrabold tracking-[0.12em] text-premium-gold uppercase">{section.name}</span>
+        <span class="text-[11px] font-extrabold tracking-[0.12em] text-premium-gold uppercase">{section.title}</span>
       )}
       <h3 class="text-[22px] leading-[1.2] text-white">{article.title}</h3>
       {showDek && <p class="text-sm leading-[1.55] text-[#b8bcc4]">{article.dek}</p>}

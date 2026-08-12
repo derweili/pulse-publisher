@@ -35,7 +35,7 @@ export interface Article {
   hero: string;
   heroAlt: string;
   tags: string[];
-  premium: boolean;
+  premium?: boolean;
   featured?: boolean;
   blocks: ArticleBlock[];
 }
