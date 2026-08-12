@@ -42,6 +42,33 @@ All commands are run from the root of the project, from a terminal:
 | `npm run preview`         | Preview your build locally, before deploying     |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
+| `npm run cf:preview`      | Build, then preview the Worker locally with `wrangler dev` |
+| `npm run deploy`          | Build, then deploy to Cloudflare Workers with `wrangler deploy` |
+
+## ☁️ Deploying to Cloudflare Workers
+
+This site is fully static (every route is prerendered), so it deploys to Cloudflare Workers using [Workers static assets](https://developers.cloudflare.com/workers/static-assets/) — no SSR adapter required. Configuration lives in [`wrangler.toml`](./wrangler.toml), which points at the `./dist` build output.
+
+### Deploying manually
+
+```sh
+npm install -g wrangler   # or use the local devDependency via npx
+npx wrangler login
+npm run deploy
+```
+
+### Deploying via GitHub Actions
+
+[`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml) builds the site and deploys it with Cloudflare's official [`wrangler-action`](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/) on every push to `main` (and via manual `workflow_dispatch`).
+
+To enable it, add these repository secrets under **Settings → Secrets and variables → Actions**:
+
+| Secret                  | Description                                                                                                                                                                                     |
+| :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | An API token with **Workers Scripts: Edit** permission for the target account. Create one at [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) using the "Edit Cloudflare Workers" template (or a custom token scoped to `Account.Workers Scripts:Edit`). |
+| `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID, found on the right-hand sidebar of the [Workers & Pages dashboard](https://dash.cloudflare.com) overview page, or by running `npx wrangler whoami`.                |
+
+No other configuration is needed — `wrangler.toml` already defines the Worker name, compatibility date, and assets directory.
 
 ## 👀 Want to learn more?
 
