@@ -29,25 +29,30 @@ const isPremium = article.premium;
 ---
 
 {variant === "hero" && (
-  <article class={`card card-hero ${isPremium ? "is-premium" : ""}`}>
-    <a href={articlePath(article.slug)} class="card-hero-media">
-      <img src={article.hero} alt={article.heroAlt} loading="eager" width="1200" height="750" />
-      <span class="card-grad"></span>
+  <article class="flex flex-col">
+    <a href={articlePath(article.slug)} class="group relative block aspect-video overflow-hidden rounded-lg bg-bg-muted">
+      <img src={article.hero} alt={article.heroAlt} loading="eager" width="1200" height="750" class="h-full w-full object-cover transition-transform duration-[600ms] ease-brand group-hover:scale-[1.04]" />
+      <span class="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_40%,rgba(0,0,0,0.5))]"></span>
       {showSection && section && (
-        <span class="card-section-pill">{section.name}</span>
+        <span class="absolute top-4 left-4 rounded-sm bg-primary px-3 py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-white uppercase">{section.name}</span>
       )}
-      {isPremium && <span class="card-premium-pill">Premium</span>}
+      {isPremium && (
+        <span class="absolute top-4 right-4 inline-flex items-center gap-1.5 rounded-sm bg-premium-gold px-3 py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-[#2a1d00] uppercase">Premium</span>
+      )}
     </a>
-    <div class="card-hero-body">
-      <h2 class="card-hero-title">
-        <a href={articlePath(article.slug)}>{article.title}</a>
+    <div class="px-1 pt-5">
+      <h2 class="text-[clamp(24px,3vw,36px)] leading-[1.1] tracking-[-0.02em]">
+        <a
+          href={articlePath(article.slug)}
+          class={`hover:text-primary ${isPremium ? "bg-[linear-gradient(90deg,var(--color-ink),var(--color-ink-2))] bg-clip-text" : ""}`}
+        >{article.title}</a>
       </h2>
-      {showDek && <p class="card-hero-dek">{article.dek}</p>}
-      <div class="card-meta">
+      {showDek && <p class="mt-3 max-w-[60ch] text-base leading-normal text-ink-3 max-sm:text-[15px]">{article.dek}</p>}
+      <div class="inline-flex flex-wrap items-center gap-2 text-xs font-medium text-ink-4">
         {primaryAuthor && (
-          <a href={authorPath(primaryAuthor.slug)} class="byline">
-            <img src={primaryAuthor.avatar} alt="" class="avatar" width="28" height="28" loading="lazy" />
-            <span class="name">{primaryAuthor.name}</span>
+          <a href={authorPath(primaryAuthor.slug)} class="inline-flex items-center gap-2">
+            <img src={primaryAuthor.avatar} alt="" class="size-7 rounded-full bg-bg-muted object-cover" width="28" height="28" loading="lazy" />
+            <span class="text-[13px] font-bold text-ink-2 hover:text-primary">{primaryAuthor.name}</span>
           </a>
         )}
         <span class="dot"></span>
@@ -60,23 +65,25 @@ const isPremium = article.premium;
 )}
 
 {variant === "default" && (
-  <article class={`card card-default ${isPremium ? "is-premium" : ""}`}>
-    <a href={articlePath(article.slug)} class="card-media">
-      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="800" height="500" />
-      {isPremium && <span class="card-premium-corner">Premium</span>}
+  <article class="group flex flex-col overflow-hidden rounded-lg border border-border bg-surface transition-all duration-200 ease-brand hover:-translate-y-1 hover:border-border-strong hover:shadow-lg">
+    <a href={articlePath(article.slug)} class="relative block aspect-[16/10] overflow-hidden bg-bg-muted">
+      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="800" height="500" class="h-full w-full object-cover transition-transform duration-[600ms] ease-brand group-hover:scale-105" />
+      {isPremium && (
+        <span class="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-[9px] py-[5px] text-[10px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase">Premium</span>
+      )}
     </a>
-    <div class="card-body">
+    <div class="flex flex-1 flex-col gap-2.5 px-5 pt-[18px] pb-5">
       {showSection && section && (
-        <a href={sectionPath(section.slug)} class="card-section" style={`--sec:${section.accent}`}>
+        <a href={sectionPath(section.slug)} class="w-fit text-[11px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accent}`}>
           {section.name}
         </a>
       )}
-      <h3 class="card-title">
-        <a href={articlePath(article.slug)}>{article.title}</a>
+      <h3 class="text-[19px] leading-[1.2] tracking-[-0.01em]">
+        <a href={articlePath(article.slug)} class="hover:text-primary">{article.title}</a>
       </h3>
-      {showDek && <p class="card-dek">{article.dek}</p>}
-      <div class="card-meta">
-        {primaryAuthor && <span class="name">{primaryAuthor.name}</span>}
+      {showDek && <p class="text-sm leading-relaxed text-ink-3">{article.dek}</p>}
+      <div class="mt-auto inline-flex flex-wrap items-center gap-2 text-xs font-medium text-ink-4">
+        {primaryAuthor && <span class="font-bold text-ink-2 hover:text-primary">{primaryAuthor.name}</span>}
         <span class="dot"></span>
         <span>{article.readTime} min</span>
       </div>
@@ -85,21 +92,23 @@ const isPremium = article.premium;
 )}
 
 {variant === "compact" && (
-  <article class={`card card-compact ${isPremium ? "is-premium" : ""}`}>
-    <a href={articlePath(article.slug)} class="card-compact-media">
-      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="200" height="200" />
-      {isPremium && <span class="card-premium-corner small">Premium</span>}
+  <article class="group grid grid-cols-[96px_1fr] items-start gap-3.5 max-sm:grid-cols-[80px_1fr] max-sm:gap-3">
+    <a href={articlePath(article.slug)} class="relative block aspect-square overflow-hidden rounded bg-bg-muted">
+      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="200" height="200" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+      {isPremium && (
+        <span class="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-2 py-1 text-[9px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase">Premium</span>
+      )}
     </a>
-    <div class="card-compact-body">
+    <div class="flex min-w-0 flex-col gap-1.5">
       {showSection && section && (
-        <a href={sectionPath(section.slug)} class="card-section small" style={`--sec:${section.accent}`}>
+        <a href={sectionPath(section.slug)} class="w-fit text-[10px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accent}`}>
           {section.name}
         </a>
       )}
-      <h4 class="card-compact-title">
-        <a href={articlePath(article.slug)}>{article.title}</a>
+      <h4 class="text-[15px] leading-[1.25]">
+        <a href={articlePath(article.slug)} class="hover:text-primary">{article.title}</a>
       </h4>
-      <div class="card-meta small">
+      <div class="inline-flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-ink-4">
         <span>{article.readTime} min</span>
       </div>
     </div>
@@ -107,23 +116,25 @@ const isPremium = article.premium;
 )}
 
 {variant === "list" && (
-  <article class={`card card-list ${isPremium ? "is-premium" : ""}`}>
-    <a href={articlePath(article.slug)} class="card-list-media">
-      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="240" height="160" />
-      {isPremium && <span class="card-premium-corner small">Premium</span>}
+  <article class="group grid grid-cols-[200px_1fr] gap-5 border-b border-border py-4 max-sm:grid-cols-[120px_1fr] max-sm:gap-3.5">
+    <a href={articlePath(article.slug)} class="relative block aspect-[3/2] overflow-hidden rounded bg-bg-muted">
+      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="240" height="160" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+      {isPremium && (
+        <span class="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-2 py-1 text-[9px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase">Premium</span>
+      )}
     </a>
-    <div class="card-list-body">
+    <div class="flex min-w-0 flex-col gap-2">
       {showSection && section && (
-        <a href={sectionPath(section.slug)} class="card-section small" style={`--sec:${section.accent}`}>
+        <a href={sectionPath(section.slug)} class="w-fit text-[10px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accent}`}>
           {section.name}
         </a>
       )}
-      <h3 class="card-list-title">
-        <a href={articlePath(article.slug)}>{article.title}</a>
+      <h3 class="text-xl leading-[1.2] max-sm:text-[17px]">
+        <a href={articlePath(article.slug)} class="hover:text-primary">{article.title}</a>
       </h3>
-      {showDek && <p class="card-dek">{article.dek}</p>}
-      <div class="card-meta">
-        {primaryAuthor && <span class="name">{primaryAuthor.name}</span>}
+      {showDek && <p class="text-sm leading-relaxed text-ink-3">{article.dek}</p>}
+      <div class="inline-flex flex-wrap items-center gap-2 text-xs font-medium text-ink-4">
+        {primaryAuthor && <span class="font-bold text-ink-2 hover:text-primary">{primaryAuthor.name}</span>}
         <span class="dot"></span>
         <span>{formatDate(article.date)}</span>
         <span class="dot"></span>
@@ -134,17 +145,17 @@ const isPremium = article.premium;
 )}
 
 {variant === "feed" && (
-  <article class={`card card-feed ${isPremium ? "is-premium" : ""}`}>
+  <article class="flex flex-col gap-2 border-b border-border py-4">
     {showSection && section && (
-      <a href={sectionPath(section.slug)} class="card-section small" style={`--sec:${section.accent}`}>
+      <a href={sectionPath(section.slug)} class="w-fit text-[10px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accent}`}>
         {section.name}
       </a>
     )}
-    <h3 class="card-feed-title">
-      <a href={articlePath(article.slug)}>{article.title}</a>
+    <h3 class="text-[17px] leading-[1.25]">
+      <a href={articlePath(article.slug)} class="hover:text-primary">{article.title}</a>
     </h3>
-    <div class="card-meta">
-      {primaryAuthor && <span class="name">{primaryAuthor.name}</span>}
+    <div class="mt-auto inline-flex flex-wrap items-center gap-2 text-xs font-medium text-ink-4">
+      {primaryAuthor && <span class="font-bold text-ink-2 hover:text-primary">{primaryAuthor.name}</span>}
       <span class="dot"></span>
       <span>{article.readTime} min</span>
     </div>
@@ -152,205 +163,26 @@ const isPremium = article.premium;
 )}
 
 {variant === "premium" && (
-  <a href={articlePath(article.slug)} class={`card card-premium ${isPremium ? "" : "is-premium"}`}>
-    <div class="card-premium-media">
-      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="800" height="500" />
-      <span class="card-premium-badge">
+  <a href={articlePath(article.slug)} class="group relative flex flex-col overflow-hidden rounded-lg border border-[#22232a] bg-premium text-white transition-all duration-200 ease-brand hover:-translate-y-1 hover:shadow-xl">
+    <div class="relative aspect-[16/10] overflow-hidden bg-[#15161a]">
+      <img src={article.hero} alt={article.heroAlt} loading="lazy" width="800" height="500" class="h-full w-full object-cover opacity-[0.92] transition-transform duration-[600ms] group-hover:scale-[1.04]" />
+      <span class="absolute top-3.5 left-3.5 inline-flex items-center gap-1.5 rounded-sm bg-premium-gold px-[11px] py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-[#2a1d00] uppercase">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.5L21 9.2l-5 4.3 1.6 6.8L12 16.9 6.4 20.3 8 13.5 3 9.2l6.6-.7L12 2z"/></svg>
         Premium
       </span>
     </div>
-    <div class="card-premium-body">
+    <div class="flex flex-col gap-3 px-[22px] pt-[22px] pb-6">
       {showSection && section && (
-        <span class="card-premium-section">{section.name}</span>
+        <span class="text-[11px] font-extrabold tracking-[0.12em] text-premium-gold uppercase">{section.name}</span>
       )}
-      <h3 class="card-premium-title">{article.title}</h3>
-      {showDek && <p class="card-premium-dek">{article.dek}</p>}
-      <div class="card-premium-meta">
+      <h3 class="text-[22px] leading-[1.2] text-white">{article.title}</h3>
+      {showDek && <p class="text-sm leading-[1.55] text-[#b8bcc4]">{article.dek}</p>}
+      <div class="inline-flex items-center gap-2 text-xs text-[#8a8f99]">
         {primaryAuthor && <span>{primaryAuthor.name}</span>}
         <span class="dot"></span>
         <span>{article.readTime} min read</span>
       </div>
-      <span class="card-premium-cta">Read with PULSE+</span>
+      <span class="mt-1 inline-flex w-fit items-center gap-1.5 rounded-full bg-premium-gold px-3.5 py-2.5 text-xs font-extrabold tracking-[0.04em] text-[#2a1d00] uppercase">Read with PULSE+</span>
     </div>
   </a>
 )}
-
-<style is:global>
-  .card { display: block; }
-  .card a { text-decoration: none; }
-
-  /* HERO */
-  .card-hero { position: relative; display: flex; flex-direction: column; }
-  .card-hero-media {
-    position: relative;
-    display: block;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    background: var(--color-bg-muted);
-  }
-  .card-hero-media img {
-    width: 100%; height: 100%; object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.2,0.7,0.2,1);
-  }
-  .card-hero-media:hover img { transform: scale(1.04); }
-  .card-grad {
-    position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.5));
-  }
-  .card-section-pill {
-    position: absolute; top: 16px; left: 16px;
-    padding: 6px 12px;
-    background: var(--color-primary);
-    color: #fff;
-    font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-    border-radius: 6px;
-  }
-  .card-premium-pill {
-    position: absolute; top: 16px; right: 16px;
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 12px;
-    background: var(--color-premium-gold);
-    color: #2a1d00;
-    font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-    border-radius: 6px;
-  }
-  .card-hero-body { padding: 20px 4px 0; }
-  .card-hero-title {
-    font-size: clamp(24px, 3vw, 36px);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-  }
-  .card-hero-title a:hover { color: var(--color-primary); }
-  .card-hero-dek {
-    margin-top: 12px;
-    font-size: 16px;
-    color: var(--color-ink-3);
-    line-height: 1.5;
-    max-width: 60ch;
-  }
-  .card-hero.is-premium .card-hero-title a {
-    background: linear-gradient(90deg, var(--color-ink), var(--color-ink-2));
-    -webkit-background-clip: text; background-clip: text;
-  }
-
-  /* DEFAULT */
-  .card-default {
-    display: flex; flex-direction: column;
-    background: var(--color-surface);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
-  }
-  .card-default:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--color-border-strong); }
-  .card-media {
-    display: block; aspect-ratio: 16 / 10; overflow: hidden; position: relative; background: var(--color-bg-muted);
-  }
-  .card-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.2,0.7,0.2,1); }
-  .card-default:hover .card-media img { transform: scale(1.05); }
-  .card-premium-corner {
-    position: absolute; top: 12px; right: 12px;
-    padding: 5px 9px;
-    background: var(--color-premium-gold);
-    color: #2a1d00;
-    font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
-    border-radius: 5px;
-  }
-  .card-premium-corner.small { padding: 4px 8px; font-size: 9px; }
-  .card-body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
-  .card-section {
-    font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--sec, var(--color-primary));
-    width: fit-content;
-  }
-  .card-section.small { font-size: 10px; }
-  .card-section:hover { text-decoration: underline; }
-  .card-title { font-size: 19px; line-height: 1.2; letter-spacing: -0.01em; }
-  .card-title a:hover { color: var(--color-primary); }
-  .card-dek { font-size: 14px; color: var(--color-ink-3); line-height: 1.5; }
-  .card-meta {
-    display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px;
-    font-size: 12px; color: var(--color-ink-4); font-weight: 500;
-    margin-top: auto;
-  }
-  .card-meta.small { font-size: 11px; gap: 6px; }
-  .card-meta .name { font-weight: 700; color: var(--color-ink-2); }
-  .card-meta .name:hover { color: var(--color-primary); }
-  .card-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.6; }
-
-  /* COMPACT */
-  .card-compact { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: start; }
-  .card-compact-media { display: block; aspect-ratio: 1; overflow: hidden; border-radius: var(--radius); background: var(--color-bg-muted); position: relative; }
-  .card-compact-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
-  .card-compact-media:hover img { transform: scale(1.05); }
-  .card-compact-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .card-compact-title { font-size: 15px; line-height: 1.25; }
-  .card-compact-title a:hover { color: var(--color-primary); }
-
-  /* LIST */
-  .card-list { display: grid; grid-template-columns: 200px 1fr; gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--color-border); }
-  .card-list-media { display: block; aspect-ratio: 3 / 2; overflow: hidden; border-radius: var(--radius); background: var(--color-bg-muted); position: relative; }
-  .card-list-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
-  .card-list-media:hover img { transform: scale(1.04); }
-  .card-list-body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-  .card-list-title { font-size: 20px; line-height: 1.2; }
-  .card-list-title a:hover { color: var(--color-primary); }
-
-  /* FEED */
-  .card-feed { display: flex; flex-direction: column; gap: 8px; padding: 16px 0; border-bottom: 1px solid var(--color-border); }
-  .card-feed-title { font-size: 17px; line-height: 1.25; }
-  .card-feed-title a:hover { color: var(--color-primary); }
-
-  /* PREMIUM */
-  .card-premium {
-    display: flex; flex-direction: column;
-    background: var(--color-premium);
-    color: #fff;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    border: 1px solid #22232a;
-    position: relative;
-    transition: transform var(--transition), box-shadow var(--transition);
-  }
-  .card-premium:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); }
-  .card-premium-media { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: #15161a; }
-  .card-premium-media img { width: 100%; height: 100%; object-fit: cover; opacity: 0.92; transition: transform 0.6s; }
-  .card-premium:hover .card-premium-media img { transform: scale(1.04); }
-  .card-premium-badge {
-    position: absolute; top: 14px; left: 14px;
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 11px;
-    background: var(--color-premium-gold);
-    color: #2a1d00;
-    font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-    border-radius: 6px;
-  }
-  .card-premium-body { padding: 22px 22px 24px; display: flex; flex-direction: column; gap: 12px; }
-  .card-premium-section {
-    font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--color-premium-gold);
-  }
-  .card-premium-title { font-size: 22px; line-height: 1.2; color: #fff; }
-  .card-premium-dek { font-size: 14px; color: #b8bcc4; line-height: 1.55; }
-  .card-premium-meta { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: #8a8f99; }
-  .card-premium-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.6; }
-  .card-premium-cta {
-    margin-top: 4px;
-    display: inline-flex; align-items: center; gap: 6px;
-    width: fit-content;
-    padding: 9px 14px;
-    background: var(--color-premium-gold);
-    color: #2a1d00;
-    font-size: 12px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
-    border-radius: 999px;
-  }
-
-  @media (max-width: 640px) {
-    .card-hero-dek { font-size: 15px; }
-    .card-list { grid-template-columns: 120px 1fr; gap: 14px; }
-    .card-list-title { font-size: 17px; }
-    .card-compact { grid-template-columns: 80px 1fr; gap: 12px; }
-  }
-</style>

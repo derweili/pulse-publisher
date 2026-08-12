@@ -12,127 +12,50 @@ const {
   class: className = "",
 } = Astro.props;
 
-const sizeMap: Record<string, { w: string; h: string; minH: string }> = {
-  leaderboard: { w: "728px", h: "90px", minH: "90px" },
-  mpu: { w: "300px", h: "250px", minH: "250px" },
-  rectangle: { w: "300px", h: "250px", minH: "250px" },
-  "in-article": { w: "100%", h: "250px", minH: "120px" },
-  "native-in-feed": { w: "100%", h: "auto", minH: "0" },
-  skyscraper: { w: "300px", h: "600px", minH: "600px" },
-  sticky: { w: "320px", h: "50px", minH: "50px" },
+const sizeMap: Record<string, { w: string; h: string }> = {
+  leaderboard: { w: "728px", h: "90px" },
+  mpu: { w: "300px", h: "250px" },
+  rectangle: { w: "300px", h: "250px" },
+  "in-article": { w: "100%", h: "250px" },
+  "native-in-feed": { w: "100%", h: "auto" },
+  skyscraper: { w: "300px", h: "600px" },
+  sticky: { w: "320px", h: "50px" },
 };
 const s = sizeMap[format] ?? sizeMap.rectangle;
+
+const outerClasses: Record<string, string> = {
+  skyscraper: "max-md:hidden",
+};
+const innerClasses: Record<string, string> = {
+  leaderboard: "w-[728px] h-[90px] min-h-[90px] max-md:w-full max-md:h-[100px]",
+  mpu: "w-[300px] h-[250px] min-h-[250px]",
+  rectangle: "w-[300px] h-[250px] min-h-[250px]",
+  "in-article": "w-full h-[250px] min-h-[120px] max-md:h-[200px]",
+  "native-in-feed": "w-full min-h-0",
+  skyscraper: "w-[300px] h-[600px] min-h-[600px]",
+  sticky: "w-[320px] min-h-[50px]",
+};
 ---
 
 <aside
-  class={`ad-slot ad-${format} ${className}`}
+  class={`flex w-full items-center justify-center mx-auto ${innerClasses[format] ? "" : "min-h-[250px]"} ${outerClasses[format] ?? ""} ${className}`}
   data-ad-slot={slot}
   role="complementary"
   aria-label={label}
-  style={`--ad-w:${s.w};--ad-h:${s.h};--ad-min-h:${s.minH}`}
 >
-  <div class="ad-inner">
-    <span class="ad-label">{label}</span>
-    <span class="ad-slot-name">{slot}</span>
+  <div
+    class={`ad-inner flex max-w-full flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border-strong bg-[repeating-linear-gradient(45deg,var(--color-bg-soft),var(--color-bg-soft)_10px,var(--color-bg-muted)_10px,var(--color-bg-muted)_20px)] p-3.5 text-center text-ink-4 ${innerClasses[format] ?? innerClasses.rectangle}`}
+  >
+    <span class="text-[9px] font-bold tracking-[0.14em] text-ink-5 uppercase">{label}</span>
+    <span class="rounded-[4px] bg-white/70 px-1.5 py-0.5 font-mono text-[10px] text-ink-5">{slot}</span>
     {format === "native-in-feed" ? (
-      <div class="ad-native">
-        <span class="ad-native-tag">Sponsored</span>
-        <span class="ad-native-title">A message from our partner</span>
-        <span class="ad-native-cta">Learn more →</span>
+      <div class="flex w-full flex-col gap-1.5 px-1.5 py-1 text-left">
+        <span class="text-[10px] font-extrabold tracking-[0.1em] text-ink-5 uppercase">Sponsored</span>
+        <span class="text-[15px] font-bold text-ink-2">A message from our partner</span>
+        <span class="text-[13px] font-bold text-primary">Learn more →</span>
       </div>
     ) : (
-      <span class="ad-placeholder">{s.w} × {s.h}</span>
+      <span class="font-mono text-xs text-ink-5 opacity-80">{s.w} × {s.h}</span>
     )}
   </div>
 </aside>
-
-<style>
-  .ad-slot {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-height: var(--ad-min-h);
-    margin-inline: auto;
-  }
-  .ad-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: var(--ad-w);
-    max-width: 100%;
-    min-height: var(--ad-min-h);
-    padding: 14px;
-    background: repeating-linear-gradient(
-      45deg,
-      var(--color-bg-soft),
-      var(--color-bg-soft) 10px,
-      var(--color-bg-muted) 10px,
-      var(--color-bg-muted) 20px
-    );
-    border: 1px dashed var(--color-border-strong);
-    border-radius: var(--radius);
-    color: var(--color-ink-4);
-    text-align: center;
-  }
-  .ad-label {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-ink-5);
-  }
-  .ad-slot-name {
-    font-size: 10px;
-    font-family: var(--font-mono);
-    color: var(--color-ink-5);
-    background: rgba(255,255,255,0.7);
-    padding: 2px 7px;
-    border-radius: 4px;
-  }
-  .ad-placeholder {
-    font-size: 12px;
-    font-family: var(--font-mono);
-    color: var(--color-ink-5);
-    opacity: 0.8;
-  }
-  .ad-native {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    width: 100%;
-    text-align: left;
-    padding: 4px 6px;
-  }
-  .ad-native-tag {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-ink-5);
-  }
-  .ad-native-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--color-ink-2);
-  }
-  .ad-native-cta {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--color-primary);
-  }
-
-  .ad-leaderboard .ad-inner { width: 728px; height: 90px; }
-  .ad-mpu .ad-inner,
-  .ad-rectangle .ad-inner { width: 300px; height: 250px; }
-  .ad-in-article .ad-inner { width: 100%; height: 250px; }
-  .ad-skyscraper .ad-inner { width: 300px; height: 600px; }
-
-  @media (max-width: 768px) {
-    .ad-leaderboard .ad-inner { width: 100%; height: 100px; }
-    .ad-in-article .ad-inner { height: 200px; }
-    .ad-skyscraper { display: none; }
-  }
-</style>

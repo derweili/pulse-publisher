@@ -5,13 +5,9 @@ import AdSlot from "../../components/AdSlot.astro";
 import Newsletter from "../../components/Newsletter.astro";
 import Pagination from "../../components/Pagination.astro";
 import {
-  articles,
-  articlesByAuthor,
   authors,
-  formatDate,
-  getAuthor,
+  articlesByAuthor,
   paginate,
-  sectionPath,
   PER_PAGE,
 } from "../../data";
 
@@ -36,21 +32,21 @@ const rest = all.slice(1);
 ---
 
 <Layout title={`${author.name} — PULSE`} description={author.bio}>
-  <div class="container-wide">
+  <div class="container-page-wide">
     <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
   </div>
 
-  <section class="container author-hero">
-    <div class="author-card">
-      <img src={author.avatar} alt={author.name} class="author-avatar" width="120" height="120" />
-      <div class="author-meta">
+  <section class="container-page pt-8">
+    <div class="grid grid-cols-[120px_1fr] items-center gap-7 rounded-xl border border-border bg-bg-soft p-8 max-sm:grid-cols-1 max-sm:justify-items-center max-sm:p-6 max-sm:text-center">
+      <img src={author.avatar} alt={author.name} class="size-[120px] rounded-full border-[3px] border-white object-cover shadow max-sm:mx-auto" width="120" height="120" />
+      <div>
         <span class="eyebrow eyebrow-accent">{author.role}</span>
-        <h1 class="author-name">{author.name}</h1>
-        <p class="author-bio">{author.bio}</p>
-        <div class="author-stats">
-          <span><strong>{all.length}</strong> articles</span>
+        <h1 class="mt-2 font-display text-[clamp(28px,4vw,44px)] leading-none tracking-[0.01em]">{author.name}</h1>
+        <p class="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-ink-3 max-sm:mx-auto">{author.bio}</p>
+        <div class="mt-4 flex gap-[18px] text-[13px] text-ink-4 max-sm:justify-center">
+          <span><strong class="text-ink">{all.length}</strong> articles</span>
           {author.twitter && (
-            <a href={`https://twitter.com/${author.twitter}`} class="author-twitter" target="_blank" rel="noopener noreferrer">
+            <a href={`https://twitter.com/${author.twitter}`} class="font-bold text-primary" target="_blank" rel="noopener noreferrer">
               @{author.twitter}
             </a>
           )}
@@ -60,7 +56,7 @@ const rest = all.slice(1);
   </section>
 
   {top && (
-    <section class="container">
+    <section class="container-page mt-16">
       <div class="section-head">
         <div>
           <span class="eyebrow eyebrow-accent">Top story</span>
@@ -71,22 +67,22 @@ const rest = all.slice(1);
     </section>
   )}
 
-  <div class="container author-layout">
-    <div class="author-listing">
+  <div class="container-page mt-12 grid grid-cols-[1fr_320px] items-start gap-10 max-[960px]:grid-cols-1 max-[960px]:gap-8">
+    <div>
       <div class="section-head">
         <div>
           <span class="eyebrow eyebrow-accent">More from {author.name}</span>
           <h2 class="section-title">All articles</h2>
         </div>
-        <span class="result-count">{total} articles</span>
+        <span class="text-[13px] font-semibold whitespace-nowrap text-ink-4">{total} articles</span>
       </div>
 
-      <div class="listing-grid">
+      <div class="grid grid-cols-2 gap-6 max-sm:grid-cols-1">
         {rest.map((a, i) => (
           <>
             <ArticleCard article={a} variant="default" />
             {i === 1 && (
-              <div class="in-feed-card">
+              <div class="col-span-full my-1 border-y border-border py-3">
                 <AdSlot slot="native-in-feed" format="native-in-feed" label="Sponsored" />
               </div>
             )}
@@ -99,18 +95,18 @@ const rest = all.slice(1);
       )}
     </div>
 
-    <aside class="author-rail">
+    <aside class="sticky top-[calc(var(--spacing-header)+16px)] flex flex-col gap-6 max-[960px]:static">
       <AdSlot slot="mpu-rail" format="mpu" label="Advertisement" />
-      <div class="rail-block">
-        <h4 class="rail-title">More voices</h4>
-        <ul class="voice-list">
+      <div class="rounded-lg border border-border bg-bg-soft p-5">
+        <h4 class="mb-3.5 border-b-2 border-ink pb-2.5 text-xs font-extrabold tracking-[0.12em] text-ink-3 uppercase">More voices</h4>
+        <ul class="flex flex-col gap-3.5">
           {authors.filter((a) => a.slug !== author.slug).slice(0, 4).map((a) => (
             <li>
-              <a href={`/authors/${a.slug}`} class="voice-item">
-                <img src={a.avatar} alt="" class="voice-avatar" width="44" height="44" loading="lazy" />
+              <a href={`/authors/${a.slug}`} class="group flex items-center gap-3">
+                <img src={a.avatar} alt="" class="size-11 rounded-full object-cover" width="44" height="44" loading="lazy" />
                 <div>
-                  <span class="voice-name">{a.name}</span>
-                  <span class="voice-role">{a.role}</span>
+                  <span class="block text-sm font-bold text-ink group-hover:text-primary">{a.name}</span>
+                  <span class="block text-[11px] text-ink-4">{a.role}</span>
                 </div>
               </a>
             </li>
@@ -125,110 +121,3 @@ const rest = all.slice(1);
     </aside>
   </div>
 </Layout>
-
-<style>
-  .author-hero { padding-top: 32px; }
-  .author-card {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 28px;
-    align-items: center;
-    padding: 32px;
-    background: var(--color-bg-soft);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-  }
-  .author-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #fff;
-    box-shadow: var(--shadow);
-  }
-  .author-name {
-    font-family: var(--font-display);
-    font-size: clamp(28px, 4vw, 44px);
-    margin-top: 8px;
-    line-height: 1;
-    letter-spacing: 0.01em;
-  }
-  .author-bio {
-    margin-top: 12px;
-    font-size: 15px;
-    color: var(--color-ink-3);
-    max-width: 60ch;
-    line-height: 1.6;
-  }
-  .author-stats {
-    display: flex;
-    gap: 18px;
-    margin-top: 16px;
-    font-size: 13px;
-    color: var(--color-ink-4);
-  }
-  .author-stats strong { color: var(--color-ink); }
-  .author-twitter { color: var(--color-primary); font-weight: 700; }
-
-  .author-layout {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 40px;
-    margin-top: 48px;
-    align-items: start;
-  }
-  .result-count { font-size: 13px; color: var(--color-ink-4); font-weight: 600; white-space: nowrap; }
-  .listing-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-  }
-  .in-feed-card {
-    grid-column: 1 / -1;
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
-    padding: 12px 0;
-    margin: 4px 0;
-  }
-  .author-rail {
-    position: sticky;
-    top: calc(var(--header-h) + 16px);
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-  .rail-block {
-    background: var(--color-bg-soft);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-  }
-  .rail-title {
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-ink-3);
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--color-ink);
-    margin-bottom: 14px;
-  }
-  .voice-list { display: flex; flex-direction: column; gap: 14px; }
-  .voice-item { display: flex; gap: 12px; align-items: center; }
-  .voice-avatar { border-radius: 50%; object-fit: cover; }
-  .voice-name { display: block; font-size: 14px; font-weight: 700; color: var(--color-ink); }
-  .voice-item:hover .voice-name { color: var(--color-primary); }
-  .voice-role { display: block; font-size: 11px; color: var(--color-ink-4); }
-
-  @media (max-width: 960px) {
-    .author-layout { grid-template-columns: 1fr; gap: 32px; }
-    .author-rail { position: static; }
-  }
-  @media (max-width: 640px) {
-    .author-card { grid-template-columns: 1fr; text-align: center; justify-items: center; padding: 24px; }
-    .author-avatar { margin-inline: auto; }
-    .author-bio { margin-inline: auto; }
-    .author-stats { justify-content: center; }
-    .listing-grid { grid-template-columns: 1fr; }
-  }
-</style>
