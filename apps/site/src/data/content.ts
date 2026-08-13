@@ -210,7 +210,7 @@ const longBody = (imgs: { a: string; b: string }): ArticleBlock[] => [
   p("If you remember one thing from this piece, make it this: the interface is the ideology. Whatever you build next, build it knowing that the shape of the thing will teach people how to use it — and how to want it."),
 ];
 
-export const articles: Article[] = [
+const flagshipArticles: Article[] = [
   {
     slug: "the-new-ai-chips-are-rewriting-the-rules",
     title: "The New AI Chips Are Rewriting the Rules",
@@ -453,6 +453,476 @@ export const articles: Article[] = [
     blocks: longBody({ a: IMG.science3, b: IMG.science1 }),
   },
 ];
+
+// --- Backdated archive articles ---------------------------------------
+//
+// Bulks out each section to a proper back-catalog (>10 articles per
+// category). These are generated from lightweight specs rather than
+// hand-written like the flagship pieces above: dummy body copy via
+// `longBody`, and hero/inline images pulled from a free keyword-matched
+// photo source so each image actually relates to its headline. All of
+// them are dated before the oldest flagship article so they read as the
+// older archive.
+//
+// Note: Unsplash's old keyword-search "Source" endpoint was retired in
+// 2023, and its current API needs an access key we don't have here — so
+// images are pulled from LoremFlickr instead, a free, keyless,
+// keyword-matched photo proxy (real Flickr photos, no signup required)
+// that fits the brief's "unsplash or other free sources" allowance.
+
+const demoImage = (keywords: string, seed: number) =>
+  `https://loremflickr.com/1200/750/${keywords}?lock=${seed}`;
+
+const slugify = (title: string) =>
+  title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-+|-+$)/g, "");
+
+const oldestFlagshipDate = flagshipArticles.reduce(
+  (oldest, a) => (a.date < oldest ? a.date : oldest),
+  flagshipArticles[0].date
+);
+
+let archiveDayOffset = 0;
+const nextArchiveDate = () => {
+  archiveDayOffset += 1;
+  const d = new Date(`${oldestFlagshipDate}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - archiveDayOffset);
+  return d.toISOString().slice(0, 10);
+};
+
+let archiveImageSeed = 0;
+const nextImageSeed = () => (archiveImageSeed += 1);
+
+interface ArchiveArticleSpec {
+  title: string;
+  dek: string;
+  section: string;
+  authors: string[];
+  readTime: number;
+  tags: string[];
+  keywords: string;
+  premium?: boolean;
+}
+
+const generateArchiveArticle = (spec: ArchiveArticleSpec): Article => ({
+  slug: slugify(spec.title),
+  title: spec.title,
+  dek: spec.dek,
+  section: spec.section,
+  authors: spec.authors,
+  date: nextArchiveDate(),
+  readTime: spec.readTime,
+  hero: demoImage(spec.keywords, nextImageSeed()),
+  heroAlt: spec.title,
+  tags: spec.tags,
+  premium: spec.premium ?? false,
+  blocks: longBody({
+    a: demoImage(spec.keywords, nextImageSeed()),
+    b: demoImage(spec.keywords, nextImageSeed()),
+  }),
+});
+
+const archiveArticleSpecs: ArchiveArticleSpec[] = [
+  // --- Tech ---
+  {
+    title: "Inside the Chip Shortage That Never Really Ended",
+    dek: "Factories caught up on paper. Lead times tell a different story.",
+    section: "tech",
+    authors: ["mara-okafor"],
+    readTime: 7,
+    tags: ["Chips", "Supply Chain", "Hardware"],
+    keywords: "semiconductor,factory",
+  },
+  {
+    title: "The Rise of the Solo Founder Coder",
+    dek: "No cofounder, no office, no problem — how one-person software companies quietly became normal.",
+    section: "tech",
+    authors: ["noah-benamran"],
+    readTime: 5,
+    tags: ["Startups", "Indie", "Work"],
+    keywords: "programmer,laptop",
+  },
+  {
+    title: "Why Everyone Is Suddenly Talking About Quantum Again",
+    dek: "A string of lab results has the physicists cautiously optimistic and everyone else confused.",
+    section: "tech",
+    authors: ["mara-okafor"],
+    readTime: 8,
+    tags: ["Quantum", "Research", "Deep Dive"],
+    keywords: "quantum,laboratory",
+    premium: true,
+  },
+  {
+    title: "The Browser Wars Are Back, Sort Of",
+    dek: "A new crop of AI-native browsers wants to replace the tab. Here's what that actually means.",
+    section: "tech",
+    authors: ["mara-okafor", "noah-benamran"],
+    readTime: 6,
+    tags: ["Browsers", "AI", "Web"],
+    keywords: "computer,code",
+  },
+  {
+    title: "How a Teenager's Side Project Became a Billion-Dollar App",
+    dek: "A bedroom prototype, a viral weekend, and the founder who is still finishing high school.",
+    section: "tech",
+    authors: ["noah-benamran"],
+    readTime: 6,
+    tags: ["Startups", "Profile", "Apps"],
+    keywords: "startup,office",
+  },
+  {
+    title: "Robots Are Finally Learning to Open Doors",
+    dek: "It sounds trivial. In robotics, it's the benchmark that has humbled everyone.",
+    section: "tech",
+    authors: ["mara-okafor"],
+    readTime: 5,
+    tags: ["Robotics", "AI", "Hardware"],
+    keywords: "robot,technology",
+  },
+  {
+    title: "The Data Centers Quietly Reshaping the Desert",
+    dek: "Water, power and land are being spoken for years in advance. Locals are only now noticing.",
+    section: "tech",
+    authors: ["mara-okafor"],
+    readTime: 9,
+    tags: ["Infrastructure", "AI", "Environment"],
+    keywords: "datacenter,server",
+    premium: true,
+  },
+  {
+    title: "Why Your Next Phone Might Not Have a Screen",
+    dek: "Wearable displays and ambient audio are further along than the demos suggest.",
+    section: "tech",
+    authors: ["noah-benamran"],
+    readTime: 5,
+    tags: ["Hardware", "Wearables", "Trends"],
+    keywords: "smartphone,technology",
+  },
+
+  // --- Culture ---
+  {
+    title: "The Return of the Mixtape, Now With Algorithms",
+    dek: "Hand-curated playlists are back in fashion — and this time the algorithm is invited.",
+    section: "culture",
+    authors: ["dani-rovira"],
+    readTime: 5,
+    tags: ["Music", "Nostalgia", "Trends"],
+    keywords: "vinyl,music",
+  },
+  {
+    title: "Inside the Pop-Up Museum Taking Over Instagram",
+    dek: "It's not really about the art. Or maybe it is, just not in the way you'd expect.",
+    section: "culture",
+    authors: ["dani-rovira", "noah-benamran"],
+    readTime: 6,
+    tags: ["Art", "Exhibits", "Social Media"],
+    keywords: "museum,exhibit",
+  },
+  {
+    title: "Why Everyone's Reading Poetry Again",
+    dek: "Sales are up, readings are packed, and nobody saw it coming — least of all the poets.",
+    section: "culture",
+    authors: ["dani-rovira"],
+    readTime: 5,
+    tags: ["Books", "Poetry", "Trends"],
+    keywords: "books,reading",
+  },
+  {
+    title: "The Street Food Scene Rewriting the Rules of Fine Dining",
+    dek: "Tasting menus are borrowing from night markets. The chefs behind it explain why.",
+    section: "culture",
+    authors: ["dani-rovira"],
+    readTime: 6,
+    tags: ["Food", "Chefs", "Cities"],
+    keywords: "streetfood,market",
+  },
+  {
+    title: "How a Small Film Festival Became the Industry's Best-Kept Secret",
+    dek: "No red carpet, no press junket — just the best new directors in the world, once a year.",
+    section: "culture",
+    authors: ["noah-benamran"],
+    readTime: 7,
+    tags: ["Film", "Festivals", "Profile"],
+    keywords: "cinema,filmfestival",
+    premium: true,
+  },
+  {
+    title: "The Fashion Trend That Refuses to Die",
+    dek: "Designers keep declaring it over. Shoppers keep not listening.",
+    section: "culture",
+    authors: ["dani-rovira"],
+    readTime: 4,
+    tags: ["Fashion", "Trends", "Retail"],
+    keywords: "fashion,runway",
+  },
+  {
+    title: "Inside the World's Loudest Silent Disco",
+    dek: "Three thousand headphones, three DJs, zero noise complaints. A night out gets reinvented.",
+    section: "culture",
+    authors: ["dani-rovira", "noah-benamran"],
+    readTime: 5,
+    tags: ["Nightlife", "Music", "Events"],
+    keywords: "party,dj",
+  },
+  {
+    title: "The Graffiti Artists Turning Alleyways Into Galleries",
+    dek: "Cities used to scrub it off overnight. Now they're commissioning it.",
+    section: "culture",
+    authors: ["dani-rovira"],
+    readTime: 6,
+    tags: ["Street Art", "Cities", "Artists"],
+    keywords: "graffiti,streetart",
+  },
+
+  // --- Science ---
+  {
+    title: "The Ocean Floor Just Got a Lot More Interesting",
+    dek: "New submersible footage is rewriting what we thought lived in total darkness.",
+    section: "science",
+    authors: ["priya-nair"],
+    readTime: 7,
+    tags: ["Ocean", "Biology", "Discovery"],
+    keywords: "ocean,deepsea",
+  },
+  {
+    title: "Inside the Race to Map the Human Brain",
+    dek: "Competing labs, incompatible standards, and one very expensive shared goal.",
+    section: "science",
+    authors: ["priya-nair"],
+    readTime: 8,
+    tags: ["Neuroscience", "Research", "Deep Dive"],
+    keywords: "brain,neuroscience",
+    premium: true,
+  },
+  {
+    title: "Why Glaciers Are Melting Faster Than the Models Predicted",
+    dek: "The gap between forecast and reality has scientists revising their assumptions, fast.",
+    section: "science",
+    authors: ["priya-nair"],
+    readTime: 6,
+    tags: ["Climate", "Glaciers", "Research"],
+    keywords: "glacier,ice",
+  },
+  {
+    title: "The Volcano Scientists Are Watching Most Closely",
+    dek: "It hasn't erupted in decades. That's exactly why nobody can look away.",
+    section: "science",
+    authors: ["priya-nair", "noah-benamran"],
+    readTime: 6,
+    tags: ["Volcanoes", "Geology", "Research"],
+    keywords: "volcano,eruption",
+  },
+  {
+    title: "How Fireflies Are Helping Decode Insect Communication",
+    dek: "A summer of blinking lights is teaching researchers to speak a very old language.",
+    section: "science",
+    authors: ["priya-nair"],
+    readTime: 5,
+    tags: ["Insects", "Biology", "Nature"],
+    keywords: "firefly,forest",
+  },
+  {
+    title: "The Telescope That Rewrote the Timeline of the Universe",
+    dek: "A few weeks of new data. A few centuries of assumptions, undone.",
+    section: "science",
+    authors: ["priya-nair"],
+    readTime: 7,
+    tags: ["Space", "Astronomy", "Research"],
+    keywords: "telescope,space",
+  },
+  {
+    title: "Inside the Vault Built to Outlive Civilization",
+    dek: "A tour of the seed bank designed to survive everything, including us.",
+    section: "science",
+    authors: ["priya-nair"],
+    readTime: 6,
+    tags: ["Conservation", "Agriculture", "Essay"],
+    keywords: "seedvault,arctic",
+  },
+  {
+    title: "Why Mushrooms Might Save the Internet",
+    dek: "Mycelium networks are inspiring a new generation of resilient, decentralized systems.",
+    section: "science",
+    authors: ["priya-nair", "noah-benamran"],
+    readTime: 5,
+    tags: ["Fungi", "Biology", "Tech Crossover"],
+    keywords: "mushroom,forest",
+  },
+
+  // --- Sports ---
+  {
+    title: "The Marathon Runner Who Trains at Midnight",
+    dek: "Heat, work, and family leave one window. She's turned it into a career.",
+    section: "sports",
+    authors: ["jude-halloran"],
+    readTime: 5,
+    tags: ["Running", "Profile", "Endurance"],
+    keywords: "marathon,night",
+  },
+  {
+    title: "Inside the Locker Room After the Upset of the Decade",
+    dek: "What actually gets said in the ninety seconds after nobody expected to win.",
+    section: "sports",
+    authors: ["jude-halloran"],
+    readTime: 4,
+    tags: ["Football", "Story", "Access"],
+    keywords: "lockerroom,team",
+  },
+  {
+    title: "The Youth Academy Quietly Producing World Champions",
+    dek: "A gravel pitch, a part-time coach, and a conveyor belt of talent nobody can explain.",
+    section: "sports",
+    authors: ["jude-halloran"],
+    readTime: 7,
+    tags: ["Soccer", "Youth", "Profile"],
+    keywords: "soccer,training",
+  },
+  {
+    title: "Why Cricket Is Having a Streaming Moment",
+    dek: "A sport built for five-day patience just found a home on platforms built for six-second clips.",
+    section: "sports",
+    authors: ["jude-halloran", "noah-benamran"],
+    readTime: 6,
+    tags: ["Cricket", "Streaming", "Media"],
+    keywords: "cricket,stadium",
+  },
+  {
+    title: "The Comeback Nobody Saw Coming",
+    dek: "Down by twenty with six minutes left. Then everything changed.",
+    section: "sports",
+    authors: ["jude-halloran"],
+    readTime: 4,
+    tags: ["Basketball", "Story", "Recap"],
+    keywords: "basketball,arena",
+  },
+  {
+    title: "Inside the Strangest Transfer Window in Years",
+    dek: "Deals fell apart, then came back together, then fell apart again. Nobody could look away.",
+    section: "sports",
+    authors: ["jude-halloran"],
+    readTime: 6,
+    tags: ["Football", "Transfers", "Business"],
+    keywords: "football,stadium",
+    premium: true,
+  },
+  {
+    title: "The Swimmer Who Rewrote the Record Books Twice in One Summer",
+    dek: "Two records, six weeks apart, and a training method the sport is scrambling to copy.",
+    section: "sports",
+    authors: ["jude-halloran"],
+    readTime: 5,
+    tags: ["Swimming", "Records", "Profile"],
+    keywords: "swimming,pool",
+  },
+  {
+    title: "How a Small-Town Team Became a National Obsession",
+    dek: "A population of nine thousand. A stadium that seats twelve. Go figure.",
+    section: "sports",
+    authors: ["jude-halloran"],
+    readTime: 6,
+    tags: ["Football", "Community", "Story"],
+    keywords: "stadium,crowd",
+  },
+  {
+    title: "The Coach Who Talks More About Chess Than Football",
+    dek: "His tactics board looks less like a formation and more like an opening theory.",
+    section: "sports",
+    authors: ["jude-halloran", "noah-benamran"],
+    readTime: 7,
+    tags: ["Football", "Strategy", "Profile"],
+    keywords: "chess,strategy",
+  },
+
+  // --- Business ---
+  {
+    title: "The Small Bank Making a Big Bet on Rural Lending",
+    dek: "While the majors retreat from small towns, one lender is doubling down.",
+    section: "business",
+    authors: ["sasha-lindqvist"],
+    readTime: 7,
+    tags: ["Banking", "Finance", "Communities"],
+    keywords: "bank,finance",
+  },
+  {
+    title: "Why Corner Stores Are Suddenly Venture-Backed",
+    dek: "The unglamorous convenience store just became one of the hottest categories in retail.",
+    section: "business",
+    authors: ["sasha-lindqvist"],
+    readTime: 6,
+    tags: ["Retail", "Startups", "Investing"],
+    keywords: "storefront,retail",
+  },
+  {
+    title: "Inside the Warehouse That Runs Itself",
+    dek: "A tour of the fulfillment center where the humans are mostly there to supervise.",
+    section: "business",
+    authors: ["sasha-lindqvist", "noah-benamran"],
+    readTime: 6,
+    tags: ["Logistics", "Automation", "Retail"],
+    keywords: "warehouse,logistics",
+  },
+  {
+    title: "The Freight Industry's Quiet Software Problem",
+    dek: "Trucks are full. Software is decades old. Somebody is about to make a fortune fixing it.",
+    section: "business",
+    authors: ["sasha-lindqvist"],
+    readTime: 8,
+    tags: ["Logistics", "Software", "Deep Dive"],
+    keywords: "shipping,cargo",
+    premium: true,
+  },
+  {
+    title: "How a Failed Startup Became a Thriving Consultancy",
+    dek: "The product died. The team, the process and the relationships survived — and thrived.",
+    section: "business",
+    authors: ["sasha-lindqvist"],
+    readTime: 5,
+    tags: ["Startups", "Pivots", "Profile"],
+    keywords: "office,meeting",
+  },
+  {
+    title: "The Real Estate Trend Landlords Don't Want You to Notice",
+    dek: "A quiet shift in lease terms is moving more risk onto tenants than anyone's admitting.",
+    section: "business",
+    authors: ["sasha-lindqvist"],
+    readTime: 7,
+    tags: ["Real Estate", "Housing", "Investigation"],
+    keywords: "realestate,building",
+  },
+  {
+    title: "Why Family Businesses Are Buying Back Their Own Stores",
+    dek: "After a decade of franchising out, a wave of founders wants control back.",
+    section: "business",
+    authors: ["sasha-lindqvist"],
+    readTime: 6,
+    tags: ["Small Business", "Franchising", "Trends"],
+    keywords: "shop,smallbusiness",
+  },
+  {
+    title: "The Currency Traders Betting on Bad News",
+    dek: "For a specific kind of investor, instability isn't a risk. It's the whole strategy.",
+    section: "business",
+    authors: ["sasha-lindqvist", "noah-benamran"],
+    readTime: 7,
+    tags: ["Markets", "Currency", "Trading"],
+    keywords: "currency,trading",
+  },
+  {
+    title: "Inside the Rise of the Four-Day Work Week Pilot Programs",
+    dek: "The results are in from hundreds of companies. They're more interesting than a headline.",
+    section: "business",
+    authors: ["sasha-lindqvist"],
+    readTime: 6,
+    tags: ["Work", "Labor", "Trends"],
+    keywords: "office,worklife",
+  },
+];
+
+const archiveArticles = archiveArticleSpecs.map(generateArchiveArticle);
+
+export const articles: Article[] = [...flagshipArticles, ...archiveArticles];
 
 export const getSection = (slug: string) => sections.find((s) => s.slug === slug);
 export const getAuthor = (slug: string) => authors.find((a) => a.slug === slug);
