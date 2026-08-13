@@ -9,7 +9,7 @@ const { slug, variant = "icon", class: className = "" } = Astro.props;
 
 <button
   type="button"
-  class={`inline-flex items-center gap-1.5 rounded-full border border-border text-ink-3 transition-colors duration-200 ease-brand hover:border-ink hover:text-ink aria-pressed:border-primary aria-pressed:text-primary ${
+  class={`inline-flex justify-center items-center gap-1.5 rounded-full border border-border text-ink-3 transition-colors duration-200 ease-brand hover:border-ink hover:text-ink aria-pressed:border-primary aria-pressed:text-primary ${
     variant === "full" ? "px-3.5 py-2 text-[13px] font-bold" : "grid size-9 shrink-0 place-items-center"
   } ${className}`}
   data-save-button
