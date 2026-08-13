@@ -2,6 +2,7 @@
 import AdSlot from "../components/AdSlot.astro";
 import ArticleCard from "../components/ArticleCard.astro";
 import Newsletter from "../components/Newsletter.astro";
+import TrendingList from "../components/TrendingList.astro";
 import Layout from "../layouts/Layout.astro";
 import { sectionPath } from "../lib/paths";
 import { getSanityClient } from "../lib/sanity/client";
@@ -10,14 +11,16 @@ import {
   getFeaturedArticles,
   getPremiumArticles,
   getSections,
+  getTrendingArticles,
 } from "../lib/sanity/fetch";
 
 const client = getSanityClient(Astro.locals.runtime.env);
-const [featured, premiumsAll, allSections, allArticles] = await Promise.all([
+const [featured, premiumsAll, allSections, allArticles, trending] = await Promise.all([
   getFeaturedArticles(client),
   getPremiumArticles(client),
   getSections(client),
   getAllArticles(client),
+  getTrendingArticles(client),
 ]);
 
 // Curation counts vary with real content, so this degrades gracefully
@@ -65,6 +68,14 @@ const sectionArticleLists = new Map(
             <ArticleCard article={a} variant="default" showDek={false} />
           ))}
         </div>
+      </div>
+    </section>
+  )}
+
+  {trending.length > 0 && (
+    <section class="container-page mt-12">
+      <div class="max-w-md rounded-lg border border-border bg-bg-soft p-6">
+        <TrendingList articles={trending} />
       </div>
     </section>
   )}

@@ -147,6 +147,11 @@ export const allArticlesQuery = defineQuery(`
   *[_type == "article"] | order(publishedAt desc) ${cardProjection}
 `);
 
+export const trendingArticlesQuery = defineQuery(`
+  *[_type == "article" && defined(trendingRank)]
+  | order(trendingRank asc) [0...8] ${cardProjection}
+`);
+
 export const articlesByTagQuery = defineQuery(`
   *[_type == "article" && $tag in tags]
   | order(publishedAt desc) ${cardProjection}

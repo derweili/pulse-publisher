@@ -859,6 +859,12 @@ export type ArticlesByTagQueryResult = AllArticlesQueryResult;
 // with `npm run studio:typegen` against a live dataset to replace this.
 export type ArticlesBySlugsQueryResult = AllArticlesQueryResult;
 
+// Variable: trendingArticlesQuery
+// Query: *[_type == "article" && defined(trendingRank)] | order(trendingRank asc) [0...8] {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
+// NOTE: hand-written to match the shared cardProjection shape — regenerate
+// with `npm run studio:typegen` against a live dataset to replace this.
+export type TrendingArticlesQueryResult = AllArticlesQueryResult;
+
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {

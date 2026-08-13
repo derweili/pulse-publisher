@@ -15,6 +15,7 @@ import {
   sectionBySlugQuery,
   sectionsQuery,
   siteSettingsQuery,
+  trendingArticlesQuery,
 } from "./queries";
 import type {
   AllArticlesQueryResult,
@@ -32,6 +33,7 @@ import type {
   SectionBySlugQueryResult,
   SectionsQueryResult,
   SiteSettingsQueryResult,
+  TrendingArticlesQueryResult,
 } from "./sanity.types";
 
 /** The shape shared by every article-listing query (`ArticleCard`, `RelatedRail`, grids). */
@@ -135,6 +137,9 @@ export const getPremiumArticles = (client: SanityClient): Promise<PremiumArticle
 
 export const getFeaturedArticles = (client: SanityClient): Promise<FeaturedArticlesQueryResult> =>
   client.fetch(featuredArticlesQuery);
+
+export const getTrendingArticles = (client: SanityClient): Promise<TrendingArticlesQueryResult> =>
+  client.fetch(trendingArticlesQuery);
 
 export const getRelatedArticles = (
   client: SanityClient,
