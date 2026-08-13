@@ -1,9 +1,11 @@
-import { sanityClient } from "./client";
+import type { SanityClient } from "@sanity/client";
 import {
   allArticlesQuery,
   articleBySlugQuery,
   articleSlugsQuery,
   articlesByAuthorQuery,
+  articlesBySlugsQuery,
+  articlesByTagQuery,
   articlesInSectionQuery,
   authorBySlugQuery,
   authorsQuery,
@@ -19,6 +21,8 @@ import type {
   ArticleBySlugQueryResult,
   ArticleSlugsQueryResult,
   ArticlesByAuthorQueryResult,
+  ArticlesBySlugsQueryResult,
+  ArticlesByTagQueryResult,
   ArticlesInSectionQueryResult,
   AuthorBySlugQueryResult,
   AuthorsQueryResult,
@@ -35,64 +39,117 @@ export type ArticleCardData = ArticlesInSectionQueryResult[number];
 export type ArticleDetail = NonNullable<ArticleBySlugQueryResult>;
 export type SectionData = NonNullable<SectionBySlugQueryResult>;
 export type AuthorData = NonNullable<AuthorBySlugQueryResult>;
-export type SiteSettingsData = Extract<SiteSettingsQueryResult, { defaultSeo: object }>;
+// `breakingNews` is intersected in rather than added to the generated
+// `SiteSettingsQueryResult` union directly: that union has one branch per
+// historical combination of optional fields (as produced by `sanity
+// typegen` against a live dataset), and hand-editing every branch for a
+// field typegen hasn't seen yet is impractical. Re-running
+// `npm run studio:typegen` will fold this into the union properly.
+export type SiteSettingsData = Extract<SiteSettingsQueryResult, { defaultSeo: object }> & {
+  breakingNews: { active: boolean | null; headline: string | null; href: string | null } | null;
+};
 
-// Every helper below has an explicit return type. `sanityClient.fetch`'s
-// result type is inferred from the exact query-string literal via the
-// generated `SanityQueries` map (see sanity.types.ts) — that inference
-// chain doesn't reliably survive being combined inside `Promise.all([...])`
-// call sites, so we pin it down here once instead of at every call site.
+// Every helper below takes the request's Sanity client explicitly (see
+// `getSanityClient` in `./client.ts`) rather than importing a singleton,
+// since the site renders via SSR and each request gets its own client built
+// from the Worker's runtime env. Each has an explicit return type because
+// `sanityClient.fetch`'s result type is inferred from the exact query-string
+// literal via the generated `SanityQueries` map (see sanity.types.ts) — that
+// inference chain doesn't reliably survive being combined inside
+// `Promise.all([...])` call sites, so we pin it down here once instead of at
+// every call site.
 
-export const getSections = (): Promise<SectionsQueryResult> =>
-  sanityClient.fetch(sectionsQuery);
+export const getSections = (client: SanityClient): Promise<SectionsQueryResult> =>
+  client.fetch(sectionsQuery);
 
-export const getSectionBySlug = (slug: string): Promise<SectionBySlugQueryResult> =>
-  sanityClient.fetch(sectionBySlugQuery, { slug });
+export const getSectionBySlug = (
+  client: SanityClient,
+  slug: string
+): Promise<SectionBySlugQueryResult> => client.fetch(sectionBySlugQuery, { slug });
 
-export const getAuthors = (): Promise<AuthorsQueryResult> =>
-  sanityClient.fetch(authorsQuery);
+export const getAuthors = (client: SanityClient): Promise<AuthorsQueryResult> =>
+  client.fetch(authorsQuery);
 
-export const getAuthorBySlug = (slug: string): Promise<AuthorBySlugQueryResult> =>
-  sanityClient.fetch(authorBySlugQuery, { slug });
+export const getAuthorBySlug = (
+  client: SanityClient,
+  slug: string
+): Promise<AuthorBySlugQueryResult> => client.fetch(authorBySlugQuery, { slug });
 
-export const getArticleSlugs = (): Promise<ArticleSlugsQueryResult> =>
-  sanityClient.fetch(articleSlugsQuery);
+export const getArticleSlugs = (client: SanityClient): Promise<ArticleSlugsQueryResult> =>
+  client.fetch(articleSlugsQuery);
 
-export const getArticleBySlug = (slug: string): Promise<ArticleBySlugQueryResult> =>
-  sanityClient.fetch(articleBySlugQuery, { slug });
+export const getArticleBySlug = (
+  client: SanityClient,
+  slug: string
+): Promise<ArticleBySlugQueryResult> => client.fetch(articleBySlugQuery, { slug });
 
-export const getAllArticles = (): Promise<AllArticlesQueryResult> =>
-  sanityClient.fetch(allArticlesQuery);
+export const getAllArticles = (client: SanityClient): Promise<AllArticlesQueryResult> =>
+  client.fetch(allArticlesQuery);
 
 export const getArticlesInSection = (
+  client: SanityClient,
   sectionSlug: string
 ): Promise<ArticlesInSectionQueryResult> =>
-  sanityClient.fetch(articlesInSectionQuery, { sectionSlug });
+  client.fetch(articlesInSectionQuery, { sectionSlug });
 
 export const getArticlesByAuthor = (
+  client: SanityClient,
   authorSlug: string
 ): Promise<ArticlesByAuthorQueryResult> =>
-  sanityClient.fetch(articlesByAuthorQuery, { authorSlug });
+  client.fetch(articlesByAuthorQuery, { authorSlug });
 
-export const getPremiumArticles = (): Promise<PremiumArticlesQueryResult> =>
-  sanityClient.fetch(premiumArticlesQuery);
+// `client.fetch`'s overloads resolve params/result types by looking up the
+// exact query string in the generated `SanityQueries` map; that lookup
+// (and the constraint-checking around it) only works cleanly for queries
+// typegen itself produced. Queries added by hand below interpolate
+// `${cardProjection}` — a non-literal interpolation — which the generated
+// map can't key on, so the overloads can't be satisfied without fighting
+// unrelated type machinery. This helper casts `fetch` to the shape we
+// actually need; re-running `npm run studio:typegen` against a live
+// dataset would let these resolve normally, with the same result either way.
+function fetchUntyped<T>(
+  client: SanityClient,
+  query: string,
+  params: Record<string, unknown>
+): Promise<T> {
+  // Call as `client.fetch(...)` directly rather than detaching the method
+  // into a variable first — @sanity/client's implementation relies on
+  // `this` internally, and a detached reference loses that binding.
+  return client.fetch(query, params as never) as unknown as Promise<T>;
+}
 
-export const getFeaturedArticles = (): Promise<FeaturedArticlesQueryResult> =>
-  sanityClient.fetch(featuredArticlesQuery);
+export const getArticlesByTag = (
+  client: SanityClient,
+  tag: string
+): Promise<ArticlesByTagQueryResult> =>
+  fetchUntyped<ArticlesByTagQueryResult>(client, articlesByTagQuery, { tag });
+
+export const getArticlesBySlugs = (
+  client: SanityClient,
+  slugs: string[]
+): Promise<ArticlesBySlugsQueryResult> =>
+  fetchUntyped<ArticlesBySlugsQueryResult>(client, articlesBySlugsQuery, { slugs });
+
+export const getPremiumArticles = (client: SanityClient): Promise<PremiumArticlesQueryResult> =>
+  client.fetch(premiumArticlesQuery);
+
+export const getFeaturedArticles = (client: SanityClient): Promise<FeaturedArticlesQueryResult> =>
+  client.fetch(featuredArticlesQuery);
 
 export const getRelatedArticles = (
+  client: SanityClient,
   article: Pick<ArticleDetail, "slug" | "section" | "tags">,
   limit = 4
 ): Promise<RelatedArticlesQueryResult> =>
-  sanityClient.fetch(relatedArticlesQuery, {
+  client.fetch(relatedArticlesQuery, {
     slug: article.slug,
     sectionSlug: article.section.slug,
     tags: article.tags ?? [],
     limit,
   });
 
-export async function getSiteSettings(): Promise<SiteSettingsData> {
-  const settings = await sanityClient.fetch(siteSettingsQuery);
+export async function getSiteSettings(client: SanityClient): Promise<SiteSettingsData> {
+  const settings = await client.fetch(siteSettingsQuery);
   if (!settings || !settings.defaultSeo) {
     throw new Error(
       'Site settings document not found. Run "npm run studio:migrate" to seed it.'

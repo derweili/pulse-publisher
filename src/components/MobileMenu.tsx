@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+import { $userStore } from "@clerk/astro/client";
 
 interface Section {
   slug: string;
@@ -12,6 +13,7 @@ interface Props {
 
 export default function MobileMenu({ sections }: Props) {
   const [open, setOpen] = useState(false);
+  const user = useSyncExternalStore($userStore.subscribe, $userStore.get, $userStore.get);
 
   useEffect(() => {
     const btn = document.getElementById("menu-open-btn");
@@ -73,10 +75,15 @@ export default function MobileMenu({ sections }: Props) {
                     {s.name}
                   </a>
                 ))}
+                {user && (
+                  <a href="/saved" className="rounded-lg px-3 py-3 text-lg font-bold text-ink-2 transition-colors duration-200 hover:bg-primary-soft hover:text-primary">
+                    Saved
+                  </a>
+                )}
               </nav>
               <div className="mt-auto flex flex-col gap-3">
                 <a
-                  href="/subscribe"
+                  href="/subscription"
                   className="rounded-full bg-ink px-5 py-3 text-center text-sm font-bold tracking-[0.02em] text-white transition-colors duration-200 hover:bg-primary"
                   onClick={() => setOpen(false)}
                 >

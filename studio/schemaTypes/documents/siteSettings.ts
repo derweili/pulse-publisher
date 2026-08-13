@@ -63,6 +63,38 @@ export const siteSettings = defineType({
       type: 'string',
       description: 'Optional override. If empty, the site falls back to "© {year} {title}. All rights reserved."',
     }),
+    defineField({
+      name: 'breakingNews',
+      title: 'Breaking news banner',
+      type: 'object',
+      description: 'A dismissible banner shown site-wide. Toggle it on/off any time — the live site picks it up immediately, no redeploy.',
+      fields: [
+        defineField({
+          name: 'active',
+          title: 'Show banner',
+          type: 'boolean',
+          initialValue: false,
+        }),
+        defineField({
+          name: 'headline',
+          title: 'Headline',
+          type: 'string',
+          validation: (Rule) => Rule.max(140),
+        }),
+        defineField({
+          name: 'href',
+          title: 'Link (optional)',
+          type: 'string',
+          description: 'Where the banner links to, e.g. /articles/some-story. Leave empty for a non-clickable banner.',
+        }),
+      ],
+      preview: {
+        select: {active: 'active', headline: 'headline'},
+        prepare({active, headline}) {
+          return {title: headline || 'Breaking news banner', subtitle: active ? 'Active' : 'Off'}
+        },
+      },
+    }),
   ],
   preview: {
     select: {title: 'title'},

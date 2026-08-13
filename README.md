@@ -52,13 +52,18 @@ All commands are run from the root of the project, from a terminal:
 
 ## ☁️ Deploying to Cloudflare Workers
 
-This site is fully static (every route is prerendered), so it deploys to Cloudflare Workers using [Workers static assets](https://developers.cloudflare.com/workers/static-assets/) — no SSR adapter required. Configuration lives in [`wrangler.toml`](./wrangler.toml), which points at the `./dist` build output.
+This site renders via SSR on Cloudflare Workers using [`@astrojs/cloudflare`](https://docs.astro.build/en/guides/integrations-guide/cloudflare/) — every page queries Sanity live, per request, so publishing/editing content in Studio shows up immediately with no rebuild. Static assets (JS/CSS/images) are still served from `./dist` via the Workers [assets binding](https://developers.cloudflare.com/workers/static-assets/); only page rendering happens per-request. Configuration lives in [`wrangler.toml`](./wrangler.toml).
 
 ### Deploying manually
 
 ```sh
 npm install -g wrangler   # or use the local devDependency via npx
 npx wrangler login
+
+# One-time per environment: the Sanity read token is a Worker runtime
+# secret, not a build-time env var (see the Content section below).
+npx wrangler secret put SANITY_API_READ_TOKEN
+
 npm run deploy
 ```
 
@@ -72,17 +77,20 @@ To enable it, add these repository secrets under **Settings → Secrets and vari
 | :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CLOUDFLARE_API_TOKEN`  | An API token with **Workers Scripts: Edit** permission for the target account. Create one at [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) using the "Edit Cloudflare Workers" template (or a custom token scoped to `Account.Workers Scripts:Edit`). |
 | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID, found on the right-hand sidebar of the [Workers & Pages dashboard](https://dash.cloudflare.com) overview page, or by running `npx wrangler whoami`.                |
-| `PUBLIC_CLERK_PUBLISHABLE_KEY` | Your [Clerk](https://dashboard.clerk.com) publishable key. The site is static, so Clerk auth (sign-in button, user profile) runs client-side — this key gets baked into the build output, so it must be set for the **Build** step. Not a secret value, but stored as an Actions secret here for convenience. |
+| `PUBLIC_CLERK_PUBLISHABLE_KEY` | Your [Clerk](https://dashboard.clerk.com) publishable key. Clerk auth (sign-in button, user profile) runs entirely client-side regardless of SSR — this key gets baked into the build output, so it must be set for the **Build** step. Not a secret value, but stored as an Actions secret here for convenience. |
 | `PUBLIC_SANITY_PROJECT_ID` | Your Sanity project ID (see [Content](#-content-sanity-studio) below). Not a secret, but needed at build time to know which project to query. |
 | `PUBLIC_SANITY_DATASET` | The Sanity dataset to read from, typically `production`. |
 | `PUBLIC_SANITY_API_VERSION` | A dated [Sanity API version](https://www.sanity.io/docs/api-versioning) string, e.g. `2025-02-01`. |
-| `SANITY_API_READ_TOKEN` | A Sanity **Viewer** API token. The dataset is private, so every build needs this to fetch content — set it here even though it isn't exposed to the browser. |
 
-No other configuration is needed — `wrangler.toml` already defines the Worker name, compatibility date, and assets directory.
+`SANITY_API_READ_TOKEN` (a Sanity **Viewer** API token — the dataset is private) is **not** a build secret. Since every page fetches from Sanity live inside the Worker, the token is a Cloudflare Worker runtime secret instead: set it once per environment with `npx wrangler secret put SANITY_API_READ_TOKEN` (see [Deploying manually](#deploying-manually) above), or add it in the Cloudflare dashboard under **Workers & Pages → your Worker → Settings → Variables**. CI doesn't need it — deploys don't rotate it.
+
+`wrangler.toml` already defines the Worker name, entry point, compatibility date, and assets directory.
 
 ## ✍️ Content (Sanity Studio)
 
-All site content (articles, authors, sections, site settings) is managed in [Sanity](https://www.sanity.io/), a hosted headless CMS. The schema and Studio configuration live in this repo under [`studio/`](./studio) as a standalone package — Sanity's cloud backend hosts the actual dataset, this repo only defines the content model and editing UI. The Astro app queries Sanity at **build time** (every page is statically generated) via `@sanity/client`; there is no runtime/browser dependency on Sanity.
+All site content (articles, authors, sections, site settings) is managed in [Sanity](https://www.sanity.io/), a hosted headless CMS. The schema and Studio configuration live in this repo under [`studio/`](./studio) as a standalone package — Sanity's cloud backend hosts the actual dataset, this repo only defines the content model and editing UI. The Astro app queries Sanity **per request** via `@sanity/client`, from inside the Cloudflare Worker (see [Deploying to Cloudflare Workers](#%EF%B8%8F-deploying-to-cloudflare-workers) above) — publishing or editing content in Studio is live on the site immediately, no rebuild needed. There is still no runtime/browser dependency on Sanity; all fetching happens server-side.
+
+For local dev, copy `.dev.vars.example` to `.dev.vars` and fill in `SANITY_API_READ_TOKEN` — `astro dev` reads Worker runtime secrets from that file via the Cloudflare adapter's `platformProxy`.
 
 ### Local Studio setup
 

@@ -1,0 +1,68 @@
+---
+import AdSlot from "../../components/AdSlot.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import Newsletter from "../../components/Newsletter.astro";
+import Pagination from "../../components/Pagination.astro";
+import Layout from "../../layouts/Layout.astro";
+import { PER_PAGE, paginate } from "../../lib/format";
+import { tagPath } from "../../lib/paths";
+import { getSanityClient } from "../../lib/sanity/client";
+import { getArticlesByTag } from "../../lib/sanity/fetch";
+
+const tagParam = Astro.params.tag;
+const tag = tagParam ? decodeURIComponent(tagParam) : undefined;
+if (!tag) {
+  return new Response(null, { status: 404 });
+}
+
+const client = getSanityClient(Astro.locals.runtime.env);
+const all = await getArticlesByTag(client, tag);
+if (all.length === 0) {
+  return new Response(null, { status: 404 });
+}
+
+// Pagination.astro links with a `?page=` query string by default, so this
+// reads the same param rather than a `[...page]` path segment.
+const pageParam = Astro.url.searchParams.get("page");
+const requestedPage = pageParam ? Number(pageParam) : 1;
+if (!Number.isInteger(requestedPage) || requestedPage < 1) {
+  return new Response(null, { status: 404 });
+}
+const { items, page, pages, total } = paginate(all, requestedPage, PER_PAGE);
+if (requestedPage > pages) {
+  return new Response(null, { status: 404 });
+}
+---
+
+<Layout title={`#${tag} — PULSE`} description={`Stories tagged "${tag}" on PULSE.`}>
+  <div class="container-page-wide flex justify-center pt-4 pb-2">
+    <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
+  </div>
+
+  <section class="container-page pt-7 pb-2">
+    <span class="eyebrow eyebrow-accent">Tag</span>
+    <h1 class="section-title mt-2">#{tag}</h1>
+    <p class="mt-2.5 text-[15px] text-ink-3">{total} {total === 1 ? "story" : "stories"} tagged "{tag}"</p>
+  </section>
+
+  <div class="container-page mt-8">
+    <div class="grid grid-cols-4 gap-6 max-[960px]:grid-cols-2 max-sm:grid-cols-1">
+      {items.map((a, i) => (
+        <>
+          <ArticleCard article={a} variant="default" />
+          {i === 3 && (
+            <div class="col-span-full my-1 border-y border-border py-3">
+              <AdSlot slot="native-in-feed" format="native-in-feed" label="Sponsored" />
+            </div>
+          )}
+        </>
+      ))}
+    </div>
+
+    <Pagination page={page} pages={pages} basePath={tagPath(tag)} />
+  </div>
+
+  <section class="container-page mt-16">
+    <Newsletter variant="inline" />
+  </section>
+</Layout>

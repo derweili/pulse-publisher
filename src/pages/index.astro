@@ -4,6 +4,7 @@ import ArticleCard from "../components/ArticleCard.astro";
 import Newsletter from "../components/Newsletter.astro";
 import Layout from "../layouts/Layout.astro";
 import { sectionPath } from "../lib/paths";
+import { getSanityClient } from "../lib/sanity/client";
 import {
   getAllArticles,
   getFeaturedArticles,
@@ -11,11 +12,12 @@ import {
   getSections,
 } from "../lib/sanity/fetch";
 
+const client = getSanityClient(Astro.locals.runtime.env);
 const [featured, premiumsAll, allSections, allArticles] = await Promise.all([
-  getFeaturedArticles(),
-  getPremiumArticles(),
-  getSections(),
-  getAllArticles(),
+  getFeaturedArticles(client),
+  getPremiumArticles(client),
+  getSections(client),
+  getAllArticles(client),
 ]);
 
 // Curation counts vary with real content, so this degrades gracefully

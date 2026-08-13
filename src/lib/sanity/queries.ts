@@ -41,7 +41,8 @@ export const siteSettingsQuery = defineQuery(`
       }
     },
     socialLinks[]{ platform, url },
-    copyrightText
+    copyrightText,
+    breakingNews{ active, headline, href }
   }
 `);
 
@@ -146,6 +147,16 @@ export const allArticlesQuery = defineQuery(`
   *[_type == "article"] | order(publishedAt desc) ${cardProjection}
 `);
 
+export const articlesByTagQuery = defineQuery(`
+  *[_type == "article" && $tag in tags]
+  | order(publishedAt desc) ${cardProjection}
+`);
+
+export const articlesBySlugsQuery = defineQuery(`
+  *[_type == "article" && slug.current in $slugs]
+  | order(publishedAt desc) ${cardProjection}
+`);
+
 /**
  * Same-section articles first, then articles from other sections that
  * share at least one tag — mirrors the old content.ts `relatedArticles()`
@@ -157,7 +168,7 @@ export const relatedArticlesQuery = defineQuery(`
     slug.current != $slug &&
     (section->slug.current == $sectionSlug || count((tags[])[@ in $tags]) > 0)
   ]
-  | order(section->slug.current == $sectionSlug desc, publishedAt desc)
+  | order((section->slug.current == $sectionSlug) desc, publishedAt desc)
   [0...$limit]
   ${cardProjection}
 `);

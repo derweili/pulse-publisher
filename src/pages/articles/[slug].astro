@@ -5,32 +5,30 @@ import Comments from "../../components/Comments.tsx";
 import Newsletter from "../../components/Newsletter.astro";
 import PortableText from "../../components/portable-text/PortableText.astro";
 import RelatedRail from "../../components/RelatedRail.astro";
+import SaveButton from "../../components/SaveButton.astro";
+import ShareButtons from "../../components/ShareButtons.astro";
+import StructuredData from "../../components/StructuredData.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate } from "../../lib/format";
-import { authorPath, sectionPath } from "../../lib/paths";
+import { articlePath, authorPath, sectionPath, tagPath } from "../../lib/paths";
+import { getSanityClient } from "../../lib/sanity/client";
 import { urlFor } from "../../lib/sanity/image";
-import {
-  getArticleBySlug,
-  getArticleSlugs,
-  getArticlesInSection,
-} from "../../lib/sanity/fetch";
-
-export async function getStaticPaths() {
-  const slugs = await getArticleSlugs();
-  return slugs.map(({ slug }) => ({ params: { slug } }));
-}
+import { getArticleBySlug, getArticlesInSection, getSiteSettings } from "../../lib/sanity/fetch";
 
 const { slug } = Astro.params;
-const article = await getArticleBySlug(slug);
+const client = getSanityClient(Astro.locals.runtime.env);
+const article = slug ? await getArticleBySlug(client, slug) : null;
 if (!article) {
-  throw new Error(`Article not found for slug "${slug}"`);
+  return new Response(null, { status: 404 });
 }
 
 const section = article.section;
 const articleAuthors = article.authors ?? [];
-const sameSection = (await getArticlesInSection(section.slug))
-  .filter((a) => a.slug !== article.slug)
-  .slice(0, 4);
+const [sameSectionAll, settings] = await Promise.all([
+  getArticlesInSection(client, section.slug),
+  getSiteSettings(client),
+]);
+const sameSection = sameSectionAll.filter((a) => a.slug !== article.slug).slice(0, 4);
 const isPremium = article.premium ?? false;
 
 const blocks = article.body;
@@ -38,10 +36,48 @@ const midIdx = Math.floor(blocks.length / 2);
 const firstHalf = blocks.slice(0, midIdx);
 const secondHalf = blocks.slice(midIdx);
 
+const siteOrigin = (Astro.site ?? Astro.url).origin;
+const articleUrl = new URL(articlePath(article.slug), Astro.url).toString();
 const heroImageUrl = urlFor(article.hero).width(1600).height(900).fit("crop").url();
 const ogImageUrl = article.seo?.ogImage
   ? urlFor(article.seo.ogImage).width(1200).height(630).fit("crop").url()
   : urlFor(article.hero).width(1200).height(630).fit("crop").url();
+
+const newsArticleSchema = {
+  "@context": "https://schema.org",
+  "@type": "NewsArticle",
+  headline: article.title,
+  description: article.dek,
+  image: [heroImageUrl],
+  datePublished: article.publishedAt,
+  dateModified: article.publishedAt,
+  mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
+  articleSection: section.title,
+  author: articleAuthors.map((a) => ({
+    "@type": "Person",
+    name: a.name,
+    url: new URL(authorPath(a.slug), siteOrigin).toString(),
+  })),
+  publisher: {
+    "@type": "Organization",
+    name: settings.title,
+    logo: { "@type": "ImageObject", url: new URL("/favicon.svg", siteOrigin).toString() },
+  },
+};
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: siteOrigin },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: section.title,
+      item: new URL(sectionPath(section.slug), siteOrigin).toString(),
+    },
+    { "@type": "ListItem", position: 3, name: article.title, item: articleUrl },
+  ],
+};
 ---
 
 <Layout
@@ -50,6 +86,8 @@ const ogImageUrl = article.seo?.ogImage
   activeSection={section.slug}
   ogImageUrl={ogImageUrl}
 >
+  <StructuredData data={[newsArticleSchema, breadcrumbSchema]} />
+
   <div class="container-page-wide">
     <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
   </div>
@@ -91,6 +129,10 @@ const ogImageUrl = article.seo?.ogImage
           <span>{article.readTime} min read</span>
         </div>
       </div>
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <ShareButtons url={articleUrl} title={article.title} />
+        <SaveButton slug={article.slug} variant="full" />
+      </div>
     </header>
 
     <!-- Hero media -->
@@ -116,7 +158,7 @@ const ogImageUrl = article.seo?.ogImage
             <span class="mb-3 block text-[11px] font-extrabold tracking-[0.12em] text-ink-4 uppercase">Tags</span>
             <div class="flex flex-wrap gap-2">
               {article.tags.map((t) => (
-                <span class="cursor-pointer rounded-full border border-border px-[13px] py-[7px] text-sm font-semibold text-ink-2 transition-all duration-200 ease-brand hover:border-primary hover:text-primary">{t}</span>
+                <a href={tagPath(t)} class="rounded-full border border-border px-[13px] py-[7px] text-sm font-semibold text-ink-2 transition-all duration-200 ease-brand hover:border-primary hover:text-primary">{t}</a>
               ))}
             </div>
           </div>

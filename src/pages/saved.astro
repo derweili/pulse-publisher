@@ -1,0 +1,21 @@
+---
+import AdSlot from "../components/AdSlot.astro";
+import SavedArticles from "../components/SavedArticles.tsx";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Saved articles — PULSE" description="Articles you've saved to read later on PULSE.">
+  <div class="container-page-wide flex justify-center pt-4 pb-2">
+    <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
+  </div>
+
+  <section class="container-page pt-8 pb-2">
+    <span class="eyebrow eyebrow-accent">Your library</span>
+    <h1 class="section-title mt-2">Saved articles</h1>
+    <p class="mt-2.5 max-w-[50ch] text-[15px] text-ink-3">Everything you've bookmarked to read later.</p>
+  </section>
+
+  <div class="container-page mt-8">
+    <SavedArticles client:load />
+  </div>
+</Layout>

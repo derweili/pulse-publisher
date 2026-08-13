@@ -17,7 +17,9 @@
     "studio:migrate": "npm --prefix studio run migrate"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.6.13",
     "@astrojs/react": "^4.2.0",
+    "@astrojs/rss": "^4.0.19",
     "@clerk/astro": "^4.0.11",
     "@sanity/client": "^7.26.2",
     "@sanity/image-url": "^2.1.1",

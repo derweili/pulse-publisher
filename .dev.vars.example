@@ -1,0 +1,12 @@
+# Cloudflare Worker runtime secrets for local dev.
+#
+# Copy to `.dev.vars` and fill it in. Read by `astro dev` (via the Cloudflare
+# adapter's `platformProxy`) and by `wrangler dev`/`npm run cf:preview` — it
+# mirrors what you'd set in production with `wrangler secret put` or the
+# Workers dashboard. Unlike `.env`, this is NOT inlined at build time: it's
+# read per-request through `Astro.locals.runtime.env`, matching how the
+# deployed Worker reads it. See `src/lib/sanity/client.ts`.
+
+# Sanity read token, required because the dataset is private. Generate at
+# sanity.io/manage → API → Tokens with "Viewer" permission.
+SANITY_API_READ_TOKEN=

@@ -3,38 +3,57 @@ import AdSlot from "../../../components/AdSlot.astro";
 import ArticleCard from "../../../components/ArticleCard.astro";
 import Newsletter from "../../../components/Newsletter.astro";
 import Pagination from "../../../components/Pagination.astro";
+import StructuredData from "../../../components/StructuredData.astro";
 import Layout from "../../../layouts/Layout.astro";
 import { PER_PAGE, paginate } from "../../../lib/format";
 import { sectionPath } from "../../../lib/paths";
+import { getSanityClient } from "../../../lib/sanity/client";
 import { getArticlesInSection, getSections } from "../../../lib/sanity/fetch";
 
-export async function getStaticPaths() {
-  const sections = await getSections();
-  const paths = [];
-  for (const section of sections) {
-    const all = await getArticlesInSection(section.slug);
-    const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
-    for (let page = 1; page <= pages; page++) {
-      paths.push({
-        params: { section: section.slug, page: page === 1 ? undefined : String(page) },
-        props: { sectionSlug: section.slug, sections, page, pages, total: all.length },
-      });
-    }
-  }
-  return paths;
+const client = getSanityClient(Astro.locals.runtime.env);
+const sectionSlug = Astro.params.section;
+const pageParam = Astro.params.page;
+const requestedPage = pageParam ? Number(pageParam) : 1;
+if (!sectionSlug || !Number.isInteger(requestedPage) || requestedPage < 1 || (pageParam && requestedPage === 1)) {
+  // "/sections/x/1" isn't a canonical URL (page 1 lives at "/sections/x") — treat it as not found, same as any other bad param.
+  return new Response(null, { status: 404 });
 }
 
-const { sectionSlug, sections, page, pages, total } = Astro.props;
-const section = sections.find((s) => s.slug === sectionSlug)!;
-const all = await getArticlesInSection(sectionSlug);
-const { items } = paginate(all, page, PER_PAGE);
+const sections = await getSections(client);
+const section = sections.find((s) => s.slug === sectionSlug);
+if (!section) {
+  return new Response(null, { status: 404 });
+}
+
+const all = await getArticlesInSection(client, sectionSlug);
+const { items, page, pages, total } = paginate(all, requestedPage, PER_PAGE);
+if (requestedPage > pages) {
+  return new Response(null, { status: 404 });
+}
 
 const highlight = all[0];
 const restHighlights = all.slice(1, 3);
 const listing = page === 1 ? all.slice(3) : items;
+
+const siteOrigin = (Astro.site ?? Astro.url).origin;
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: siteOrigin },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: section.title,
+      item: new URL(sectionPath(section.slug), siteOrigin).toString(),
+    },
+  ],
+};
 ---
 
 <Layout title={`${section.title} — PULSE`} description={section.tagline} activeSection={section.slug}>
+  <StructuredData data={breadcrumbSchema} />
+
   <div class="container-page-wide flex justify-center pt-4 pb-2">
     <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
   </div>

@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import type { SearchIndexEntry } from "../pages/search-index.json";
 
 interface Section {
   slug: string;
@@ -21,23 +22,53 @@ const TRENDING = [
   "Circuit boards",
 ];
 
-const FAKE_RESULTS = [
-  { kind: "Article", title: "The New AI Chips Are Rewriting the Rules", href: "/articles/the-new-ai-chips-are-rewriting-the-rules" },
-  { kind: "Author", title: "Mara Okafor — Senior Tech Reporter", href: "/authors/mara-okafor" },
-  { kind: "Section", title: "Tech — The machines are getting smarter", href: "/sections/tech" },
-  { kind: "Article", title: "Circuit Boards and the Craft Revival", href: "/articles/circuit-boards-and-the-craft-revival" },
-  { kind: "Article", title: "The Grid Is Alive", href: "/articles/the-grid-is-alive" },
-];
-
 const KIND_CLASSES: Record<string, string> = {
   article: "bg-primary-soft text-primary",
   author: "bg-premium-gold-soft text-[#7a5c0a]",
   section: "bg-bg-muted text-ink-3",
 };
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Score a single search term against a piece of text; 0 means no match. */
+function scoreTerm(text: string, term: string): number {
+  const t = text.toLowerCase();
+  const q = term.toLowerCase();
+  if (!q) return 0;
+  if (t === q) return 100;
+  if (t.startsWith(q)) return 80;
+  if (new RegExp(`\\b${escapeRegExp(q)}`).test(t)) return 60;
+  if (t.includes(q)) return 40;
+  return 0;
+}
+
+function search(index: SearchIndexEntry[], query: string, limit = 8): SearchIndexEntry[] {
+  const terms = query.trim().split(/\s+/).filter(Boolean);
+  if (terms.length === 0) return [];
+
+  const scored = index
+    .map((entry) => {
+      const score = terms.reduce((sum, term) => {
+        const titleScore = scoreTerm(entry.title, term);
+        const subtitleScore = entry.subtitle ? scoreTerm(entry.subtitle, term) * 0.5 : 0;
+        const best = Math.max(titleScore, subtitleScore);
+        return best === 0 ? -Infinity : sum + best;
+      }, 0);
+      return { entry, score };
+    })
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  return scored.slice(0, limit).map((r) => r.entry);
+}
+
 export default function SearchTrigger({ sections }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [index, setIndex] = useState<SearchIndexEntry[] | null>(null);
+  const [indexError, setIndexError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -46,6 +77,17 @@ export default function SearchTrigger({ sections }: Props) {
       return () => clearTimeout(t);
     }
   }, [open]);
+
+  useEffect(() => {
+    if (!open || index !== null) return;
+    fetch("/search-index.json")
+      .then((res) => {
+        if (!res.ok) throw new Error(`${res.status}`);
+        return res.json();
+      })
+      .then((data: SearchIndexEntry[]) => setIndex(data))
+      .catch(() => setIndexError(true));
+  }, [open, index]);
 
   useEffect(() => {
     if (!open) return;
@@ -59,6 +101,8 @@ export default function SearchTrigger({ sections }: Props) {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  const results = useMemo(() => (index ? search(index, query) : []), [index, query]);
 
   return (
     <>
@@ -132,15 +176,21 @@ export default function SearchTrigger({ sections }: Props) {
                       ))}
                     </div>
                   </>
+                ) : indexError ? (
+                  <p className="py-6 text-center text-sm text-ink-4">Search is unavailable right now — try again in a moment.</p>
+                ) : index === null ? (
+                  <p className="py-6 text-center text-sm text-ink-4">Searching…</p>
+                ) : results.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-ink-4">No results for "{query}".</p>
                 ) : (
                   <div className="flex flex-col gap-1">
-                    <p className="pb-3 text-[13px] text-ink-4">
-                      Showing placeholder results for "{query}" — search is a UI preview for now.
-                    </p>
-                    {FAKE_RESULTS.map((r, i) => (
+                    {results.map((r, i) => (
                       <a className="flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors duration-200 hover:bg-bg-soft" href={r.href} key={i}>
                         <span className={`shrink-0 rounded-sm px-2 py-1 text-[10px] font-extrabold tracking-[0.08em] uppercase ${KIND_CLASSES[r.kind.toLowerCase()] ?? "bg-bg-muted text-ink-3"}`}>{r.kind}</span>
-                        <span className="text-sm font-semibold text-ink">{r.title}</span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold text-ink">{r.title}</span>
+                          {r.subtitle && <span className="block truncate text-xs text-ink-4">{r.subtitle}</span>}
+                        </span>
                       </a>
                     ))}
                   </div>

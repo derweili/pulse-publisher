@@ -1,0 +1,45 @@
+---
+interface Props {
+  headline: string;
+  href?: string | null;
+}
+const { headline, href } = Astro.props;
+const Tag = href ? "a" : "div";
+---
+
+<div class="hidden bg-error text-white" data-breaking-banner data-key={headline}>
+  <div class="container-page-wide flex items-center gap-3 py-2.5">
+    <span class="inline-flex shrink-0 items-center gap-1.5 rounded-sm bg-white/15 px-2 py-1 text-[10px] font-extrabold tracking-[0.1em] uppercase">
+      <span class="relative flex size-1.5">
+        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
+        <span class="relative inline-flex size-1.5 rounded-full bg-white"></span>
+      </span>
+      Breaking
+    </span>
+    <Tag href={href ?? undefined} class={`min-w-0 flex-1 truncate text-sm font-bold ${href ? "hover:underline" : ""}`}>
+      {headline}
+    </Tag>
+    <button
+      type="button"
+      class="shrink-0 rounded-full p-1 text-white/80 transition-colors duration-200 hover:bg-white/15 hover:text-white"
+      aria-label="Dismiss breaking news banner"
+      data-breaking-dismiss
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  function initBreakingBanner(el: HTMLElement) {
+    const key = el.dataset.key ?? "";
+    const storageKey = `breaking-dismissed-${key}`;
+    if (sessionStorage.getItem(storageKey) === "1") return;
+    el.classList.remove("hidden");
+    el.querySelector<HTMLButtonElement>("[data-breaking-dismiss]")?.addEventListener("click", () => {
+      sessionStorage.setItem(storageKey, "1");
+      el.classList.add("hidden");
+    });
+  }
+  document.querySelectorAll<HTMLElement>("[data-breaking-banner]").forEach(initBreakingBanner);
+</script>
