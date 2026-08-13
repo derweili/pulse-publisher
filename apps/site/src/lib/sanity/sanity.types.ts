@@ -15,6 +15,21 @@
 export declare const internalGroqTypeReferenceTo: unique symbol;
 
 // Source: schema.json
+export type AuthorReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "author";
+};
+
+export type LiveBlogEntry = {
+  _type: "liveBlogEntry";
+  timestamp: string;
+  headline?: string;
+  body: BlockContent;
+  author?: AuthorReference;
+};
+
 export type VideoEmbed = {
   _type: "videoEmbed";
   url: string;
@@ -110,11 +125,54 @@ export type Seo = {
   };
 };
 
-export type AuthorReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "author";
+export type LiveBlog = {
+  _id: string;
+  _type: "liveBlog";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  slug: Slug;
+  dek: string;
+  section?: SectionReference;
+  hero: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  };
+  status: "live" | "ended";
+  startedAt: string;
+  entries?: Array<
+    {
+      _key: string;
+    } & LiveBlogEntry
+  >;
+  seo?: Seo;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+};
+
+export type Slug = {
+  _type: "slug";
+  current: string;
+  source?: string;
 };
 
 export type Article = {
@@ -141,34 +199,14 @@ export type Article = {
     _type: "image";
   };
   body: BlockContent;
+  freePreviewBlocks?: number;
   publishedAt: string;
   readTime: number;
   tags?: Array<string>;
   premium?: boolean;
   featured?: boolean;
+  trendingRank?: number;
   seo?: Seo;
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-};
-
-export type Slug = {
-  _type: "slug";
-  current: string;
-  source?: string;
 };
 
 export type Author = {
@@ -238,6 +276,11 @@ export type SiteSettings = {
     } & SocialLink
   >;
   copyrightText?: string;
+  breakingNews?: {
+    active?: boolean;
+    headline?: string;
+    href?: string;
+  };
 };
 
 export type SanityImagePaletteSwatch = {
@@ -338,6 +381,8 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
+  | AuthorReference
+  | LiveBlogEntry
   | VideoEmbed
   | SanityImageAssetReference
   | ImageBlock
@@ -347,11 +392,11 @@ export type AllSanitySchemaTypes =
   | SectionReference
   | NavLink
   | Seo
-  | AuthorReference
-  | Article
+  | LiveBlog
   | SanityImageCrop
   | SanityImageHotspot
   | Slug
+  | Article
   | Author
   | Section
   | SiteSettings
@@ -364,7 +409,7 @@ export type AllSanitySchemaTypes =
   | SanityImageAsset
   | Geopoint;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: cardProjection
 // Query: {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
 export type CardProjectionResult = {
@@ -381,9 +426,9 @@ export type CardProjectionResult = {
   featured: never;
 };
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: siteSettingsQuery
-// Query: *[_id == "siteSettings"][0]{    title,    tagline,    logo,    defaultSeo,    mainNav[]{      label,      linkType,      "internalHref": internalLink->slug.current,      externalUrl    },    footerLinkGroups[]{      heading,      links[]{        label,        linkType,        "internalHref": internalLink->slug.current,        externalUrl      }    },    socialLinks[]{ platform, url },    copyrightText  }
+// Query: *[_id == "siteSettings"][0]{    title,    tagline,    logo,    defaultSeo,    mainNav[]{      label,      linkType,      "internalHref": internalLink->slug.current,      externalUrl    },    footerLinkGroups[]{      heading,      links[]{        label,        linkType,        "internalHref": internalLink->slug.current,        externalUrl      }    },    socialLinks[]{ platform, url },    copyrightText,    breakingNews{ active, headline, href }  }
 export type SiteSettingsQueryResult =
   | {
       title: null;
@@ -394,6 +439,7 @@ export type SiteSettingsQueryResult =
       footerLinkGroups: null;
       socialLinks: null;
       copyrightText: null;
+      breakingNews: null;
     }
   | {
       title: string;
@@ -404,6 +450,7 @@ export type SiteSettingsQueryResult =
       footerLinkGroups: null;
       socialLinks: null;
       copyrightText: null;
+      breakingNews: null;
     }
   | {
       title: string | null;
@@ -414,6 +461,7 @@ export type SiteSettingsQueryResult =
       footerLinkGroups: null;
       socialLinks: null;
       copyrightText: null;
+      breakingNews: null;
     }
   | {
       title: string;
@@ -424,6 +472,7 @@ export type SiteSettingsQueryResult =
       footerLinkGroups: null;
       socialLinks: null;
       copyrightText: null;
+      breakingNews: null;
     }
   | {
       title: string;
@@ -462,10 +511,15 @@ export type SiteSettingsQueryResult =
         url: string;
       }> | null;
       copyrightText: string | null;
+      breakingNews: {
+        active: boolean | null;
+        headline: string | null;
+        href: string | null;
+      } | null;
     }
   | null;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: sectionsQuery
 // Query: *[_type == "section"] | order(order asc) {    _id,    title,    "slug": slug.current,    tagline,    accentColor,    order,    seo  }
 export type SectionsQueryResult = Array<{
@@ -478,7 +532,7 @@ export type SectionsQueryResult = Array<{
   seo: Seo | null;
 }>;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: sectionBySlugQuery
 // Query: *[_type == "section" && slug.current == $slug][0]{    _id,    title,    "slug": slug.current,    tagline,    accentColor,    order,    seo  }
 export type SectionBySlugQueryResult = {
@@ -491,7 +545,7 @@ export type SectionBySlugQueryResult = {
   seo: Seo | null;
 } | null;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: authorsQuery
 // Query: *[_type == "author"] | order(name asc) {    _id,    name,    "slug": slug.current,    role,    bio,    avatar,    twitter,    seo  }
 export type AuthorsQueryResult = Array<{
@@ -511,7 +565,7 @@ export type AuthorsQueryResult = Array<{
   seo: Seo | null;
 }>;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: authorBySlugQuery
 // Query: *[_type == "author" && slug.current == $slug][0]{    _id,    name,    "slug": slug.current,    role,    bio,    avatar,    twitter,    seo  }
 export type AuthorBySlugQueryResult = {
@@ -531,16 +585,16 @@ export type AuthorBySlugQueryResult = {
   seo: Seo | null;
 } | null;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: articleSlugsQuery
 // Query: *[_type == "article"]{ "slug": slug.current }
 export type ArticleSlugsQueryResult = Array<{
   slug: string;
 }>;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: articleBySlugQuery
-// Query: *[_type == "article" && slug.current == $slug][0]{    _id,    title,    "slug": slug.current,    dek,    "section": section->{ "slug": slug.current, title, accentColor },    "authors": authors[]->{ "slug": slug.current, name, role, bio, avatar, twitter },    publishedAt,    readTime,    hero,    tags,    premium,    featured,    body[]{      ...,      markDefs[]{ ... }    },    seo  }
+// Query: *[_type == "article" && slug.current == $slug][0]{    _id,    title,    "slug": slug.current,    dek,    "section": section->{ "slug": slug.current, title, accentColor },    "authors": authors[]->{ "slug": slug.current, name, role, bio, avatar, twitter },    publishedAt,    readTime,    hero,    tags,    premium,    featured,    freePreviewBlocks,    body[]{      ...,      markDefs[]{ ... }    },    seo  }
 export type ArticleBySlugQueryResult = {
   _id: string;
   title: string;
@@ -578,6 +632,7 @@ export type ArticleBySlugQueryResult = {
   tags: Array<string> | null;
   premium: boolean | null;
   featured: boolean | null;
+  freePreviewBlocks: number | null;
   body: Array<
     | {
         children?: Array<{
@@ -619,7 +674,7 @@ export type ArticleBySlugQueryResult = {
   seo: Seo | null;
 } | null;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: articlesInSectionQuery
 // Query: *[_type == "article" && section->slug.current == $sectionSlug]  | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
 export type ArticlesInSectionQueryResult = Array<{
@@ -657,7 +712,7 @@ export type ArticlesInSectionQueryResult = Array<{
   featured: boolean | null;
 }>;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: articlesByAuthorQuery
 // Query: *[_type == "article" && $authorSlug in authors[]->slug.current]  | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
 export type ArticlesByAuthorQueryResult = Array<{
@@ -695,7 +750,7 @@ export type ArticlesByAuthorQueryResult = Array<{
   featured: boolean | null;
 }>;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: premiumArticlesQuery
 // Query: *[_type == "article" && premium == true]  | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
 export type PremiumArticlesQueryResult = Array<{
@@ -733,7 +788,7 @@ export type PremiumArticlesQueryResult = Array<{
   featured: boolean | null;
 }>;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: featuredArticlesQuery
 // Query: *[_type == "article" && featured == true]  | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
 export type FeaturedArticlesQueryResult = Array<{
@@ -771,7 +826,7 @@ export type FeaturedArticlesQueryResult = Array<{
   featured: true;
 }>;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: allArticlesQuery
 // Query: *[_type == "article"] | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
 export type AllArticlesQueryResult = Array<{
@@ -809,7 +864,260 @@ export type AllArticlesQueryResult = Array<{
   featured: boolean | null;
 }>;
 
-// Source: ../src/lib/sanity/queries.ts
+// Source: ../apps/site/src/lib/sanity/queries.ts
+// Variable: trendingArticlesQuery
+// Query: *[_type == "article" && defined(trendingRank)]  | order(trendingRank asc) [0...8] {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
+export type TrendingArticlesQueryResult = Array<{
+  _id: string;
+  title: string;
+  slug: string;
+  dek: string;
+  hero: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  };
+  section: {
+    slug: string;
+    title: string;
+    accentColor: string;
+  };
+  authors: Array<{
+    slug: string;
+    name: string;
+    avatar: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+  }>;
+  publishedAt: string;
+  readTime: number;
+  premium: boolean | null;
+  featured: boolean | null;
+}>;
+
+// Source: ../apps/site/src/lib/sanity/queries.ts
+// Variable: forYouArticlesQuery
+// Query: *[    _type == "article" &&    (section->slug.current in $sections || count((tags[])[@ in $tags]) > 0)  ]  | order(publishedAt desc) [0...8] {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
+export type ForYouArticlesQueryResult = Array<{
+  _id: string;
+  title: string;
+  slug: string;
+  dek: string;
+  hero: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  };
+  section: {
+    slug: string;
+    title: string;
+    accentColor: string;
+  };
+  authors: Array<{
+    slug: string;
+    name: string;
+    avatar: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+  }>;
+  publishedAt: string;
+  readTime: number;
+  premium: boolean | null;
+  featured: boolean | null;
+}>;
+
+// Source: ../apps/site/src/lib/sanity/queries.ts
+// Variable: articlesByTagQuery
+// Query: *[_type == "article" && $tag in tags]  | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
+export type ArticlesByTagQueryResult = Array<{
+  _id: string;
+  title: string;
+  slug: string;
+  dek: string;
+  hero: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  };
+  section: {
+    slug: string;
+    title: string;
+    accentColor: string;
+  };
+  authors: Array<{
+    slug: string;
+    name: string;
+    avatar: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+  }>;
+  publishedAt: string;
+  readTime: number;
+  premium: boolean | null;
+  featured: boolean | null;
+}>;
+
+// Source: ../apps/site/src/lib/sanity/queries.ts
+// Variable: articlesBySlugsQuery
+// Query: *[_type == "article" && slug.current in $slugs]  | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
+export type ArticlesBySlugsQueryResult = Array<{
+  _id: string;
+  title: string;
+  slug: string;
+  dek: string;
+  hero: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  };
+  section: {
+    slug: string;
+    title: string;
+    accentColor: string;
+  };
+  authors: Array<{
+    slug: string;
+    name: string;
+    avatar: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+  }>;
+  publishedAt: string;
+  readTime: number;
+  premium: boolean | null;
+  featured: boolean | null;
+}>;
+
+// Source: ../apps/site/src/lib/sanity/queries.ts
+// Variable: liveBlogBySlugQuery
+// Query: *[_type == "liveBlog" && slug.current == $slug][0]{    _id,    title,    "slug": slug.current,    dek,    "section": section->{ "slug": slug.current, title, accentColor },    hero,    status,    startedAt,    "entries": entries[] | order(timestamp desc){      timestamp,      headline,      body[]{        ...,        markDefs[]{ ... }      },      "author": author->{ "slug": slug.current, name, avatar }    },    seo  }
+export type LiveBlogBySlugQueryResult = {
+  _id: string;
+  title: string;
+  slug: string;
+  dek: string;
+  section: {
+    slug: string;
+    title: string;
+    accentColor: string;
+  } | null;
+  hero: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  };
+  status: "ended" | "live";
+  startedAt: string;
+  entries: Array<{
+    timestamp: string;
+    headline: string | null;
+    body: Array<
+      | {
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?: "blockquote" | "h2" | "normal";
+          listItem?: "bullet" | "number";
+          markDefs: Array<{
+            href: string;
+            newTab?: boolean;
+            _type: "link";
+            _key: string;
+          }> | null;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }
+      | {
+          _key: string;
+          _type: "imageBlock";
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          caption?: string;
+          markDefs: null;
+        }
+      | {
+          _key: string;
+          _type: "videoEmbed";
+          url: string;
+          markDefs: null;
+        }
+    >;
+    author: {
+      slug: string;
+      name: string;
+      avatar: {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+      };
+    } | null;
+  }> | null;
+  seo: Seo | null;
+} | null;
+
+// Source: ../apps/site/src/lib/sanity/queries.ts
+// Variable: activeLiveBlogsQuery
+// Query: *[_type == "liveBlog" && status == "live"] | order(startedAt desc){    _id,    title,    "slug": slug.current,    dek,    startedAt  }
+export type ActiveLiveBlogsQueryResult = Array<{
+  _id: string;
+  title: string;
+  slug: string;
+  dek: string;
+  startedAt: string;
+}>;
+
+// Source: ../apps/site/src/lib/sanity/queries.ts
+// Variable: allLiveBlogsQuery
+// Query: *[_type == "liveBlog"]{ _id, title, dek, "slug": slug.current, startedAt }
+export type AllLiveBlogsQueryResult = Array<{
+  _id: string;
+  title: string;
+  dek: string;
+  slug: string;
+  startedAt: string;
+}>;
+
+// Source: ../apps/site/src/lib/sanity/queries.ts
 // Variable: relatedArticlesQuery
 // Query: *[    _type == "article" &&    slug.current != $slug &&    (section->slug.current == $sectionSlug || count((tags[])[@ in $tags]) > 0)  ]  | order((section->slug.current == $sectionSlug) desc, publishedAt desc)  [0...$limit]  {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
 export type RelatedArticlesQueryResult = Array<{
@@ -847,112 +1155,30 @@ export type RelatedArticlesQueryResult = Array<{
   featured: boolean | null;
 }>;
 
-// Variable: articlesByTagQuery
-// Query: *[_type == "article" && $tag in tags] | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
-// NOTE: hand-written to match the shared cardProjection shape — regenerate
-// with `npm run studio:typegen` against a live dataset to replace this.
-export type ArticlesByTagQueryResult = AllArticlesQueryResult;
-
-// Variable: articlesBySlugsQuery
-// Query: *[_type == "article" && slug.current in $slugs] | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
-// NOTE: hand-written to match the shared cardProjection shape — regenerate
-// with `npm run studio:typegen` against a live dataset to replace this.
-export type ArticlesBySlugsQueryResult = AllArticlesQueryResult;
-
-// Variable: trendingArticlesQuery
-// Query: *[_type == "article" && defined(trendingRank)] | order(trendingRank asc) [0...8] {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
-// NOTE: hand-written to match the shared cardProjection shape — regenerate
-// with `npm run studio:typegen` against a live dataset to replace this.
-export type TrendingArticlesQueryResult = AllArticlesQueryResult;
-
-// Variable: forYouArticlesQuery
-// Query: *[_type == "article" && (section->slug.current in $sections || count((tags[])[@ in $tags]) > 0)] | order(publishedAt desc) [0...8] {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
-// NOTE: hand-written to match the shared cardProjection shape — regenerate
-// with `npm run studio:typegen` against a live dataset to replace this.
-export type ForYouArticlesQueryResult = AllArticlesQueryResult;
-
-// Variable: liveBlogBySlugQuery
-// Query: *[_type == "liveBlog" && slug.current == $slug][0]{ ... }
-// NOTE: hand-written (new document type, not yet seen by a live-dataset
-// typegen run) — regenerate with `npm run studio:typegen` to replace this.
-export type LiveBlogBySlugQueryResult = {
-  _id: string;
-  title: string;
-  slug: string;
-  dek: string;
-  section: {
-    slug: string;
-    title: string;
-    accentColor: string;
-  } | null;
-  hero: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    alt: string;
-    _type: "image";
-  };
-  status: "live" | "ended";
-  startedAt: string;
-  entries: Array<{
-    timestamp: string;
-    headline: string | null;
-    body: NonNullable<ArticleBySlugQueryResult>["body"];
-    author: {
-      slug: string;
-      name: string;
-      avatar: {
-        asset?: SanityImageAssetReference;
-        media?: unknown;
-        hotspot?: SanityImageHotspot;
-        crop?: SanityImageCrop;
-        _type: "image";
-      };
-    } | null;
-  }> | null;
-  seo: Seo | null;
-} | null;
-
-// Variable: activeLiveBlogsQuery
-// Query: *[_type == "liveBlog" && status == "live"] | order(startedAt desc){ ... }
-// NOTE: hand-written — see note above.
-export type ActiveLiveBlogsQueryResult = Array<{
-  _id: string;
-  title: string;
-  slug: string;
-  dek: string;
-  startedAt: string;
-}>;
-
-// Variable: allLiveBlogsQuery
-// Query: *[_type == "liveBlog"]{ _id, title, dek, "slug": slug.current, startedAt }
-// NOTE: hand-written — see note above.
-export type AllLiveBlogsQueryResult = Array<{
-  _id: string;
-  title: string;
-  dek: string;
-  slug: string;
-  startedAt: string;
-}>;
-
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
     '{\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}': CardProjectionResult;
-    '\n  *[_id == "siteSettings"][0]{\n    title,\n    tagline,\n    logo,\n    defaultSeo,\n    mainNav[]{\n      label,\n      linkType,\n      "internalHref": internalLink->slug.current,\n      externalUrl\n    },\n    footerLinkGroups[]{\n      heading,\n      links[]{\n        label,\n        linkType,\n        "internalHref": internalLink->slug.current,\n        externalUrl\n      }\n    },\n    socialLinks[]{ platform, url },\n    copyrightText\n  }\n': SiteSettingsQueryResult;
+    '\n  *[_id == "siteSettings"][0]{\n    title,\n    tagline,\n    logo,\n    defaultSeo,\n    mainNav[]{\n      label,\n      linkType,\n      "internalHref": internalLink->slug.current,\n      externalUrl\n    },\n    footerLinkGroups[]{\n      heading,\n      links[]{\n        label,\n        linkType,\n        "internalHref": internalLink->slug.current,\n        externalUrl\n      }\n    },\n    socialLinks[]{ platform, url },\n    copyrightText,\n    breakingNews{ active, headline, href }\n  }\n': SiteSettingsQueryResult;
     '\n  *[_type == "section"] | order(order asc) {\n    _id,\n    title,\n    "slug": slug.current,\n    tagline,\n    accentColor,\n    order,\n    seo\n  }\n': SectionsQueryResult;
     '\n  *[_type == "section" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    tagline,\n    accentColor,\n    order,\n    seo\n  }\n': SectionBySlugQueryResult;
     '\n  *[_type == "author"] | order(name asc) {\n    _id,\n    name,\n    "slug": slug.current,\n    role,\n    bio,\n    avatar,\n    twitter,\n    seo\n  }\n': AuthorsQueryResult;
     '\n  *[_type == "author" && slug.current == $slug][0]{\n    _id,\n    name,\n    "slug": slug.current,\n    role,\n    bio,\n    avatar,\n    twitter,\n    seo\n  }\n': AuthorBySlugQueryResult;
     '\n  *[_type == "article"]{ "slug": slug.current }\n': ArticleSlugsQueryResult;
-    '\n  *[_type == "article" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    dek,\n    "section": section->{ "slug": slug.current, title, accentColor },\n    "authors": authors[]->{ "slug": slug.current, name, role, bio, avatar, twitter },\n    publishedAt,\n    readTime,\n    hero,\n    tags,\n    premium,\n    featured,\n    body[]{\n      ...,\n      markDefs[]{ ... }\n    },\n    seo\n  }\n': ArticleBySlugQueryResult;
+    '\n  *[_type == "article" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    dek,\n    "section": section->{ "slug": slug.current, title, accentColor },\n    "authors": authors[]->{ "slug": slug.current, name, role, bio, avatar, twitter },\n    publishedAt,\n    readTime,\n    hero,\n    tags,\n    premium,\n    featured,\n    freePreviewBlocks,\n    body[]{\n      ...,\n      markDefs[]{ ... }\n    },\n    seo\n  }\n': ArticleBySlugQueryResult;
     '\n  *[_type == "article" && section->slug.current == $sectionSlug]\n  | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': ArticlesInSectionQueryResult;
     '\n  *[_type == "article" && $authorSlug in authors[]->slug.current]\n  | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': ArticlesByAuthorQueryResult;
     '\n  *[_type == "article" && premium == true]\n  | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': PremiumArticlesQueryResult;
     '\n  *[_type == "article" && featured == true]\n  | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': FeaturedArticlesQueryResult;
     '\n  *[_type == "article"] | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': AllArticlesQueryResult;
+    '\n  *[_type == "article" && defined(trendingRank)]\n  | order(trendingRank asc) [0...8] {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': TrendingArticlesQueryResult;
+    '\n  *[\n    _type == "article" &&\n    (section->slug.current in $sections || count((tags[])[@ in $tags]) > 0)\n  ]\n  | order(publishedAt desc) [0...8] {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': ForYouArticlesQueryResult;
+    '\n  *[_type == "article" && $tag in tags]\n  | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': ArticlesByTagQueryResult;
+    '\n  *[_type == "article" && slug.current in $slugs]\n  | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': ArticlesBySlugsQueryResult;
+    '\n  *[_type == "liveBlog" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    dek,\n    "section": section->{ "slug": slug.current, title, accentColor },\n    hero,\n    status,\n    startedAt,\n    "entries": entries[] | order(timestamp desc){\n      timestamp,\n      headline,\n      body[]{\n        ...,\n        markDefs[]{ ... }\n      },\n      "author": author->{ "slug": slug.current, name, avatar }\n    },\n    seo\n  }\n': LiveBlogBySlugQueryResult;
+    '\n  *[_type == "liveBlog" && status == "live"] | order(startedAt desc){\n    _id,\n    title,\n    "slug": slug.current,\n    dek,\n    startedAt\n  }\n': ActiveLiveBlogsQueryResult;
+    '\n  *[_type == "liveBlog"]{ _id, title, dek, "slug": slug.current, startedAt }\n': AllLiveBlogsQueryResult;
     '\n  *[\n    _type == "article" &&\n    slug.current != $slug &&\n    (section->slug.current == $sectionSlug || count((tags[])[@ in $tags]) > 0)\n  ]\n  | order((section->slug.current == $sectionSlug) desc, publishedAt desc)\n  [0...$limit]\n  {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': RelatedArticlesQueryResult;
   }
 }

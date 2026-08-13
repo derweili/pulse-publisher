@@ -4,14 +4,15 @@ import type { ImageBlockData } from "./types";
 
 interface Props {
   block: ImageBlockData;
+  index: number;
 }
 
-const { block } = Astro.props;
+const { block, index } = Astro.props;
 const src = urlFor(block).width(1200).height(750).fit("crop").url();
 const fullSrc = urlFor(block).width(2400).url();
 ---
 
-<figure class="my-[1.8em]">
+<figure class="my-[1.8em]" data-mos-block={index}>
   <button
     type="button"
     class="group relative block w-full cursor-zoom-in overflow-hidden rounded p-0"

@@ -77,6 +77,15 @@ export const article = defineType({
       validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
+      name: 'freePreviewBlocks',
+      title: 'Free preview blocks',
+      type: 'number',
+      group: 'content',
+      initialValue: 3,
+      description: 'How many body blocks are visible before the paywall.',
+      validation: (Rule) => Rule.integer().min(0),
+    }),
+    defineField({
       name: 'publishedAt',
       title: 'Published at',
       type: 'datetime',

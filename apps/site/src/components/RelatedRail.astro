@@ -15,7 +15,7 @@ const related = await getRelatedArticles(client, article, limit);
 ---
 
 {related.length > 0 && (
-  <aside class="flex flex-col gap-3">
+  <aside class="flex flex-col gap-3" data-mos="related">
     <h4 class="border-b-2 border-ink pb-2.5 text-xs font-extrabold tracking-[0.12em] text-ink-3 uppercase">{title}</h4>
     <ul class="flex flex-col gap-3.5">
       {related.map((r) => {

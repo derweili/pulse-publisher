@@ -25,7 +25,7 @@ const isPremium = article.premium ?? false;
 ---
 
 {variant === "hero" && (
-  <article class="flex flex-col">
+  <article class="flex flex-col" data-mos="article-card" data-premium={isPremium ? "true" : "false"}>
     <a href={articlePath(article.slug)} class="group relative block aspect-video overflow-hidden rounded-lg bg-bg-muted">
       <img src={urlFor(article.hero).width(1200).height(750).fit("crop").url()} alt={article.hero.alt ?? ""} loading="eager" width="1200" height="750" class="h-full w-full object-cover transition-transform duration-[600ms] ease-brand group-hover:scale-[1.04]" />
       <span class="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_40%,rgba(0,0,0,0.5))]"></span>
@@ -33,7 +33,7 @@ const isPremium = article.premium ?? false;
         <span class="absolute top-4 left-4 rounded-sm bg-primary px-3 py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-white uppercase">{section.title}</span>
       )}
       {isPremium && (
-        <span class="absolute top-4 right-4 inline-flex items-center gap-1.5 rounded-sm bg-premium-gold px-3 py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-[#2a1d00] uppercase">Premium</span>
+        <span class="absolute top-4 right-4 inline-flex items-center gap-1.5 rounded-sm bg-premium-gold px-3 py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-[#2a1d00] uppercase" data-mos="premium-badge">Premium</span>
       )}
     </a>
     <div class="px-1 pt-5">
@@ -64,11 +64,11 @@ const isPremium = article.premium ?? false;
 )}
 
 {variant === "default" && (
-  <article class="group flex flex-col overflow-hidden rounded-lg border border-border bg-surface transition-all duration-200 ease-brand hover:-translate-y-1 hover:border-border-strong hover:shadow-lg">
+  <article class="group flex flex-col overflow-hidden rounded-lg border border-border bg-surface transition-all duration-200 ease-brand hover:-translate-y-1 hover:border-border-strong hover:shadow-lg" data-mos="article-card" data-premium={isPremium ? "true" : "false"}>
     <a href={articlePath(article.slug)} class="relative block aspect-[16/10] overflow-hidden bg-bg-muted">
       <img src={urlFor(article.hero).width(800).height(500).fit("crop").url()} alt={article.hero.alt ?? ""} loading="lazy" width="800" height="500" class="h-full w-full object-cover transition-transform duration-[600ms] ease-brand group-hover:scale-105" />
       {isPremium && (
-        <span class="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-[9px] py-[5px] text-[10px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase">Premium</span>
+        <span class="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-[9px] py-[5px] text-[10px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase" data-mos="premium-badge">Premium</span>
       )}
     </a>
     <div class="flex flex-1 flex-col gap-2.5 px-5 pt-[18px] pb-5">
@@ -94,11 +94,11 @@ const isPremium = article.premium ?? false;
 )}
 
 {variant === "compact" && (
-  <article class="group grid grid-cols-[96px_1fr] items-start gap-3.5 max-sm:grid-cols-[80px_1fr] max-sm:gap-3">
+  <article class="group grid grid-cols-[96px_1fr] items-start gap-3.5 max-sm:grid-cols-[80px_1fr] max-sm:gap-3" data-mos="article-card" data-premium={isPremium ? "true" : "false"}>
     <a href={articlePath(article.slug)} class="relative block aspect-square overflow-hidden rounded bg-bg-muted">
       <img src={urlFor(article.hero).width(200).height(200).fit("crop").url()} alt={article.hero.alt ?? ""} loading="lazy" width="200" height="200" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
       {isPremium && (
-        <span class="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-2 py-1 text-[9px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase">Premium</span>
+        <span class="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-2 py-1 text-[9px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase" data-mos="premium-badge">Premium</span>
       )}
     </a>
     <div class="flex min-w-0 flex-col gap-1.5">
@@ -118,11 +118,11 @@ const isPremium = article.premium ?? false;
 )}
 
 {variant === "list" && (
-  <article class="group grid grid-cols-[200px_1fr] gap-5 border-b border-border py-4 max-sm:grid-cols-[120px_1fr] max-sm:gap-3.5">
+  <article class="group grid grid-cols-[200px_1fr] gap-5 border-b border-border py-4 max-sm:grid-cols-[120px_1fr] max-sm:gap-3.5" data-mos="article-card" data-premium={isPremium ? "true" : "false"}>
     <a href={articlePath(article.slug)} class="relative block aspect-[3/2] overflow-hidden rounded bg-bg-muted">
       <img src={urlFor(article.hero).width(240).height(160).fit("crop").url()} alt={article.hero.alt ?? ""} loading="lazy" width="240" height="160" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
       {isPremium && (
-        <span class="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-2 py-1 text-[9px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase">Premium</span>
+        <span class="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-2 py-1 text-[9px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase" data-mos="premium-badge">Premium</span>
       )}
     </a>
     <div class="flex min-w-0 flex-col gap-2">
@@ -150,7 +150,7 @@ const isPremium = article.premium ?? false;
 )}
 
 {variant === "feed" && (
-  <article class="flex flex-col gap-2 border-b border-border py-4">
+  <article class="flex flex-col gap-2 border-b border-border py-4" data-mos="article-card" data-premium={isPremium ? "true" : "false"}>
     {showSection && section && (
       <a href={sectionPath(section.slug)} class="w-fit text-[10px] font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase hover:underline" style={`--sec:${section.accentColor}`}>
         {section.title}
@@ -168,10 +168,10 @@ const isPremium = article.premium ?? false;
 )}
 
 {variant === "premium" && (
-  <a href={articlePath(article.slug)} class="group relative flex flex-col overflow-hidden rounded-lg border border-[#22232a] bg-premium text-white transition-all duration-200 ease-brand hover:-translate-y-1 hover:shadow-xl">
+  <a href={articlePath(article.slug)} class="group relative flex flex-col overflow-hidden rounded-lg border border-[#22232a] bg-premium text-white transition-all duration-200 ease-brand hover:-translate-y-1 hover:shadow-xl" data-mos="article-card" data-premium={isPremium ? "true" : "false"}>
     <div class="relative aspect-[16/10] overflow-hidden bg-[#15161a]">
       <img src={urlFor(article.hero).width(800).height(500).fit("crop").url()} alt={article.hero.alt ?? ""} loading="lazy" width="800" height="500" class="h-full w-full object-cover opacity-[0.92] transition-transform duration-[600ms] group-hover:scale-[1.04]" />
-      <span class="absolute top-3.5 left-3.5 inline-flex items-center gap-1.5 rounded-sm bg-premium-gold px-[11px] py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-[#2a1d00] uppercase">
+      <span class="absolute top-3.5 left-3.5 inline-flex items-center gap-1.5 rounded-sm bg-premium-gold px-[11px] py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-[#2a1d00] uppercase" data-mos="premium-badge">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.5L21 9.2l-5 4.3 1.6 6.8L12 16.9 6.4 20.3 8 13.5 3 9.2l6.6-.7L12 2z"/></svg>
         Premium
       </span>

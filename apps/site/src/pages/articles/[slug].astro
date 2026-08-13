@@ -5,6 +5,7 @@ import Comments from "../../components/Comments.tsx";
 import Newsletter from "../../components/Newsletter.astro";
 import Lightbox from "../../components/Lightbox.astro";
 import PortableText from "../../components/portable-text/PortableText.astro";
+import { snapToListBoundary } from "../../components/portable-text/types";
 import ReadingControls from "../../components/ReadingControls.astro";
 import ReadingHistoryTracker from "../../components/ReadingHistoryTracker.astro";
 import RelatedRail from "../../components/RelatedRail.astro";
@@ -42,9 +43,20 @@ const sameSection = sameSectionAll.filter((a) => a.slug !== article.slug).slice(
 const isPremium = article.premium ?? false;
 
 const blocks = article.body;
-const midIdx = Math.floor(blocks.length / 2);
-const firstHalf = blocks.slice(0, midIdx);
-const secondHalf = blocks.slice(midIdx);
+// Paywall cut: how many blocks are free to read. Snapped forward past any
+// list run it would otherwise split in two.
+const freePreviewCount = snapToListBoundary(
+  blocks,
+  Math.min(Math.max(article.freePreviewBlocks ?? 3, 0), blocks.length)
+);
+// Ad cut: unrelated to the paywall, kept at the article midpoint as before.
+const adSplitIdx = Math.floor(blocks.length / 2);
+// The two cuts are independent, so the ad usually lands inside the locked
+// segment and disappears for gated readers along with the rest of it. This
+// is intentional — see docs/mos-selectors.md ("paywall-slot") for why the
+// wall creative carries its own ad unit to cover that case, rather than
+// moving this ad and degrading the layout for ungated readers.
+const adInPreview = adSplitIdx <= freePreviewCount;
 
 const siteOrigin = (Astro.site ?? Astro.url).origin;
 const articleUrl = new URL(articlePath(article.slug), Astro.url).toString();
@@ -105,7 +117,7 @@ const breadcrumbSchema = {
   <article>
     <!-- Premium banner -->
     {isPremium && (
-      <div class="bg-premium-gold text-[#2a1d00]">
+      <div class="bg-premium-gold text-[#2a1d00]" data-mos="premium-banner">
         <div class="container-page flex flex-wrap items-center gap-4 py-3">
           <span class="inline-flex items-center gap-1.5 rounded-sm bg-[#2a1d00] px-2.5 py-[5px] text-xs font-extrabold tracking-[0.08em] text-premium-gold uppercase">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.5L21 9.2l-5 4.3 1.6 6.8L12 16.9 6.4 20.3 8 13.5 3 9.2l6.6-.7L12 2z"/></svg>
@@ -157,13 +169,31 @@ const breadcrumbSchema = {
     <!-- Body + sidebar -->
     <div class="container-page mt-10 grid grid-cols-[1fr_320px] items-start gap-12 max-[960px]:grid-cols-1 max-[960px]:gap-8">
       <div class="w-full max-w-[680px]">
-        <AdSlot slot="in-article-1" format="in-article" label="Advertisement" class="my-[2em]" />
+        <div data-mos="article-body">
+          <AdSlot slot="in-article-1" format="in-article" label="Advertisement" class="my-[2em]" />
 
-        <PortableText value={firstHalf} />
+          <div data-mos="article-preview">
+            <PortableText
+              value={adInPreview ? blocks.slice(0, adSplitIdx) : blocks.slice(0, freePreviewCount)}
+              startIndex={0}
+            />
+            {adInPreview && <AdSlot slot="in-article-2" format="in-article" label="Advertisement" class="my-[2em]" />}
+            {adInPreview && (
+              <PortableText value={blocks.slice(adSplitIdx, freePreviewCount)} startIndex={adSplitIdx} />
+            )}
+          </div>
 
-        <AdSlot slot="in-article-2" format="in-article" label="Advertisement" class="my-[2em]" />
+          <div data-mos="article-locked">
+            <PortableText
+              value={adInPreview ? blocks.slice(freePreviewCount) : blocks.slice(freePreviewCount, adSplitIdx)}
+              startIndex={freePreviewCount}
+            />
+            {!adInPreview && <AdSlot slot="in-article-2" format="in-article" label="Advertisement" class="my-[2em]" />}
+            {!adInPreview && <PortableText value={blocks.slice(adSplitIdx)} startIndex={adSplitIdx} />}
+          </div>
 
-        <PortableText value={secondHalf} />
+          <div data-mos="paywall-slot"></div>
+        </div>
 
         <!-- Tags -->
         {article.tags && article.tags.length > 0 && (
@@ -192,7 +222,7 @@ const breadcrumbSchema = {
         </div>
 
         <!-- Comments placeholder -->
-        <section class="mt-12">
+        <section class="mt-12" data-mos="comments">
           <Comments articleTitle={article.title} client:idle />
         </section>
       </div>
@@ -212,7 +242,7 @@ const breadcrumbSchema = {
     </div>
 
     <!-- Footer related -->
-    <section class="container-page mt-[72px]">
+    <section class="container-page mt-[72px]" data-mos="related">
       <div class="section-head">
         <div>
           <span class="eyebrow eyebrow-accent">Keep reading</span>

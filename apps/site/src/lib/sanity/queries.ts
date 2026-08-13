@@ -115,6 +115,7 @@ export const articleBySlugQuery = defineQuery(`
     tags,
     premium,
     featured,
+    freePreviewBlocks,
     body[]{
       ...,
       markDefs[]{ ... }

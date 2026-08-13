@@ -3,12 +3,13 @@ import type { VideoEmbedData } from "./types";
 
 interface Props {
   block: VideoEmbedData;
+  index: number;
 }
 
-const { block } = Astro.props;
+const { block, index } = Astro.props;
 ---
 
-<div class="relative my-[1.8em] aspect-video overflow-hidden rounded bg-ink">
+<div class="relative my-[1.8em] aspect-video overflow-hidden rounded bg-ink" data-mos-block={index}>
   <iframe
     src={block.url}
     title="Embedded video"

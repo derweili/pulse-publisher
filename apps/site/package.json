@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
+    "check:auth-blindness": "node scripts/check-auth-blindness.mjs",
     "cf:preview": "npm run build && wrangler dev",
     "deploy": "npm run build && wrangler deploy"
   },
