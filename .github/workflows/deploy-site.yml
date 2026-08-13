@@ -1,9 +1,12 @@
-name: Deploy to Cloudflare Workers
+name: Deploy Site to Cloudflare Workers
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'apps/site/**'
+      - '.github/workflows/deploy-site.yml'
   workflow_dispatch: {}
 
 jobs:
@@ -25,7 +28,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build
+        run: npm run build -w apps/site
         env:
           PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.PUBLIC_CLERK_PUBLISHABLE_KEY }}
           PUBLIC_SANITY_PROJECT_ID: ${{ secrets.PUBLIC_SANITY_PROJECT_ID }}
@@ -41,3 +44,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/site

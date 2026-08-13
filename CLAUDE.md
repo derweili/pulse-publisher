@@ -41,7 +41,7 @@ editor ──► Sanity Studio (studio/) — separate deploy, unrelated to the p
 
 ## Commands
 
-**Site** (`apps/site` once restructured by session 1; currently at repo root as `pulse-today`):
+**Site** (`apps/site`, `pulse-today`):
 - dev: `npm run dev`
 - build: `npm run build`
 - deploy: `npm run deploy` (equivalent to `npm run build && wrangler deploy`)
