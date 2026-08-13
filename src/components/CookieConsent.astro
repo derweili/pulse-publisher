@@ -1,0 +1,48 @@
+---
+---
+
+<div
+  class="pointer-events-none fixed inset-x-0 bottom-0 z-[150] translate-y-full border-t border-border bg-white/95 backdrop-blur-[14px] transition-transform duration-300 ease-brand data-[visible=true]:pointer-events-auto data-[visible=true]:translate-y-0"
+  data-cookie-banner
+  data-visible="false"
+  role="dialog"
+  aria-label="Cookie notice"
+>
+  <div class="container-page-wide flex flex-wrap items-center gap-4 py-4">
+    <p class="min-w-0 flex-1 text-[13px] leading-relaxed text-ink-3">
+      We use cookies to run this site and to personalize ads and content. By continuing, you agree to our use of cookies.
+    </p>
+    <div class="flex shrink-0 items-center gap-2.5">
+      <button type="button" class="rounded-full border border-border px-4 py-2 text-[13px] font-bold text-ink-2 transition-colors duration-200 hover:border-ink hover:text-ink" data-cookie-decline>
+        Decline
+      </button>
+      <button type="button" class="rounded-full bg-ink px-4 py-2 text-[13px] font-bold text-white transition-colors duration-200 hover:bg-primary" data-cookie-accept>
+        Accept
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = "pulse-cookie-consent";
+
+  function initCookieConsent() {
+    const banner = document.querySelector<HTMLElement>("[data-cookie-banner]");
+    if (!banner) return;
+    if (localStorage.getItem(STORAGE_KEY)) return;
+
+    requestAnimationFrame(() => {
+      banner.dataset.visible = "true";
+    });
+
+    function dismiss(choice: "accepted" | "declined") {
+      localStorage.setItem(STORAGE_KEY, choice);
+      banner!.dataset.visible = "false";
+    }
+
+    banner.querySelector("[data-cookie-accept]")?.addEventListener("click", () => dismiss("accepted"));
+    banner.querySelector("[data-cookie-decline]")?.addEventListener("click", () => dismiss("declined"));
+  }
+
+  initCookieConsent();
+</script>
