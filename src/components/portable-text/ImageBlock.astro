@@ -8,9 +8,25 @@ interface Props {
 
 const { block } = Astro.props;
 const src = urlFor(block).width(1200).height(750).fit("crop").url();
+const fullSrc = urlFor(block).width(2400).url();
 ---
 
 <figure class="my-[1.8em]">
-  <img src={src} alt={block.alt ?? ""} loading="lazy" class="w-full rounded" width="1200" height="750" />
+  <button
+    type="button"
+    class="group relative block w-full cursor-zoom-in overflow-hidden rounded p-0"
+    data-lightbox-trigger="image"
+    data-src={fullSrc}
+    data-alt={block.alt ?? ""}
+    data-caption={block.caption ?? ""}
+    aria-label="Open image in lightbox"
+  >
+    <img src={src} alt={block.alt ?? ""} loading="lazy" class="w-full rounded transition-transform duration-500 group-hover:scale-[1.02]" width="1200" height="750" />
+    <span class="pointer-events-none absolute inset-0 flex items-center justify-center bg-ink/0 opacity-0 transition-all duration-200 group-hover:bg-ink/20 group-hover:opacity-100">
+      <span class="grid size-11 place-items-center rounded-full bg-white/90 text-ink">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
+      </span>
+    </span>
+  </button>
   {block.caption && <figcaption class="mt-2 text-xs text-ink-4">{block.caption}</figcaption>}
 </figure>

@@ -1,0 +1,101 @@
+---
+// Single shared overlay for portable-text imageBlock/videoEmbed content.
+// The DOM is built lazily on first trigger click rather than rendered here,
+// so this only needs to be included once per page (see ImageBlock.astro /
+// VideoEmbed.astro, which mark their triggers with data-lightbox-trigger).
+---
+
+<script>
+  function buildOverlay() {
+    const overlay = document.createElement("div");
+    overlay.className =
+      "fixed inset-0 z-[400] hidden items-center justify-center bg-ink/90 p-4 backdrop-blur-xs";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.innerHTML = `
+      <button type="button" class="absolute top-4 right-4 z-2 grid size-10 place-items-center rounded-full border-2 border-white/40 text-white transition-colors duration-200 hover:border-white" data-lightbox-close aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+      <div class="flex max-h-[90vh] w-full max-w-4xl flex-col items-center gap-3" data-lightbox-body></div>
+    `;
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+
+  function openImage(overlay: HTMLElement, src: string, alt: string, caption: string) {
+    const body = overlay.querySelector("[data-lightbox-body]");
+    if (!body) return;
+    body.innerHTML = "";
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = alt;
+    img.className = "max-h-[80vh] w-auto max-w-full rounded object-contain";
+    body.appendChild(img);
+    if (caption) {
+      const cap = document.createElement("p");
+      cap.className = "text-center text-sm text-white/80";
+      cap.textContent = caption;
+      body.appendChild(cap);
+    }
+  }
+
+  function openVideo(overlay: HTMLElement, src: string) {
+    const body = overlay.querySelector("[data-lightbox-body]");
+    if (!body) return;
+    body.innerHTML = "";
+    const wrap = document.createElement("div");
+    wrap.className = "aspect-video w-full overflow-hidden rounded bg-ink";
+    const iframe = document.createElement("iframe");
+    iframe.src = src;
+    iframe.title = "Embedded video";
+    iframe.allowFullscreen = true;
+    iframe.className = "h-full w-full border-0";
+    wrap.appendChild(iframe);
+    body.appendChild(wrap);
+  }
+
+  function initLightbox() {
+    let overlay: HTMLElement | null = null;
+
+    function close() {
+      if (!overlay) return;
+      overlay.classList.add("hidden");
+      overlay.classList.remove("flex");
+      const body = overlay.querySelector("[data-lightbox-body]");
+      if (body) body.innerHTML = ""; // stop any playing video
+      document.body.style.overflow = "";
+    }
+
+    function open() {
+      if (!overlay) return;
+      overlay.classList.remove("hidden");
+      overlay.classList.add("flex");
+      document.body.style.overflow = "hidden";
+    }
+
+    document.addEventListener("click", (e) => {
+      const trigger = (e.target as HTMLElement).closest<HTMLElement>("[data-lightbox-trigger]");
+      if (trigger) {
+        if (!overlay) {
+          overlay = buildOverlay();
+          overlay.addEventListener("click", (ev) => {
+            if (ev.target === overlay || (ev.target as HTMLElement).closest("[data-lightbox-close]")) close();
+          });
+        }
+        const type = trigger.dataset.lightboxTrigger;
+        if (type === "image") {
+          openImage(overlay, trigger.dataset.src ?? "", trigger.dataset.alt ?? "", trigger.dataset.caption ?? "");
+        } else if (type === "video") {
+          openVideo(overlay, trigger.dataset.src ?? "");
+        }
+        open();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && overlay && !overlay.classList.contains("hidden")) close();
+    });
+  }
+
+  initLightbox();
+</script>
