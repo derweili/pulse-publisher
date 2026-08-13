@@ -3,12 +3,19 @@ interface Props {
   title?: string;
   subtitle?: string;
   variant?: "inline" | "footer" | "compact";
+  topics?: string[];
 }
 const {
   title = "Join the PULSE list",
   subtitle = "Get the stories that matter, every morning. Free, no spam, unsubscribe anytime.",
   variant = "inline",
+  topics = variant === "compact" ? [] : ["Morning briefing", "Weekend reads", "Breaking news alerts"],
 } = Astro.props;
+
+// Unique per instance so checkbox <label for> pairing doesn't collide when
+// this component renders more than once on the same page (homepage, footer,
+// article sidebar all do).
+const uid = Math.random().toString(36).slice(2, 9);
 
 const wrapClasses: Record<string, string> = {
   inline: "bg-bg-soft border border-border",
@@ -16,8 +23,8 @@ const wrapClasses: Record<string, string> = {
   compact: "bg-ink text-white",
 };
 const innerClasses: Record<string, string> = {
-  inline: "grid grid-cols-[1.4fr_1fr] items-center gap-6 p-7 max-[720px]:grid-cols-1 max-[720px]:gap-4",
-  footer: "grid grid-cols-[1.3fr_1fr] items-center gap-7 py-2 max-[720px]:grid-cols-1 max-[720px]:gap-4",
+  inline: "grid grid-cols-[1.4fr_1fr] items-start gap-6 p-7 max-[720px]:grid-cols-1 max-[720px]:gap-4",
+  footer: "grid grid-cols-[1.3fr_1fr] items-start gap-7 py-2 max-[720px]:grid-cols-1 max-[720px]:gap-4",
   compact: "px-5 py-[18px]",
 };
 ---
@@ -38,26 +45,40 @@ const innerClasses: Record<string, string> = {
         </div>
       </div>
     )}
-    <form class="flex w-full gap-2 max-[720px]:flex-col" data-nl-form>
-      {variant === "compact" && (
-        <p class="mb-2 text-[13px] font-bold text-white">{title}</p>
+    <div class="flex w-full flex-col gap-2.5">
+      <form class="flex w-full gap-2 max-[720px]:flex-col" data-nl-form>
+        {variant === "compact" && (
+          <p class="mb-2 text-[13px] font-bold text-white">{title}</p>
+        )}
+        <input
+          type="email"
+          class={`min-w-0 flex-1 rounded-full border px-3.5 py-[13px] text-sm focus:border-primary focus:outline-none ${
+            variant === "footer"
+              ? "border-[#33343c] bg-[#15161a] text-white placeholder:text-[#6b7280]"
+              : "border-border-strong bg-white text-ink"
+          }`}
+          placeholder="you@example.com"
+          aria-label="Email address"
+          required
+        />
+        <button type="submit" class="rounded-full bg-primary px-5 py-[13px] text-sm font-extrabold tracking-[0.02em] whitespace-nowrap text-white transition-all duration-200 ease-brand hover:-translate-y-px hover:bg-primary-dark max-[720px]:w-full">Subscribe</button>
+      </form>
+      {topics.length > 0 && (
+        <fieldset class="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-0 p-0" data-nl-topics>
+          <legend class={`mr-1 text-[11px] font-bold tracking-[0.06em] uppercase ${variant === "footer" ? "text-[#6b7280]" : "text-ink-4"}`}>Send me:</legend>
+          {topics.map((topic, i) => {
+            const id = `nl-${uid}-topic-${i}`;
+            return (
+              <label for={id} class={`inline-flex cursor-pointer items-center gap-1.5 text-[13px] font-semibold ${variant === "footer" ? "text-[#c3c6cc]" : "text-ink-2"}`}>
+                <input type="checkbox" id={id} value={topic} checked class="size-3.5 accent-primary" />
+                {topic}
+              </label>
+            );
+          })}
+        </fieldset>
       )}
-      <input
-        type="email"
-        class={`min-w-0 flex-1 rounded-full border px-3.5 py-[13px] text-sm focus:border-primary focus:outline-none ${
-          variant === "footer"
-            ? "border-[#33343c] bg-[#15161a] text-white placeholder:text-[#6b7280]"
-            : "border-border-strong bg-white text-ink"
-        }`}
-        placeholder="you@example.com"
-        aria-label="Email address"
-        required
-      />
-      <button type="submit" class="rounded-full bg-primary px-5 py-[13px] text-sm font-extrabold tracking-[0.02em] whitespace-nowrap text-white transition-all duration-200 ease-brand hover:-translate-y-px hover:bg-primary-dark max-[720px]:w-full">Subscribe</button>
-    </form>
-    <p class={`pt-1 text-[13px] font-semibold ${variant === "footer" ? "text-[#4ade80]" : "text-success"}`} data-nl-success hidden>
-      You're on the list. Check your inbox for a confirmation.
-    </p>
+    </div>
+    <p class={`pt-1 text-[13px] font-semibold ${variant === "footer" ? "text-[#4ade80]" : "text-success"}`} data-nl-success hidden></p>
     <p class={`pt-1 text-[13px] font-semibold ${variant === "footer" ? "text-[#fca5a5]" : "text-error"}`} data-nl-error hidden>
       Please enter a valid email address.
     </p>
@@ -67,6 +88,7 @@ const innerClasses: Record<string, string> = {
 <script>
   function initNewsletter(root: HTMLElement) {
     const form = root.querySelector<HTMLFormElement>("[data-nl-form]");
+    const topicsField = root.querySelector<HTMLElement>("[data-nl-topics]");
     const success = root.querySelector<HTMLElement>("[data-nl-success]");
     const error = root.querySelector<HTMLElement>("[data-nl-error]");
     if (!form || !success || !error) return;
@@ -81,9 +103,17 @@ const innerClasses: Record<string, string> = {
         success.hidden = true;
         return;
       }
+      const selectedTopics = topicsField
+        ? Array.from(topicsField.querySelectorAll<HTMLInputElement>("input[type=checkbox]:checked")).map((c) => c.value)
+        : [];
       error.hidden = true;
       success.hidden = false;
+      success.textContent =
+        selectedTopics.length > 0
+          ? `You're on the list for ${selectedTopics.join(", ")}. Check your inbox for a confirmation.`
+          : "You're on the list. Check your inbox for a confirmation.";
       form.hidden = true;
+      if (topicsField) topicsField.hidden = true;
     });
   }
   document.querySelectorAll<HTMLElement>("[data-newsletter]").forEach(initNewsletter);
