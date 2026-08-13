@@ -1,7 +1,7 @@
 import type { APIContext } from "astro";
-import { articlePath, authorPath, sectionPath } from "../lib/paths";
+import { articlePath, authorPath, liveBlogPath, sectionPath } from "../lib/paths";
 import { getSanityClient } from "../lib/sanity/client";
-import { getAllArticles, getAuthors, getSections } from "../lib/sanity/fetch";
+import { getAllArticles, getAuthors, getAllLiveBlogs, getSections } from "../lib/sanity/fetch";
 
 // A hand-written endpoint rather than @astrojs/sitemap: that integration
 // enumerates routes at build time from getStaticPaths, which no longer
@@ -32,10 +32,11 @@ function escapeXml(value: string) {
 
 export async function GET(context: APIContext) {
   const client = getSanityClient(context.locals.runtime.env);
-  const [articles, authors, sections] = await Promise.all([
+  const [articles, authors, sections, liveBlogs] = await Promise.all([
     getAllArticles(client),
     getAuthors(client),
     getSections(client),
+    getAllLiveBlogs(client),
   ]);
 
   const origin = context.site?.origin ?? context.url.origin;
@@ -45,6 +46,7 @@ export async function GET(context: APIContext) {
     ...sections.map((s) => ({ loc: sectionPath(s.slug) })),
     ...authors.map((a) => ({ loc: authorPath(a.slug) })),
     ...articles.map((a) => ({ loc: articlePath(a.slug), lastmod: a.publishedAt })),
+    ...liveBlogs.map((lb) => ({ loc: liveBlogPath(lb.slug), lastmod: lb.startedAt })),
   ];
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>

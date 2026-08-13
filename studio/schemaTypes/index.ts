@@ -2,11 +2,13 @@ import type {SchemaTypeDefinition} from 'sanity'
 
 import {article} from './documents/article'
 import {author} from './documents/author'
+import {liveBlog} from './documents/liveBlog'
 import {section} from './documents/section'
 import {siteSettings} from './documents/siteSettings'
 import {blockContent} from './objects/blockContent'
 import {footerLinkGroup} from './objects/footerLinkGroup'
 import {imageBlock} from './objects/imageBlock'
+import {liveBlogEntry} from './objects/liveBlogEntry'
 import {navLink} from './objects/navLink'
 import {seo} from './objects/seo'
 import {socialLink} from './objects/socialLink'
@@ -18,6 +20,7 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   section,
   author,
   article,
+  liveBlog,
   // Objects
   seo,
   navLink,
@@ -26,4 +29,5 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   blockContent,
   imageBlock,
   videoEmbed,
+  liveBlogEntry,
 ]

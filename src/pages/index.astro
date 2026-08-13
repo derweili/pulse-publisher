@@ -6,7 +6,10 @@ import TrendingList from "../components/TrendingList.astro";
 import Layout from "../layouts/Layout.astro";
 import { sectionPath } from "../lib/paths";
 import { getSanityClient } from "../lib/sanity/client";
+import { timeAgo } from "../lib/format";
+import { liveBlogPath } from "../lib/paths";
 import {
+  getActiveLiveBlogs,
   getAllArticles,
   getFeaturedArticles,
   getPremiumArticles,
@@ -15,12 +18,13 @@ import {
 } from "../lib/sanity/fetch";
 
 const client = getSanityClient(Astro.locals.runtime.env);
-const [featured, premiumsAll, allSections, allArticles, trending] = await Promise.all([
+const [featured, premiumsAll, allSections, allArticles, trending, activeLiveBlogs] = await Promise.all([
   getFeaturedArticles(client),
   getPremiumArticles(client),
   getSections(client),
   getAllArticles(client),
   getTrendingArticles(client),
+  getActiveLiveBlogs(client),
 ]);
 
 // Curation counts vary with real content, so this degrades gracefully
@@ -55,6 +59,24 @@ const sectionArticleLists = new Map(
   <div class="container-page-wide flex justify-center pt-4 pb-2">
     <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
   </div>
+
+  {activeLiveBlogs.length > 0 && (
+    <div class="container-page pt-2">
+      {activeLiveBlogs.map((lb) => (
+        <a href={liveBlogPath(lb.slug)} class="group flex flex-wrap items-center gap-3 rounded-lg border border-error/30 bg-error/5 px-5 py-3.5 transition-colors duration-200 hover:bg-error/10">
+          <span class="inline-flex shrink-0 items-center gap-1.5 rounded-sm bg-error px-2 py-1 text-[10px] font-extrabold tracking-[0.1em] text-white uppercase">
+            <span class="relative flex size-1.5">
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
+              <span class="relative inline-flex size-1.5 rounded-full bg-white"></span>
+            </span>
+            Live
+          </span>
+          <span class="min-w-0 flex-1 truncate text-sm font-bold text-ink group-hover:text-error">{lb.title}</span>
+          <span class="shrink-0 text-xs font-semibold text-ink-4">Updated {timeAgo(lb.startedAt)} · Follow along →</span>
+        </a>
+      ))}
+    </div>
+  )}
 
   <!-- HERO -->
   {heroArticle && (

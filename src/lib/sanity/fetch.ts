@@ -1,6 +1,8 @@
 import type { SanityClient } from "@sanity/client";
 import {
+  activeLiveBlogsQuery,
   allArticlesQuery,
+  allLiveBlogsQuery,
   articleBySlugQuery,
   articleSlugsQuery,
   articlesByAuthorQuery,
@@ -10,6 +12,7 @@ import {
   authorBySlugQuery,
   authorsQuery,
   featuredArticlesQuery,
+  liveBlogBySlugQuery,
   premiumArticlesQuery,
   relatedArticlesQuery,
   sectionBySlugQuery,
@@ -18,7 +21,9 @@ import {
   trendingArticlesQuery,
 } from "./queries";
 import type {
+  ActiveLiveBlogsQueryResult,
   AllArticlesQueryResult,
+  AllLiveBlogsQueryResult,
   ArticleBySlugQueryResult,
   ArticleSlugsQueryResult,
   ArticlesByAuthorQueryResult,
@@ -28,6 +33,7 @@ import type {
   AuthorBySlugQueryResult,
   AuthorsQueryResult,
   FeaturedArticlesQueryResult,
+  LiveBlogBySlugQueryResult,
   PremiumArticlesQueryResult,
   RelatedArticlesQueryResult,
   SectionBySlugQueryResult,
@@ -131,6 +137,18 @@ export const getArticlesBySlugs = (
   slugs: string[]
 ): Promise<ArticlesBySlugsQueryResult> =>
   fetchUntyped<ArticlesBySlugsQueryResult>(client, articlesBySlugsQuery, { slugs });
+
+export const getLiveBlogBySlug = (
+  client: SanityClient,
+  slug: string
+): Promise<LiveBlogBySlugQueryResult> =>
+  fetchUntyped<LiveBlogBySlugQueryResult>(client, liveBlogBySlugQuery, { slug });
+
+export const getActiveLiveBlogs = (client: SanityClient): Promise<ActiveLiveBlogsQueryResult> =>
+  client.fetch(activeLiveBlogsQuery);
+
+export const getAllLiveBlogs = (client: SanityClient): Promise<AllLiveBlogsQueryResult> =>
+  client.fetch(allLiveBlogsQuery);
 
 export const getPremiumArticles = (client: SanityClient): Promise<PremiumArticlesQueryResult> =>
   client.fetch(premiumArticlesQuery);

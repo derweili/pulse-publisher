@@ -865,6 +865,71 @@ export type ArticlesBySlugsQueryResult = AllArticlesQueryResult;
 // with `npm run studio:typegen` against a live dataset to replace this.
 export type TrendingArticlesQueryResult = AllArticlesQueryResult;
 
+// Variable: liveBlogBySlugQuery
+// Query: *[_type == "liveBlog" && slug.current == $slug][0]{ ... }
+// NOTE: hand-written (new document type, not yet seen by a live-dataset
+// typegen run) — regenerate with `npm run studio:typegen` to replace this.
+export type LiveBlogBySlugQueryResult = {
+  _id: string;
+  title: string;
+  slug: string;
+  dek: string;
+  section: {
+    slug: string;
+    title: string;
+    accentColor: string;
+  } | null;
+  hero: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  };
+  status: "live" | "ended";
+  startedAt: string;
+  entries: Array<{
+    timestamp: string;
+    headline: string | null;
+    body: NonNullable<ArticleBySlugQueryResult>["body"];
+    author: {
+      slug: string;
+      name: string;
+      avatar: {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+      };
+    } | null;
+  }> | null;
+  seo: Seo | null;
+} | null;
+
+// Variable: activeLiveBlogsQuery
+// Query: *[_type == "liveBlog" && status == "live"] | order(startedAt desc){ ... }
+// NOTE: hand-written — see note above.
+export type ActiveLiveBlogsQueryResult = Array<{
+  _id: string;
+  title: string;
+  slug: string;
+  dek: string;
+  startedAt: string;
+}>;
+
+// Variable: allLiveBlogsQuery
+// Query: *[_type == "liveBlog"]{ _id, title, dek, "slug": slug.current, startedAt }
+// NOTE: hand-written — see note above.
+export type AllLiveBlogsQueryResult = Array<{
+  _id: string;
+  title: string;
+  dek: string;
+  slug: string;
+  startedAt: string;
+}>;
+
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {

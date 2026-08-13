@@ -1,0 +1,111 @@
+---
+import AdSlot from "../../components/AdSlot.astro";
+import PortableText from "../../components/portable-text/PortableText.astro";
+import StructuredData from "../../components/StructuredData.astro";
+import Layout from "../../layouts/Layout.astro";
+import { formatTime, timeAgo } from "../../lib/format";
+import { authorPath, liveBlogPath, sectionPath } from "../../lib/paths";
+import { getSanityClient } from "../../lib/sanity/client";
+import { urlFor } from "../../lib/sanity/image";
+import { getLiveBlogBySlug } from "../../lib/sanity/fetch";
+
+const { slug } = Astro.params;
+const client = getSanityClient(Astro.locals.runtime.env);
+const liveBlog = slug ? await getLiveBlogBySlug(client, slug) : null;
+if (!liveBlog) {
+  return new Response(null, { status: 404 });
+}
+
+const entries = liveBlog.entries ?? [];
+const isLive = liveBlog.status === "live";
+const lastUpdated = entries[0]?.timestamp ?? liveBlog.startedAt;
+
+const heroImageUrl = urlFor(liveBlog.hero).width(1600).height(900).fit("crop").url();
+const ogImageUrl = liveBlog.seo?.ogImage
+  ? urlFor(liveBlog.seo.ogImage).width(1200).height(630).fit("crop").url()
+  : urlFor(liveBlog.hero).width(1200).height(630).fit("crop").url();
+
+const liveBlogUrl = new URL(liveBlogPath(liveBlog.slug), Astro.url).toString();
+const liveBlogSchema = {
+  "@context": "https://schema.org",
+  "@type": "LiveBlogPosting",
+  headline: liveBlog.title,
+  description: liveBlog.dek,
+  coverageStartTime: liveBlog.startedAt,
+  ...(isLive ? {} : { coverageEndTime: entries[0]?.timestamp ?? liveBlog.startedAt }),
+  mainEntityOfPage: { "@type": "WebPage", "@id": liveBlogUrl },
+  liveBlogUpdate: entries.map((e) => ({
+    "@type": "BlogPosting",
+    headline: e.headline || liveBlog.title,
+    datePublished: e.timestamp,
+    ...(e.author && { author: { "@type": "Person", name: e.author.name } }),
+  })),
+};
+---
+
+<Layout
+  title={liveBlog.seo?.metaTitle || `${liveBlog.title} — PULSE`}
+  description={liveBlog.seo?.metaDescription || liveBlog.dek}
+  activeSection={liveBlog.section?.slug}
+  ogImageUrl={ogImageUrl}
+>
+  <StructuredData data={liveBlogSchema} />
+
+  <div class="container-page-wide">
+    <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
+  </div>
+
+  <header class="container-page max-w-[760px] pt-7">
+    {liveBlog.section && (
+      <a href={sectionPath(liveBlog.section.slug)} class="text-xs font-extrabold tracking-[0.1em] text-[var(--sec,var(--color-primary))] uppercase" style={`--sec:${liveBlog.section.accentColor}`}>
+        {liveBlog.section.title}
+      </a>
+    )}
+    <div class="mt-2.5 flex flex-wrap items-center gap-3">
+      <span class={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-[5px] text-xs font-extrabold tracking-[0.08em] text-white uppercase ${isLive ? "bg-error" : "bg-ink-4"}`}>
+        {isLive && (
+          <span class="relative flex size-1.5">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
+            <span class="relative inline-flex size-1.5 rounded-full bg-white"></span>
+          </span>
+        )}
+        {isLive ? "Live" : "Ended"}
+      </span>
+      <span class="text-xs font-semibold text-ink-4">Updated {timeAgo(lastUpdated)}</span>
+    </div>
+    <h1 class="mt-2.5 text-[clamp(30px,5vw,52px)] leading-[1.05] tracking-[-0.02em]">{liveBlog.title}</h1>
+    <p class="mt-4 text-[clamp(17px,2vw,21px)] leading-relaxed text-ink-3">{liveBlog.dek}</p>
+  </header>
+
+  <figure class="container-page-wide mt-7">
+    <img src={heroImageUrl} alt={liveBlog.hero.alt ?? ""} width="1600" height="900" fetchpriority="high" class="aspect-video w-full rounded-lg bg-bg-muted object-cover max-sm:rounded" />
+  </figure>
+
+  <div class="container-page mt-10 max-w-[760px]">
+    {entries.length === 0 ? (
+      <p class="text-sm text-ink-4">No updates yet — check back soon.</p>
+    ) : (
+      <ol class="flex flex-col gap-10">
+        {entries.map((entry, i) => (
+          <li class="relative border-l-2 border-border pl-6">
+            <span class={`absolute top-1.5 -left-[7px] size-3 rounded-full ${i === 0 && isLive ? "bg-error" : "bg-border-strong"}`}></span>
+            <div class="flex flex-wrap items-baseline gap-2.5">
+              <time class="font-display text-lg leading-none text-primary" datetime={entry.timestamp}>{formatTime(entry.timestamp)}</time>
+              <span class="text-xs text-ink-4">{timeAgo(entry.timestamp)}</span>
+            </div>
+            {entry.headline && <h2 class="mt-2 text-xl leading-[1.2]">{entry.headline}</h2>}
+            <div class="mt-2">
+              <PortableText value={entry.body} />
+            </div>
+            {entry.author && (
+              <a href={authorPath(entry.author.slug)} class="mt-3 inline-flex items-center gap-2">
+                <img src={urlFor(entry.author.avatar).width(56).height(56).fit("crop").url()} alt="" class="size-6 rounded-full bg-bg-muted object-cover" width="24" height="24" loading="lazy" />
+                <span class="text-[13px] font-bold text-ink-2 hover:text-primary">{entry.author.name}</span>
+              </a>
+            )}
+          </li>
+        ))}
+      </ol>
+    )}
+  </div>
+</Layout>
