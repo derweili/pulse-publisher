@@ -1,0 +1,68 @@
+---
+import AdSlot from "../components/AdSlot.astro";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Editorial Standards — PULSE"
+  description="How PULSE sources, edits, corrects and separates editorial coverage from advertising."
+>
+  <div class="container-page-wide flex justify-center pt-4 pb-2">
+    <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
+  </div>
+
+  <section class="container-page max-w-[720px] pt-10 pb-14">
+    <span class="eyebrow eyebrow-accent">About PULSE</span>
+    <h1 class="section-title mt-2 text-[clamp(28px,4.5vw,40px)]">Editorial standards</h1>
+    <p class="mt-5 text-[17px] leading-relaxed text-ink-3">
+      These are the rules our newsroom operates under. They apply to every story, every section, every
+      byline — no exceptions for sponsors, subjects or subscribers.
+    </p>
+
+    <div class="mt-10 flex flex-col gap-9">
+      <div>
+        <h2 class="text-xl">Sourcing</h2>
+        <p class="mt-2.5 text-[15px] leading-relaxed text-ink-3">
+          We attribute information to a named, on-record source wherever possible. Anonymous sources are
+          used only when a source faces real risk for speaking on the record, and only when an editor has
+          independently verified their access to the information. We do not publish single-source claims
+          about wrongdoing without corroboration.
+        </p>
+      </div>
+      <div>
+        <h2 class="text-xl">Editorial independence</h2>
+        <p class="mt-2.5 text-[15px] leading-relaxed text-ink-3">
+          Advertisers, sponsors and PULSE+ subscribers have no input into what we cover or how we cover it.
+          Sponsored content is labeled "Sponsored" in the layout itself — not in a footnote — and is never
+          written or edited by the newsroom.
+        </p>
+      </div>
+      <div>
+        <h2 class="text-xl">Corrections</h2>
+        <p class="mt-2.5 text-[15px] leading-relaxed text-ink-3">
+          When we get something wrong, we say so. Factual errors are corrected as soon as they're
+          confirmed, with a note on the affected article describing what changed. See our
+          <a href="/corrections" class="font-bold text-primary hover:underline">corrections policy</a> for
+          how to flag an error.
+        </p>
+      </div>
+      <div>
+        <h2 class="text-xl">Use of AI</h2>
+        <p class="mt-2.5 text-[15px] leading-relaxed text-ink-3">
+          Reporting, writing and editing at PULSE is done by our journalists. We may use AI tools for
+          research assistance, transcription or headline experimentation, but a human editor is
+          accountable for every published word.
+        </p>
+      </div>
+      <div>
+        <h2 class="text-xl">Bylines and accountability</h2>
+        <p class="mt-2.5 text-[15px] leading-relaxed text-ink-3">
+          Every story carries the name of the reporter(s) who wrote it. If you have a concern about a
+          specific piece, the fastest path is the reporter's author page, which lists their full
+          archive — or you can reach the newsroom directly through
+          <a href="/contact" class="font-bold text-primary hover:underline">Contact &amp; tips</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -43,6 +43,10 @@ export async function GET(context: APIContext) {
   const urls: UrlEntry[] = [
     { loc: "/" },
     { loc: "/subscription" },
+    { loc: "/about" },
+    { loc: "/standards" },
+    { loc: "/corrections" },
+    { loc: "/contact" },
     ...sections.map((s) => ({ loc: sectionPath(s.slug) })),
     ...authors.map((a) => ({ loc: authorPath(a.slug) })),
     ...articles.map((a) => ({ loc: articlePath(a.slug), lastmod: a.publishedAt })),

@@ -1,0 +1,70 @@
+---
+import AdSlot from "../components/AdSlot.astro";
+import Layout from "../layouts/Layout.astro";
+import { authorPath } from "../lib/paths";
+import { getSanityClient } from "../lib/sanity/client";
+import { urlFor } from "../lib/sanity/image";
+import { getAuthors } from "../lib/sanity/fetch";
+
+const client = getSanityClient(Astro.locals.runtime.env);
+const authors = await getAuthors(client);
+---
+
+<Layout
+  title="About & Masthead — PULSE"
+  description="Who we are and what PULSE stands for: modern news, bold takes, no filler."
+>
+  <div class="container-page-wide flex justify-center pt-4 pb-2">
+    <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
+  </div>
+
+  <section class="container-page max-w-[720px] pt-10 pb-4">
+    <span class="eyebrow eyebrow-accent">About PULSE</span>
+    <h1 class="section-title mt-2 text-[clamp(30px,5vw,44px)]">Modern news. Bold takes. No filler.</h1>
+    <p class="mt-5 text-[17px] leading-relaxed text-ink-3">
+      PULSE is an independent digital publisher covering technology, culture, science, sports and
+      business. We built PULSE on a simple bet: readers are done with clickbait and slideshow-padded
+      articles. Every story we run is reported, edited and fact-checked to a single standard, whether
+      it's a 400-word update or a 4,000-word investigation.
+    </p>
+    <p class="mt-4 text-[17px] leading-relaxed text-ink-3">
+      We're funded by a mix of advertising and PULSE+ subscriptions. We don't let either shape our
+      coverage — see our <a href="/standards" class="font-bold text-primary hover:underline">editorial standards</a>
+      for how we keep that separation real, not just a line in a footer.
+    </p>
+  </section>
+
+  {authors.length > 0 && (
+    <section class="container-page mt-10">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow eyebrow-accent">The masthead</span>
+          <h2 class="section-title">Who writes PULSE</h2>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-7 max-[860px]:grid-cols-2 max-sm:grid-cols-1">
+        {authors.map((a) => (
+          <a href={authorPath(a.slug)} class="group flex items-start gap-4 rounded-lg border border-border p-5 transition-all duration-200 ease-brand hover:-translate-y-1 hover:border-border-strong hover:shadow-lg">
+            <img src={urlFor(a.avatar).width(112).height(112).fit("crop").url()} alt={a.name} class="size-14 shrink-0 rounded-full object-cover" width="56" height="56" loading="lazy" />
+            <div class="min-w-0">
+              <span class="block text-base font-extrabold text-ink group-hover:text-primary">{a.name}</span>
+              <span class="mt-0.5 block text-xs font-bold tracking-[0.04em] text-ink-4 uppercase">{a.role}</span>
+              <p class="mt-2 line-clamp-3 text-[13px] leading-relaxed text-ink-3">{a.bio}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="container-page mt-14 max-w-[720px] pb-8">
+    <div class="rounded-lg border border-border bg-bg-soft p-7">
+      <h2 class="text-lg">Got a story, a correction, or a question?</h2>
+      <p class="mt-2 text-sm leading-relaxed text-ink-3">
+        Read our <a href="/corrections" class="font-bold text-primary hover:underline">corrections policy</a>
+        or <a href="/contact" class="font-bold text-primary hover:underline">get in touch</a> — including
+        our tip line for sources who need to reach us securely.
+      </p>
+    </div>
+  </section>
+</Layout>
