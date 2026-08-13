@@ -1,0 +1,23 @@
+---
+interface Props {
+  section: string;
+  tags: string[];
+}
+const { section, tags } = Astro.props;
+---
+
+<script is:inline define:vars={{ section, tags }}>
+  const STORAGE_KEY = "pulse-reading-history";
+  const MAX_ENTRIES = 30;
+
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const history = raw ? JSON.parse(raw) : [];
+    const next = Array.isArray(history) ? history : [];
+    next.push({ section, tags });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next.slice(-MAX_ENTRIES)));
+  } catch {
+    // localStorage unavailable (private browsing, quota, etc.) — reading
+    // history is a nice-to-have for the "For You" rail, not essential.
+  }
+</script>

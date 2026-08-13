@@ -1,4 +1,4 @@
-import {DocumentTextIcon} from '@sanity/icons'
+import {DocumentTextIcon} from '@sanity/icons/DocumentText'
 import {defineField, defineType} from 'sanity'
 import {isUniqueSlug} from '../lib/isUniqueSlug'
 
@@ -117,6 +117,14 @@ export const article = defineType({
       description: 'Surfaces this article in homepage featured placements.',
     }),
     defineField({
+      name: 'trendingRank',
+      title: 'Trending rank',
+      type: 'number',
+      group: 'meta',
+      description: 'Set to 1 (most trending) and up to feature this article in the "Trending now" module, ranked lowest-first. Leave empty to exclude it.',
+      validation: (Rule) => Rule.integer().positive(),
+    }),
+    defineField({
       name: 'seo',
       title: 'SEO',
       type: 'seo',
@@ -142,6 +150,11 @@ export const article = defineType({
       title: 'Title A-Z',
       name: 'titleAsc',
       by: [{field: 'title', direction: 'asc'}],
+    },
+    {
+      title: 'Trending rank',
+      name: 'trendingRankAsc',
+      by: [{field: 'trendingRank', direction: 'asc'}],
     },
   ],
   preview: {

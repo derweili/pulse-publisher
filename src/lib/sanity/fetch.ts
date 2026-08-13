@@ -1,6 +1,8 @@
 import type { SanityClient } from "@sanity/client";
 import {
+  activeLiveBlogsQuery,
   allArticlesQuery,
+  allLiveBlogsQuery,
   articleBySlugQuery,
   articleSlugsQuery,
   articlesByAuthorQuery,
@@ -10,14 +12,19 @@ import {
   authorBySlugQuery,
   authorsQuery,
   featuredArticlesQuery,
+  forYouArticlesQuery,
+  liveBlogBySlugQuery,
   premiumArticlesQuery,
   relatedArticlesQuery,
   sectionBySlugQuery,
   sectionsQuery,
   siteSettingsQuery,
+  trendingArticlesQuery,
 } from "./queries";
 import type {
+  ActiveLiveBlogsQueryResult,
   AllArticlesQueryResult,
+  AllLiveBlogsQueryResult,
   ArticleBySlugQueryResult,
   ArticleSlugsQueryResult,
   ArticlesByAuthorQueryResult,
@@ -27,11 +34,14 @@ import type {
   AuthorBySlugQueryResult,
   AuthorsQueryResult,
   FeaturedArticlesQueryResult,
+  ForYouArticlesQueryResult,
+  LiveBlogBySlugQueryResult,
   PremiumArticlesQueryResult,
   RelatedArticlesQueryResult,
   SectionBySlugQueryResult,
   SectionsQueryResult,
   SiteSettingsQueryResult,
+  TrendingArticlesQueryResult,
 } from "./sanity.types";
 
 /** The shape shared by every article-listing query (`ArticleCard`, `RelatedRail`, grids). */
@@ -124,17 +134,39 @@ export const getArticlesByTag = (
 ): Promise<ArticlesByTagQueryResult> =>
   fetchUntyped<ArticlesByTagQueryResult>(client, articlesByTagQuery, { tag });
 
+export const getForYouArticles = (
+  client: SanityClient,
+  sections: string[],
+  tags: string[]
+): Promise<ForYouArticlesQueryResult> =>
+  fetchUntyped<ForYouArticlesQueryResult>(client, forYouArticlesQuery, { sections, tags });
+
 export const getArticlesBySlugs = (
   client: SanityClient,
   slugs: string[]
 ): Promise<ArticlesBySlugsQueryResult> =>
   fetchUntyped<ArticlesBySlugsQueryResult>(client, articlesBySlugsQuery, { slugs });
 
+export const getLiveBlogBySlug = (
+  client: SanityClient,
+  slug: string
+): Promise<LiveBlogBySlugQueryResult> =>
+  fetchUntyped<LiveBlogBySlugQueryResult>(client, liveBlogBySlugQuery, { slug });
+
+export const getActiveLiveBlogs = (client: SanityClient): Promise<ActiveLiveBlogsQueryResult> =>
+  client.fetch(activeLiveBlogsQuery);
+
+export const getAllLiveBlogs = (client: SanityClient): Promise<AllLiveBlogsQueryResult> =>
+  client.fetch(allLiveBlogsQuery);
+
 export const getPremiumArticles = (client: SanityClient): Promise<PremiumArticlesQueryResult> =>
   client.fetch(premiumArticlesQuery);
 
 export const getFeaturedArticles = (client: SanityClient): Promise<FeaturedArticlesQueryResult> =>
   client.fetch(featuredArticlesQuery);
+
+export const getTrendingArticles = (client: SanityClient): Promise<TrendingArticlesQueryResult> =>
+  client.fetch(trendingArticlesQuery);
 
 export const getRelatedArticles = (
   client: SanityClient,

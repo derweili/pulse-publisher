@@ -3,17 +3,26 @@ import AdSlot from "../../components/AdSlot.astro";
 import ArticleCard from "../../components/ArticleCard.astro";
 import Comments from "../../components/Comments.tsx";
 import Newsletter from "../../components/Newsletter.astro";
+import Lightbox from "../../components/Lightbox.astro";
 import PortableText from "../../components/portable-text/PortableText.astro";
+import ReadingControls from "../../components/ReadingControls.astro";
+import ReadingHistoryTracker from "../../components/ReadingHistoryTracker.astro";
 import RelatedRail from "../../components/RelatedRail.astro";
 import SaveButton from "../../components/SaveButton.astro";
 import ShareButtons from "../../components/ShareButtons.astro";
 import StructuredData from "../../components/StructuredData.astro";
+import TrendingList from "../../components/TrendingList.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate } from "../../lib/format";
 import { articlePath, authorPath, sectionPath, tagPath } from "../../lib/paths";
 import { getSanityClient } from "../../lib/sanity/client";
 import { urlFor } from "../../lib/sanity/image";
-import { getArticleBySlug, getArticlesInSection, getSiteSettings } from "../../lib/sanity/fetch";
+import {
+  getArticleBySlug,
+  getArticlesInSection,
+  getSiteSettings,
+  getTrendingArticles,
+} from "../../lib/sanity/fetch";
 
 const { slug } = Astro.params;
 const client = getSanityClient(Astro.locals.runtime.env);
@@ -24,9 +33,10 @@ if (!article) {
 
 const section = article.section;
 const articleAuthors = article.authors ?? [];
-const [sameSectionAll, settings] = await Promise.all([
+const [sameSectionAll, settings, trending] = await Promise.all([
   getArticlesInSection(client, section.slug),
   getSiteSettings(client),
+  getTrendingArticles(client),
 ]);
 const sameSection = sameSectionAll.filter((a) => a.slug !== article.slug).slice(0, 4);
 const isPremium = article.premium ?? false;
@@ -131,7 +141,10 @@ const breadcrumbSchema = {
       </div>
       <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
         <ShareButtons url={articleUrl} title={article.title} />
-        <SaveButton slug={article.slug} variant="full" />
+        <div class="flex items-center gap-3">
+          <ReadingControls />
+          <SaveButton slug={article.slug} variant="full" />
+        </div>
       </div>
     </header>
 
@@ -188,6 +201,7 @@ const breadcrumbSchema = {
         <AdSlot slot="mpu-rail" format="mpu" label="Advertisement" class="mb-1" />
         <div class="sticky top-[calc(var(--spacing-header)+280px)] flex flex-col gap-6 max-[960px]:static">
           <RelatedRail article={article} title="Related stories" limit={4} />
+          <TrendingList articles={trending} limit={4} />
           <Newsletter
             title="The morning PULSE"
             subtitle="One email. Every weekday. Free."
@@ -221,4 +235,7 @@ const breadcrumbSchema = {
       />
     </section>
   </article>
+
+  <Lightbox />
+  <ReadingHistoryTracker section={section.slug} tags={article.tags ?? []} />
 </Layout>

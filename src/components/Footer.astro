@@ -72,6 +72,15 @@ const resolveHref = (link: { linkType: "internal" | "external"; internalHref: st
           ))}
         </ul>
       </div>
+      <div>
+        <h4 class="mb-4 text-xs font-extrabold tracking-[0.12em] text-white uppercase">About</h4>
+        <ul>
+          <li class="mb-2.5"><a href="/about" class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">Masthead</a></li>
+          <li class="mb-2.5"><a href="/standards" class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">Editorial standards</a></li>
+          <li class="mb-2.5"><a href="/corrections" class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">Corrections</a></li>
+          <li class="mb-2.5"><a href="/contact" class="text-sm text-[#9aa0a8] transition-colors duration-200 ease-brand hover:text-primary">Contact &amp; tips</a></li>
+        </ul>
+      </div>
       {(settings.footerLinkGroups ?? []).map((group) => (
         <div>
           <h4 class="mb-4 text-xs font-extrabold tracking-[0.12em] text-white uppercase">{group.heading}</h4>

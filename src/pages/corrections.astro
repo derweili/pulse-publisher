@@ -1,0 +1,61 @@
+---
+import AdSlot from "../components/AdSlot.astro";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Corrections & Clarifications — PULSE"
+  description="How to report an error in a PULSE story, and how we handle corrections once confirmed."
+>
+  <div class="container-page-wide flex justify-center pt-4 pb-2">
+    <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
+  </div>
+
+  <section class="container-page max-w-[720px] pt-10 pb-14">
+    <span class="eyebrow eyebrow-accent">About PULSE</span>
+    <h1 class="section-title mt-2 text-[clamp(28px,4.5vw,40px)]">Corrections & clarifications</h1>
+    <p class="mt-5 text-[17px] leading-relaxed text-ink-3">
+      We correct factual errors as soon as we confirm them. This page explains how that works and how to
+      flag something that looks wrong.
+    </p>
+
+    <div class="mt-10 flex flex-col gap-9">
+      <div>
+        <h2 class="text-xl">How to report an error</h2>
+        <p class="mt-2.5 text-[15px] leading-relaxed text-ink-3">
+          Email <a href="mailto:corrections@pulse.example" class="font-bold text-primary hover:underline">corrections@pulse.example</a>
+          with the article headline or link and a description of what's wrong. Include a source for the
+          correct information if you have one — it speeds up verification. See our full
+          <a href="/contact" class="font-bold text-primary hover:underline">contact page</a> for other ways
+          to reach us.
+        </p>
+      </div>
+      <div>
+        <h2 class="text-xl">What happens next</h2>
+        <p class="mt-2.5 text-[15px] leading-relaxed text-ink-3">
+          An editor — not the original reporter alone — verifies the claim. If confirmed, we fix the
+          article and add a short correction note stating what changed and when. For errors serious enough
+          to affect the story's central point, we also note it prominently at the top of the piece rather
+          than only at the bottom.
+        </p>
+      </div>
+      <div>
+        <h2 class="text-xl">Clarifications vs. corrections</h2>
+        <p class="mt-2.5 text-[15px] leading-relaxed text-ink-3">
+          A <strong class="text-ink">correction</strong> fixes a factual error. A
+          <strong class="text-ink">clarification</strong> adds context or rewords something ambiguous
+          without the original having been factually wrong. We label each one accordingly rather than
+          bundling them together.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-10 rounded-lg border border-border bg-bg-soft p-6">
+      <h3 class="text-sm font-extrabold tracking-[0.04em] text-ink-3 uppercase">Recent corrections</h3>
+      <p class="mt-2 text-sm leading-relaxed text-ink-4">
+        No corrections have been issued recently. When one is, it'll be listed here alongside a link to
+        the affected story.
+      </p>
+    </div>
+  </section>
+</Layout>

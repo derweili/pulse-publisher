@@ -1,23 +1,31 @@
 ---
 import AdSlot from "../components/AdSlot.astro";
 import ArticleCard from "../components/ArticleCard.astro";
+import ForYouRail from "../components/ForYouRail.tsx";
 import Newsletter from "../components/Newsletter.astro";
+import TrendingList from "../components/TrendingList.astro";
 import Layout from "../layouts/Layout.astro";
 import { sectionPath } from "../lib/paths";
 import { getSanityClient } from "../lib/sanity/client";
+import { timeAgo } from "../lib/format";
+import { liveBlogPath } from "../lib/paths";
 import {
+  getActiveLiveBlogs,
   getAllArticles,
   getFeaturedArticles,
   getPremiumArticles,
   getSections,
+  getTrendingArticles,
 } from "../lib/sanity/fetch";
 
 const client = getSanityClient(Astro.locals.runtime.env);
-const [featured, premiumsAll, allSections, allArticles] = await Promise.all([
+const [featured, premiumsAll, allSections, allArticles, trending, activeLiveBlogs] = await Promise.all([
   getFeaturedArticles(client),
   getPremiumArticles(client),
   getSections(client),
   getAllArticles(client),
+  getTrendingArticles(client),
+  getActiveLiveBlogs(client),
 ]);
 
 // Curation counts vary with real content, so this degrades gracefully
@@ -53,6 +61,24 @@ const sectionArticleLists = new Map(
     <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
   </div>
 
+  {activeLiveBlogs.length > 0 && (
+    <div class="container-page pt-2">
+      {activeLiveBlogs.map((lb) => (
+        <a href={liveBlogPath(lb.slug)} class="group flex flex-wrap items-center gap-3 rounded-lg border border-error/30 bg-error/5 px-5 py-3.5 transition-colors duration-200 hover:bg-error/10">
+          <span class="inline-flex shrink-0 items-center gap-1.5 rounded-sm bg-error px-2 py-1 text-[10px] font-extrabold tracking-[0.1em] text-white uppercase">
+            <span class="relative flex size-1.5">
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
+              <span class="relative inline-flex size-1.5 rounded-full bg-white"></span>
+            </span>
+            Live
+          </span>
+          <span class="min-w-0 flex-1 truncate text-sm font-bold text-ink group-hover:text-error">{lb.title}</span>
+          <span class="shrink-0 text-xs font-semibold text-ink-4">Updated {timeAgo(lb.startedAt)} · Follow along →</span>
+        </a>
+      ))}
+    </div>
+  )}
+
   <!-- HERO -->
   {heroArticle && (
     <section class="container-page pt-6">
@@ -65,6 +91,14 @@ const sectionArticleLists = new Map(
             <ArticleCard article={a} variant="default" showDek={false} />
           ))}
         </div>
+      </div>
+    </section>
+  )}
+
+  {trending.length > 0 && (
+    <section class="container-page mt-12">
+      <div class="max-w-md rounded-lg border border-border bg-bg-soft p-6">
+        <TrendingList articles={trending} />
       </div>
     </section>
   )}
@@ -150,6 +184,8 @@ const sectionArticleLists = new Map(
       </div>
     </section>
   )}
+
+  <ForYouRail client:visible />
 
   <section class="container-page mt-16">
     <Newsletter

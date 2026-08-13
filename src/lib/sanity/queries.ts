@@ -147,6 +147,26 @@ export const allArticlesQuery = defineQuery(`
   *[_type == "article"] | order(publishedAt desc) ${cardProjection}
 `);
 
+export const trendingArticlesQuery = defineQuery(`
+  *[_type == "article" && defined(trendingRank)]
+  | order(trendingRank asc) [0...8] ${cardProjection}
+`);
+
+/**
+ * Powers the client-side "For You" rail: candidate pool for a reader whose
+ * localStorage reading history leans toward certain sections/tags (see
+ * ForYouRail.tsx). No server-side personalization/tracking — this is a
+ * plain content query, filtered client-side of the request by whatever the
+ * browser already knows about that one visitor.
+ */
+export const forYouArticlesQuery = defineQuery(`
+  *[
+    _type == "article" &&
+    (section->slug.current in $sections || count((tags[])[@ in $tags]) > 0)
+  ]
+  | order(publishedAt desc) [0...8] ${cardProjection}
+`);
+
 export const articlesByTagQuery = defineQuery(`
   *[_type == "article" && $tag in tags]
   | order(publishedAt desc) ${cardProjection}
@@ -155,6 +175,44 @@ export const articlesByTagQuery = defineQuery(`
 export const articlesBySlugsQuery = defineQuery(`
   *[_type == "article" && slug.current in $slugs]
   | order(publishedAt desc) ${cardProjection}
+`);
+
+export const liveBlogBySlugQuery = defineQuery(`
+  *[_type == "liveBlog" && slug.current == $slug][0]{
+    _id,
+    title,
+    "slug": slug.current,
+    dek,
+    "section": section->{ "slug": slug.current, title, accentColor },
+    hero,
+    status,
+    startedAt,
+    "entries": entries[] | order(timestamp desc){
+      timestamp,
+      headline,
+      body[]{
+        ...,
+        markDefs[]{ ... }
+      },
+      "author": author->{ "slug": slug.current, name, avatar }
+    },
+    seo
+  }
+`);
+
+export const activeLiveBlogsQuery = defineQuery(`
+  *[_type == "liveBlog" && status == "live"] | order(startedAt desc){
+    _id,
+    title,
+    "slug": slug.current,
+    dek,
+    startedAt
+  }
+`);
+
+/** Lightweight — used for the sitemap and search index, which need every live blog regardless of status. */
+export const allLiveBlogsQuery = defineQuery(`
+  *[_type == "liveBlog"]{ _id, title, dek, "slug": slug.current, startedAt }
 `);
 
 /**

@@ -26,6 +26,7 @@ const KIND_CLASSES: Record<string, string> = {
   article: "bg-primary-soft text-primary",
   author: "bg-premium-gold-soft text-[#7a5c0a]",
   section: "bg-bg-muted text-ink-3",
+  "live blog": "bg-error/10 text-error",
 };
 
 function escapeRegExp(value: string) {
