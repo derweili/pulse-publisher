@@ -811,7 +811,7 @@ export type AllArticlesQueryResult = Array<{
 
 // Source: ../src/lib/sanity/queries.ts
 // Variable: relatedArticlesQuery
-// Query: *[    _type == "article" &&    slug.current != $slug &&    (section->slug.current == $sectionSlug || count((tags[])[@ in $tags]) > 0)  ]  | order(section->slug.current == $sectionSlug desc, publishedAt desc)  [0...$limit]  {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
+// Query: *[    _type == "article" &&    slug.current != $slug &&    (section->slug.current == $sectionSlug || count((tags[])[@ in $tags]) > 0)  ]  | order((section->slug.current == $sectionSlug) desc, publishedAt desc)  [0...$limit]  {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
 export type RelatedArticlesQueryResult = Array<{
   _id: string;
   title: string;
@@ -876,6 +876,6 @@ declare module "@sanity/client" {
     '\n  *[_type == "article" && premium == true]\n  | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': PremiumArticlesQueryResult;
     '\n  *[_type == "article" && featured == true]\n  | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': FeaturedArticlesQueryResult;
     '\n  *[_type == "article"] | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': AllArticlesQueryResult;
-    '\n  *[\n    _type == "article" &&\n    slug.current != $slug &&\n    (section->slug.current == $sectionSlug || count((tags[])[@ in $tags]) > 0)\n  ]\n  | order(section->slug.current == $sectionSlug desc, publishedAt desc)\n  [0...$limit]\n  {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': RelatedArticlesQueryResult;
+    '\n  *[\n    _type == "article" &&\n    slug.current != $slug &&\n    (section->slug.current == $sectionSlug || count((tags[])[@ in $tags]) > 0)\n  ]\n  | order((section->slug.current == $sectionSlug) desc, publishedAt desc)\n  [0...$limit]\n  {\n  _id,\n  title,\n  "slug": slug.current,\n  dek,\n  hero,\n  "section": section->{ "slug": slug.current, title, accentColor },\n  "authors": authors[]->{ "slug": slug.current, name, avatar },\n  publishedAt,\n  readTime,\n  premium,\n  featured\n}\n': RelatedArticlesQueryResult;
   }
 }

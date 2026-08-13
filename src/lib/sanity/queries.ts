@@ -168,7 +168,7 @@ export const relatedArticlesQuery = defineQuery(`
     slug.current != $slug &&
     (section->slug.current == $sectionSlug || count((tags[])[@ in $tags]) > 0)
   ]
-  | order(section->slug.current == $sectionSlug desc, publishedAt desc)
+  | order((section->slug.current == $sectionSlug) desc, publishedAt desc)
   [0...$limit]
   ${cardProjection}
 `);
