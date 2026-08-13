@@ -1,0 +1,50 @@
+---
+---
+
+<div class="inline-flex items-center gap-1 rounded-full border border-border p-1" data-reading-controls role="group" aria-label="Text size">
+  <button type="button" class="grid size-8 place-items-center rounded-full text-sm font-bold text-ink-3 transition-colors duration-200 hover:bg-bg-soft hover:text-ink" data-reading-step="-1" aria-label="Decrease text size">A-</button>
+  <button type="button" class="grid size-8 place-items-center rounded-full text-xs font-bold text-ink-4 transition-colors duration-200 hover:bg-bg-soft hover:text-ink" data-reading-reset aria-label="Reset text size">Reset</button>
+  <button type="button" class="grid size-8 place-items-center rounded-full text-base font-bold text-ink-3 transition-colors duration-200 hover:bg-bg-soft hover:text-ink" data-reading-step="1" aria-label="Increase text size">A+</button>
+</div>
+
+<script>
+  const STORAGE_KEY = "pulse-reading-scale";
+  const MIN = 0.85;
+  const MAX = 1.35;
+  const STEP = 0.075;
+  const DEFAULT = 1;
+
+  function clamp(value: number) {
+    return Math.min(MAX, Math.max(MIN, value));
+  }
+
+  function apply(scale: number) {
+    document.documentElement.style.setProperty("--reading-scale", String(scale));
+  }
+
+  function getStored(): number {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? Number(raw) : DEFAULT;
+    return Number.isFinite(parsed) ? clamp(parsed) : DEFAULT;
+  }
+
+  function setStored(scale: number) {
+    localStorage.setItem(STORAGE_KEY, String(scale));
+    apply(scale);
+  }
+
+  // Applies immediately on script load so text scales stay in sync even
+  // with multiple ReadingControls instances (none currently, but harmless).
+  apply(getStored());
+
+  document.addEventListener("click", (e) => {
+    const stepBtn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-reading-step]");
+    const resetBtn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-reading-reset]");
+    if (stepBtn) {
+      const direction = Number(stepBtn.dataset.readingStep);
+      setStored(clamp(getStored() + direction * STEP));
+    } else if (resetBtn) {
+      setStored(DEFAULT);
+    }
+  });
+</script>

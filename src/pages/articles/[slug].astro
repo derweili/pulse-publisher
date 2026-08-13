@@ -5,6 +5,7 @@ import Comments from "../../components/Comments.tsx";
 import Newsletter from "../../components/Newsletter.astro";
 import Lightbox from "../../components/Lightbox.astro";
 import PortableText from "../../components/portable-text/PortableText.astro";
+import ReadingControls from "../../components/ReadingControls.astro";
 import RelatedRail from "../../components/RelatedRail.astro";
 import SaveButton from "../../components/SaveButton.astro";
 import ShareButtons from "../../components/ShareButtons.astro";
@@ -139,7 +140,10 @@ const breadcrumbSchema = {
       </div>
       <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
         <ShareButtons url={articleUrl} title={article.title} />
-        <SaveButton slug={article.slug} variant="full" />
+        <div class="flex items-center gap-3">
+          <ReadingControls />
+          <SaveButton slug={article.slug} variant="full" />
+        </div>
       </div>
     </header>
 

@@ -20,7 +20,7 @@ const items = groupBlocks(value);
         <Tag class="my-[1.4em] list-none pl-0">
           {item.items.map((block) => (
             <li
-              class="relative mb-2.5 pl-[26px] text-[17px] leading-relaxed text-ink-2 before:absolute before:top-[11px] before:left-0 before:h-0.5 before:w-3.5 before:bg-primary before:content-['']"
+              class="relative mb-2.5 pl-[26px] text-[calc(17px*var(--reading-scale,1))] leading-relaxed text-ink-2 before:absolute before:top-[11px] before:left-0 before:h-0.5 before:w-3.5 before:bg-primary before:content-['']"
               set:html={renderInline(block)}
             />
           ))}
