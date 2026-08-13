@@ -1,4 +1,4 @@
-#:schema node_modules/wrangler/config-schema.json
+#:schema ../../node_modules/wrangler/config-schema.json
 name = "pulse-today"
 main = "./dist/_worker.js/index.js"
 compatibility_date = "2026-08-12"

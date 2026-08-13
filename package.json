@@ -1,40 +1,22 @@
 {
-  "name": "pulse-today",
-  "type": "module",
-  "version": "0.0.1",
+  "name": "pulse-publisher",
   "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/site",
+    "apps/edge",
+    "studio"
+  ],
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro",
-    "check": "astro check",
-    "cf:preview": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler deploy",
+    "dev": "npm run dev -w apps/site",
+    "build": "npm run build -w apps/site",
+    "preview": "npm run preview -w apps/site",
+    "check": "npm run check -w apps/site",
+    "cf:preview": "npm run cf:preview -w apps/site",
+    "deploy": "npm run deploy -w apps/site",
     "studio:dev": "npm --prefix studio run dev",
     "studio:deploy": "npm --prefix studio run deploy",
     "studio:typegen": "npm --prefix studio run typegen",
     "studio:migrate": "npm --prefix studio run migrate"
-  },
-  "dependencies": {
-    "@astrojs/cloudflare": "^12.6.13",
-    "@astrojs/react": "^4.2.0",
-    "@astrojs/rss": "^4.0.19",
-    "@clerk/astro": "^4.0.11",
-    "@sanity/client": "^7.26.2",
-    "@sanity/image-url": "^2.1.1",
-    "@tailwindcss/vite": "^4.3.3",
-    "astro": "^5.2.5",
-    "groq": "^6.9.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "tailwindcss": "^4.3.3"
-  },
-  "devDependencies": {
-    "@astrojs/check": "^0.9.10",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "typescript": "^5.9.3",
-    "wrangler": "^4.121.0"
   }
 }

@@ -1,0 +1,35 @@
+name: Deploy Edge to Cloudflare Workers
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/edge/**'
+      - '.github/workflows/deploy-edge.yml'
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # apps/edge has no wrangler.toml or buildable Worker yet — that lands
+      # in mOS integration session 4. This workflow exists now so the
+      # path-filtered CI split is in place ahead of that; replace this step
+      # with a real build + `cloudflare/wrangler-action@v4` deploy then.
+      - name: No-op (edge Worker not implemented yet)
+        run: echo "apps/edge has no wrangler.toml yet — nothing to deploy. Implemented in mOS integration session 4."
