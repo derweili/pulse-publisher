@@ -1,4 +1,8 @@
-import {ClockIcon, CogIcon, DocumentTextIcon, FolderIcon, UserIcon} from '@sanity/icons'
+import {CogIcon} from '@sanity/icons/Cog'
+import {DocumentTextIcon} from '@sanity/icons/DocumentText'
+import {FolderIcon} from '@sanity/icons/Folder'
+import {ClockIcon} from '@sanity/icons/Clock'
+import {UserIcon} from '@sanity/icons/User'
 import type {StructureResolver} from 'sanity/structure'
 import {SITE_SETTINGS_DOC_ID} from './schemaTypes/documents/siteSettings'
 

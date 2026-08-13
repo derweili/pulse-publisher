@@ -1,4 +1,4 @@
-import {ShareIcon} from '@sanity/icons'
+import {ShareIcon} from '@sanity/icons/Share'
 import {defineField, defineType} from 'sanity'
 
 const PLATFORMS = ['twitter', 'instagram', 'linkedin', 'youtube', 'tiktok', 'facebook'] as const

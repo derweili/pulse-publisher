@@ -1,4 +1,4 @@
-import {FolderIcon} from '@sanity/icons'
+import {FolderIcon} from '@sanity/icons/Folder'
 import {defineField, defineType} from 'sanity'
 import {isUniqueSlug} from '../lib/isUniqueSlug'
 
