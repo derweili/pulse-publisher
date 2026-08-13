@@ -66,7 +66,14 @@ export default function ForYouRail() {
     };
   }, []);
 
-  if (!articles || articles.length === 0) return null;
+  // `client:visible` hydrates by observing this component's rendered DOM
+  // node, so the initial render (SSR and pre-effect client render) must
+  // produce a real element for the observer to watch — returning `null`
+  // here would leave the island with no children to observe, and it would
+  // never hydrate. Once hydrated, collapsing to `null` for a confirmed-empty
+  // result is safe since the observer has already done its job.
+  if (articles === null) return <div aria-hidden="true" style={{ minHeight: 1 }} />;
+  if (articles.length === 0) return null;
 
   return (
     <section className="container-page mt-16">
