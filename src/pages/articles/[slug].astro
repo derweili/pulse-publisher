@@ -6,6 +6,7 @@ import Newsletter from "../../components/Newsletter.astro";
 import Lightbox from "../../components/Lightbox.astro";
 import PortableText from "../../components/portable-text/PortableText.astro";
 import ReadingControls from "../../components/ReadingControls.astro";
+import ReadingHistoryTracker from "../../components/ReadingHistoryTracker.astro";
 import RelatedRail from "../../components/RelatedRail.astro";
 import SaveButton from "../../components/SaveButton.astro";
 import ShareButtons from "../../components/ShareButtons.astro";
@@ -236,4 +237,5 @@ const breadcrumbSchema = {
   </article>
 
   <Lightbox />
+  <ReadingHistoryTracker section={section.slug} tags={article.tags ?? []} />
 </Layout>

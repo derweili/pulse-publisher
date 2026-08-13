@@ -152,6 +152,21 @@ export const trendingArticlesQuery = defineQuery(`
   | order(trendingRank asc) [0...8] ${cardProjection}
 `);
 
+/**
+ * Powers the client-side "For You" rail: candidate pool for a reader whose
+ * localStorage reading history leans toward certain sections/tags (see
+ * ForYouRail.tsx). No server-side personalization/tracking — this is a
+ * plain content query, filtered client-side of the request by whatever the
+ * browser already knows about that one visitor.
+ */
+export const forYouArticlesQuery = defineQuery(`
+  *[
+    _type == "article" &&
+    (section->slug.current in $sections || count((tags[])[@ in $tags]) > 0)
+  ]
+  | order(publishedAt desc) [0...8] ${cardProjection}
+`);
+
 export const articlesByTagQuery = defineQuery(`
   *[_type == "article" && $tag in tags]
   | order(publishedAt desc) ${cardProjection}

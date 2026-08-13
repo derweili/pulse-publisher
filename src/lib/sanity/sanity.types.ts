@@ -865,6 +865,12 @@ export type ArticlesBySlugsQueryResult = AllArticlesQueryResult;
 // with `npm run studio:typegen` against a live dataset to replace this.
 export type TrendingArticlesQueryResult = AllArticlesQueryResult;
 
+// Variable: forYouArticlesQuery
+// Query: *[_type == "article" && (section->slug.current in $sections || count((tags[])[@ in $tags]) > 0)] | order(publishedAt desc) [0...8] {  _id,  title,  "slug": slug.current,  dek,  hero,  "section": section->{ "slug": slug.current, title, accentColor },  "authors": authors[]->{ "slug": slug.current, name, avatar },  publishedAt,  readTime,  premium,  featured}
+// NOTE: hand-written to match the shared cardProjection shape — regenerate
+// with `npm run studio:typegen` against a live dataset to replace this.
+export type ForYouArticlesQueryResult = AllArticlesQueryResult;
+
 // Variable: liveBlogBySlugQuery
 // Query: *[_type == "liveBlog" && slug.current == $slug][0]{ ... }
 // NOTE: hand-written (new document type, not yet seen by a live-dataset

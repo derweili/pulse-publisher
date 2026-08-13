@@ -12,6 +12,7 @@ import {
   authorBySlugQuery,
   authorsQuery,
   featuredArticlesQuery,
+  forYouArticlesQuery,
   liveBlogBySlugQuery,
   premiumArticlesQuery,
   relatedArticlesQuery,
@@ -33,6 +34,7 @@ import type {
   AuthorBySlugQueryResult,
   AuthorsQueryResult,
   FeaturedArticlesQueryResult,
+  ForYouArticlesQueryResult,
   LiveBlogBySlugQueryResult,
   PremiumArticlesQueryResult,
   RelatedArticlesQueryResult,
@@ -131,6 +133,13 @@ export const getArticlesByTag = (
   tag: string
 ): Promise<ArticlesByTagQueryResult> =>
   fetchUntyped<ArticlesByTagQueryResult>(client, articlesByTagQuery, { tag });
+
+export const getForYouArticles = (
+  client: SanityClient,
+  sections: string[],
+  tags: string[]
+): Promise<ForYouArticlesQueryResult> =>
+  fetchUntyped<ForYouArticlesQueryResult>(client, forYouArticlesQuery, { sections, tags });
 
 export const getArticlesBySlugs = (
   client: SanityClient,

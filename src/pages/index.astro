@@ -1,6 +1,7 @@
 ---
 import AdSlot from "../components/AdSlot.astro";
 import ArticleCard from "../components/ArticleCard.astro";
+import ForYouRail from "../components/ForYouRail.tsx";
 import Newsletter from "../components/Newsletter.astro";
 import TrendingList from "../components/TrendingList.astro";
 import Layout from "../layouts/Layout.astro";
@@ -183,6 +184,8 @@ const sectionArticleLists = new Map(
       </div>
     </section>
   )}
+
+  <ForYouRail client:visible />
 
   <section class="container-page mt-16">
     <Newsletter
