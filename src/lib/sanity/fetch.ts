@@ -112,11 +112,10 @@ function fetchUntyped<T>(
   query: string,
   params: Record<string, unknown>
 ): Promise<T> {
-  const fetchWithParams = client.fetch as unknown as (
-    query: string,
-    params: Record<string, unknown>
-  ) => Promise<T>;
-  return fetchWithParams(query, params);
+  // Call as `client.fetch(...)` directly rather than detaching the method
+  // into a variable first — @sanity/client's implementation relies on
+  // `this` internally, and a detached reference loses that binding.
+  return client.fetch(query, params as never) as unknown as Promise<T>;
 }
 
 export const getArticlesByTag = (
