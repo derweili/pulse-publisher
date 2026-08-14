@@ -34,6 +34,13 @@ if (!article) {
 
 const section = article.section;
 const articleAuthors = article.authors ?? [];
+// Streaming-safe way to hand extra Cache-Tag values up to middleware.ts,
+// which merges these with the path-derived `article:<slug>` tag and sets
+// the final header — see docs/mos-integration-plan.md Session 3.
+Astro.response.headers.set(
+  "Cache-Tag",
+  [`section:${section.slug}`, ...articleAuthors.map((a) => `author:${a.slug}`)].join(",")
+);
 const [sameSectionAll, settings, trending] = await Promise.all([
   getArticlesInSection(client, section.slug),
   getSiteSettings(client),
