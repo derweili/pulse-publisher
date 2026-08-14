@@ -12,4 +12,12 @@ export interface Env {
   MOS_SURFACE_SLUG: string;
   MOS_HOST: string;
   ORIGIN_URL: string;
+  /**
+   * Local dev only — never set in `wrangler.toml` or `.dev.vars` (see
+   * siteFetch.ts). Set via `wrangler dev --var SITE_DEV_ORIGIN:http://localhost:4321`
+   * (the `dev:full` root script) to reach an `astro dev` instance of
+   * apps/site over plain HTTP instead of the SITE service binding, which
+   * only resolves against another `wrangler dev` process.
+   */
+  SITE_DEV_ORIGIN?: string;
 }

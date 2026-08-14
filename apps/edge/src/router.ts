@@ -1,5 +1,6 @@
 import { anonymize } from "./anonymize";
 import type { Env } from "./env";
+import { siteFetch } from "./siteFetch";
 
 /** Reader-specific JSON. Safe to forward verbatim only because apps/site's
  * middleware sets `private, no-store` on every route under /api/. */
@@ -20,10 +21,10 @@ export function routeRequest(request: Request, env: Env): Promise<Response> | nu
   const { pathname } = new URL(request.url);
 
   if (READER_JSON.test(pathname)) {
-    return env.SITE.fetch(request);
+    return siteFetch(request, env);
   }
   if (PUBLIC_STATIC.test(pathname)) {
-    return env.SITE.fetch(anonymize(request));
+    return siteFetch(anonymize(request), env);
   }
   return null;
 }

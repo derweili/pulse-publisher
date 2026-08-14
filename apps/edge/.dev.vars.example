@@ -12,3 +12,11 @@
 # it logs a warning and serves the origin response untouched rather than
 # breaking the site. Real surface decisions need a real key.
 MOS_SECRET_KEY=
+
+# SITE_DEV_ORIGIN deliberately does NOT belong in this file. It's the fast
+# HMR dev loop's escape hatch from the SITE service binding (see
+# src/siteFetch.ts) — putting it here would risk it being forgotten and
+# left set when running the prod-like `preview:full` script, silently
+# skipping the real service-binding path it's meant to test. It's injected
+# only via `wrangler dev --var SITE_DEV_ORIGIN:http://localhost:4321`, i.e.
+# the root `dev:full` script — never via a file.

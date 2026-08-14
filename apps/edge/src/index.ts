@@ -3,6 +3,7 @@ import { anonymize } from "./anonymize";
 import type { Env } from "./env";
 import { createCloudflareHtmlRewriterAdapter } from "./htmlRewriterAdapter";
 import { routeRequest } from "./router";
+import { siteFetch } from "./siteFetch";
 
 // `env` bindings aren't available at module-load time in Workers, so the
 // proxy can't be built at the top level — but it only needs building once
@@ -25,7 +26,7 @@ function getProxy(env: Env): MOSProxy {
         // already keeps non-HTML paths out of the pipeline; duplicating
         // that here would just be a second list that can drift from it.
       })
-      .withOriginFetcher((request) => env.SITE.fetch(anonymize(request)))
+      .withOriginFetcher((request) => siteFetch(anonymize(request), env))
       .withHtmlRewriter(createCloudflareHtmlRewriterAdapter())
       .build();
   }
