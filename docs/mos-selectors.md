@@ -1,7 +1,26 @@
 # mOS selector contract
 
-The `data-mos` contract between this repo and the mOS console configuration. Filled in during session 2.
+The `data-mos` contract between this repo and the mOS console configuration. Every selector below is a stable `data-` attribute on server-rendered HTML — never a class, never an id (see `CLAUDE.md`). Filled in during Session 2 of `docs/mos-integration-plan.md`.
 
 | Selector | Wraps | mOS action |
 |---|---|---|
-| | | |
+| `[data-mos="article-body"]` | The whole article body region on `articles/[slug].astro` (in-article ads + preview + locked + paywall slot). | None directly — a container for the other body selectors below. |
+| `[data-mos="article-preview"]` | The free portion of `article.body`, `article.freePreviewBlocks` blocks (default 3, editor-controlled, snapped forward past any list it would otherwise split). | None — always shown. |
+| `[data-mos="article-locked"]` | The remainder of `article.body` after the preview cut. | **Remove** for anonymous readers over quota and for registered readers on premium articles. |
+| `[data-mos="paywall-slot"]` | Empty `<div>` after `article-locked`. Renders nothing today. | **Set content** — the wall/offer markup, for the same audiences `article-locked` is removed for. **Must include its own ad unit in the injected creative**: `AdSlot slot="in-article-2"` is nested inside whichever of `article-preview`/`article-locked` the article's midpoint ad-split lands in, so for most articles it disappears along with the removed `article-locked` content. That's an intentional trade (see `[slug].astro` comments) — the wall creative is what restores an ad impression for readers who no longer see `in-article-2`. |
+| `[data-mos="premium-banner"]` | The gold "PULSE+ Premium … Subscribe" banner shown when `article.premium`. | **Remove** for subscriber-plan readers — otherwise a paying subscriber sees a CTA to buy what they already have. |
+| `data-mos-block="<index>"` | Every rendered portable-text block (paragraph, heading, blockquote, list item, image, video embed), on all of `article-body`'s sub-slices. Index is the block's position in the original, unsliced `article.body` array. | Escape hatch for any future block-level behaviour; no default action. |
+| `[data-mos="article-card"]` + `data-premium="true"\|"false"` | The root element of every article card: all `ArticleCard.astro` variants (`hero`, `default`, `compact`, `list`, `feed`, `premium`), plus the card roots in `SavedArticles.tsx` and `ForYouRail.tsx`. | Informational/targeting hook, not a removal target — `data-premium` lets mOS-driven personalization (e.g. hiding premium teasers for ad-free/anonymous plans) target specific cards without a class/id selector. |
+| `[data-mos="premium-badge"]` | The "Premium" badge span on every card variant that has one (`hero`, `default`, `compact`, `list`, `premium` — `feed` has no badge), and on the card badges in `SavedArticles.tsx`/`ForYouRail.tsx` (newly added in Session 2 — those two components previously rendered no premium indicator at all). | **Remove** for subscriber-plan readers, same rationale as `premium-banner`. |
+| `[data-mos="related"]` | `RelatedRail.astro`'s root `<aside>` (article sidebar) and the "Keep reading" footer `<section>` on `articles/[slug].astro`. | Informational/targeting hook. A free reader's related rail is not filtered by `premium` today (see Session 6 in `mos-integration-plan.md`) — decide there whether that's upsell bait or a leak to close. |
+| `[data-mos="newsletter"]` | `Newsletter.astro`'s root `<section>`, alongside the existing `data-newsletter` attribute used by its own inline script. | None by default; available for plan-based hide/show. |
+| `[data-mos="auth-actions"]` | Wraps the header's sign-in and signed-in (`Saved` link + `UserButton`) regions in `Header.astro`. Uses `class="contents"` so it doesn't affect the parent flex layout. | None by default; landing spot if mOS ever needs to inject/replace auth CTAs. |
+| `[data-mos="comments"]` | The `<section>` wrapping `<Comments />` on `articles/[slug].astro`. | **Remove** for anonymous readers. |
+| `[data-mos="meter-strip"]` | Empty `<div>` in `Layout.astro`, directly below the header. Renders nothing today. | **Set content** — shows quota/plan state, for all readers. |
+
+Untouched, on purpose: `[data-ad-slot]` (`AdSlot.astro`) — already the right shape.
+
+## Constraints (see `CLAUDE.md`)
+
+- Never `:last-child`/`:nth-*` in a selector meant for mOS — `HTMLRewriter` silently skips rules using them.
+- Never a Tailwind/utility class or an `id` as an mOS selector.

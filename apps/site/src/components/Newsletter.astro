@@ -29,7 +29,7 @@ const innerClasses: Record<string, string> = {
 };
 ---
 
-<section class={`overflow-hidden rounded-lg ${wrapClasses[variant]}`} data-newsletter>
+<section class={`overflow-hidden rounded-lg ${wrapClasses[variant]}`} data-newsletter data-mos="newsletter">
   <div class={innerClasses[variant]}>
     {variant !== "compact" && (
       <div class="flex items-center gap-4">

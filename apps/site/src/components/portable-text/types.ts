@@ -6,40 +6,66 @@ export type ImageBlockData = Extract<BodyBlock, { _type: "imageBlock" }>;
 export type VideoEmbedData = Extract<BodyBlock, { _type: "videoEmbed" }>;
 
 export type RenderItem =
-  | { kind: "list"; listItem: "bullet" | "number"; items: TextBlock[] }
-  | { kind: "block"; block: TextBlock }
-  | { kind: "imageBlock"; block: ImageBlockData }
-  | { kind: "videoEmbed"; block: VideoEmbedData };
+  | { kind: "list"; listItem: "bullet" | "number"; items: Array<{ block: TextBlock; index: number }> }
+  | { kind: "block"; block: TextBlock; index: number }
+  | { kind: "imageBlock"; block: ImageBlockData; index: number }
+  | { kind: "videoEmbed"; block: VideoEmbedData; index: number };
 
 /**
  * Portable Text represents each list item as its own sibling `block` with a
  * shared `listItem` marker rather than a nested list structure, so
  * consecutive same-type list blocks need to be grouped before rendering.
+ *
+ * `startIndex` lets callers render a slice of `article.body` (e.g. split
+ * around the paywall/ad cut) while keeping `data-mos-block` indices aligned
+ * to the block's position in the original, unsliced array.
  */
-export function groupBlocks(blocks: BodyBlock[]): RenderItem[] {
+export function groupBlocks(blocks: BodyBlock[], startIndex = 0): RenderItem[] {
   const result: RenderItem[] = [];
 
-  for (const block of blocks) {
+  blocks.forEach((block, i) => {
+    const index = startIndex + i;
+
     if (block._type === "block" && block.listItem) {
       const last = result[result.length - 1];
       if (last?.kind === "list" && last.listItem === block.listItem) {
-        last.items.push(block);
+        last.items.push({ block, index });
       } else {
-        result.push({ kind: "list", listItem: block.listItem, items: [block] });
+        result.push({ kind: "list", listItem: block.listItem, items: [{ block, index }] });
       }
-      continue;
+      return;
     }
 
     if (block._type === "block") {
-      result.push({ kind: "block", block });
+      result.push({ kind: "block", block, index });
     } else if (block._type === "imageBlock") {
-      result.push({ kind: "imageBlock", block });
+      result.push({ kind: "imageBlock", block, index });
     } else if (block._type === "videoEmbed") {
-      result.push({ kind: "videoEmbed", block });
+      result.push({ kind: "videoEmbed", block, index });
     }
-  }
+  });
 
   return result;
+}
+
+/**
+ * If `index` lands in the middle of a run of consecutive same-type list
+ * items, `groupBlocks` would render that run as two separate `<ul>`/`<ol>`
+ * elements on either side of the cut — valid HTML, but a visibly broken
+ * list. Moves `index` forward to the end of the run so a slice boundary
+ * never splits a list. Never moves it backward past what was requested.
+ */
+export function snapToListBoundary(blocks: BodyBlock[], index: number): number {
+  const isListItem = (b: BodyBlock) => b._type === "block" && !!b.listItem;
+  const prev = blocks[index - 1];
+  if (!prev || !isListItem(prev)) return index;
+
+  const runType = (prev as TextBlock).listItem;
+  let i = index;
+  while (i < blocks.length && blocks[i]._type === "block" && (blocks[i] as TextBlock).listItem === runType) {
+    i++;
+  }
+  return i;
 }
 
 const escapeHtml = (str: string) =>

@@ -91,6 +91,8 @@ export default function ForYouRail() {
             <article
               key={article._id}
               className="group flex flex-col overflow-hidden rounded-lg border border-border bg-surface transition-all duration-200 ease-brand hover:-translate-y-1 hover:border-border-strong hover:shadow-lg"
+              data-mos="article-card"
+              data-premium={article.premium ? "true" : "false"}
             >
               <a href={articlePath(article.slug)} className="relative block aspect-[16/10] overflow-hidden bg-bg-muted">
                 <img
@@ -101,6 +103,14 @@ export default function ForYouRail() {
                   height={500}
                   className="h-full w-full object-cover transition-transform duration-[600ms] ease-brand group-hover:scale-105"
                 />
+                {article.premium && (
+                  <span
+                    className="absolute top-3 right-3 rounded-[5px] bg-premium-gold px-[9px] py-[5px] text-[10px] font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase"
+                    data-mos="premium-badge"
+                  >
+                    Premium
+                  </span>
+                )}
               </a>
               <div className="flex flex-1 flex-col gap-2.5 px-5 pt-[18px] pb-5">
                 {section && (
