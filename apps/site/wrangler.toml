@@ -4,6 +4,13 @@ main = "./dist/_worker.js/index.js"
 compatibility_date = "2026-08-12"
 compatibility_flags = ["nodejs_compat"]
 
+# Not publicly reachable by design — only the SITE service binding from
+# apps/edge (now live, see wrangler.toml there) can reach this Worker.
+# apps/site ships full premium article bodies in its response; if this ever
+# flips back to reachable, the paywall is bypassed. See CLAUDE.md.
+workers_dev = false
+preview_urls = false
+
 [assets]
 directory = "./dist"
 binding = "ASSETS"

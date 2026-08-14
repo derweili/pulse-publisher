@@ -1,0 +1,28 @@
+#:schema ../../node_modules/wrangler/config-schema.json
+name = "pulse-edge"
+main = "src/index.ts"
+compatibility_date = "2026-08-12"
+
+# Disabled by design — this Worker runs the mOS pipeline (auth read, surface
+# decisions, HTMLRewriter) on every request. Caching happens one layer down,
+# on the anonymized fetch to the SITE service binding (apps/site has its own
+# [cache] enabled = true).
+[cache]
+enabled = false
+
+[[services]]
+binding = "SITE"
+service = "pulse-today"
+
+routes = [
+  { pattern = "www.pulse.today/*", zone_name = "pulse.today" },
+]
+
+# MOS_SECRET_KEY is a secret, not a var — see .dev.vars.example locally,
+# `wrangler secret put MOS_SECRET_KEY` in production.
+[vars]
+MOS_HOST = "https://api.monetizationos.com"
+# Placeholder — the real surface slug doesn't exist until an mOS surface is
+# created (see docs/mos-integration-plan.md Session 4 prerequisites / Session 5).
+MOS_SURFACE_SLUG = "web"
+ORIGIN_URL = "https://www.pulse.today"

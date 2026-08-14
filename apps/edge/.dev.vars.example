@@ -1,0 +1,14 @@
+# Cloudflare Worker runtime secrets for local dev.
+#
+# Copy to `.dev.vars` and fill it in. Read by `wrangler dev` — it mirrors
+# what you'd set in production with `wrangler secret put MOS_SECRET_KEY`.
+
+# MonetizationOS secret key, format `sk_<env>_<suffix>`, from the mOS
+# console (Session 5 of docs/mos-integration-plan.md provisions this).
+#
+# A placeholder value (anything non-empty, e.g. `sk_test_placeholder`) is
+# enough to test pass-through/plumbing locally: a bad or fake key makes the
+# surface-decisions API call fail, and @monetizationos/proxy fails open —
+# it logs a warning and serves the origin response untouched rather than
+# breaking the site. Real surface decisions need a real key.
+MOS_SECRET_KEY=
