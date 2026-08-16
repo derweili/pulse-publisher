@@ -18,8 +18,25 @@ The `data-mos` contract between this repo and the mOS console configuration. Eve
 | `[data-mos-show="<condition>"]` | `MosShow.astro` — the origin-agnostic replacement for Clerk's `<Show>`. The origin renders every branch unconditionally (both are present in the byte-identical HTML), each wrapped in its own `[data-mos-show]` div with `class="contents"`. Used in `Header.astro` for `when="signed-out"` (wraps `SignInButton`), `when="signed-in"` (wraps the `Saved` link + `UserButton`), and `when="no-premium"` (wraps each CMS-driven `mainNav` pill CTA, e.g. "Subscribe"). `when="premium-only"` is supported but not yet wired up anywhere. | **Remove** the branch that doesn't match the reader's actual state — `[data-mos-show="signed-out"]` removed for signed-in readers, `[data-mos-show="signed-in"]` removed for anonymous/signed-out readers, `[data-mos-show="premium-only"]` removed for readers without a premium/subscriber plan, `[data-mos-show="no-premium"]` removed for readers with a premium/subscriber plan (so an existing subscriber doesn't see a CTA to buy what they already have). |
 | `[data-mos="comments"]` | The `<section>` wrapping `<Comments />` on `articles/[slug].astro`. | **Remove** for anonymous readers. |
 | `[data-mos="meter-strip"]` | Empty `<div>` in `Layout.astro`, directly below the header. Renders nothing today. | **Set content** — shows quota/plan state, for all readers. |
+| `[data-mos="auth-state"]` | Hidden `<div>` in `Layout.astro`, next to `[data-mos="meter-strip"]`. See below — **this one is different in kind from every other row in this table.** | **Set content** — see below. |
 
 Untouched, on purpose: `[data-ad-slot]` (`AdSlot.astro`) — already the right shape.
+
+## `[data-mos="auth-state"]` — a runtime contract, not a cosmetic hook
+
+Every other selector above is read by an editor or a designer's eye: removing or filling it changes what a reader sees. This one is read by client-side JavaScript (`apps/site/src/layouts/Layout.astro`'s inline reconciliation script, backed by `apps/site/src/lib/auth-reconcile.ts`) to detect and correct the SSO-redirect race described in Session 3.5 of `docs/mos-integration-plan.md`: a reader returns from an OAuth sign-in before Clerk's client script has written the `__session` cookie, so the mOS proxy resolves that first page view as anonymous even though the reader just signed in (and the mirror case on sign-out). Getting the value wrong doesn't just look wrong — it breaks or silently disables the fix.
+
+Content values, exactly three, lowercase, hyphen not underscore, no surrounding whitespace, no HTML (the client trims whitespace but tolerates nothing else):
+
+| Value | Meaning | Set by |
+|---|---|---|
+| `unproxied` | Origin default. No mOS behaviour ran — local dev, a direct origin request, or a missing/misconfigured behaviour. | The origin itself (`Layout.astro`). Never overwritten by mOS. |
+| `anonymous` | The proxy ran and resolved the reader as anonymous. | The **Anonymous**-plan component behaviour. **Required** — see below. |
+| `signed-in` | The proxy ran and resolved the reader as authenticated (any signed-in plan). | The **Registered**, **Subscriber**, and **Subscriber Ad-free**-plan component behaviours. |
+
+**The anonymous-plan behaviour is not optional.** Without it, an anonymous reader's marker stays `unproxied`, the client-side reconciliation script treats that as "no proxy in front of this response" and skips entirely (by design — see `reconcile()`'s ordering in `auth-reconcile.ts`), and the SSO bug this contract exists to fix comes straight back on the very page view where it matters most: the first one after the OAuth redirect. It fails safe (no reload loop), but the fix is silently inert. This is why `docs/mos-integration-plan.md`'s Session 5 behaviour table lists all four plans, not just the three signed-in ones.
+
+These strings are mirrored in `apps/site/src/lib/auth-reconcile.ts`'s `ServerAuthState` type. Nothing type-checks the link between this doc, the mOS console config, and that file — there's a comment at each end pointing back here; keep all three in sync by hand.
 
 ## Meta tag contract (page-level targeting)
 

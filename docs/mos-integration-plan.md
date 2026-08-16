@@ -289,6 +289,14 @@ No Claude Code. This is the part that sells the project, and the point is that i
 | `[data-mos="meter-strip"]` | set content | all — shows quota state |
 | `[data-mos="comments"]` | remove | anonymous |
 | `[data-mos="premium-badge"]` | remove | subscriber |
+| `[data-mos="auth-state"]` | set content, value `anonymous` | anonymous — **required**, see `docs/mos-selectors.md` |
+| `[data-mos="auth-state"]` | set content, value `signed-in` | registered, subscriber, subscriber ad-free |
+
+**Session 3.5 addendum — auth-state reconciliation.** Added after this session was originally written, to fix an SSO-redirect race: a reader returning from Google sign-in can hit the first page view before Clerk's client script has written `__session`, so the proxy resolves that view as anonymous even though the reader is signed in (mirror case on sign-out). `[data-mos="auth-state"]` (table above) is a runtime contract read by client JS, not a cosmetic hook — full detail, including why the anonymous-plan row is mandatory, is in `docs/mos-selectors.md`.
+
+Coverage: these two behaviours must apply on **every page type**, not just articles — the SSO redirect typically lands on the homepage or `/sso-callback`, so an article-only surface scope would leave the marker unset exactly where it matters. Mirror whatever surface model the `[data-mos="meter-strip"]` behaviour already uses (single sitewide surface vs. one per page type).
+
+**Known side effect, accepted for the PoC:** a reconciled page view is metered twice — once anonymous, once signed-in — but only on the first page view immediately after an SSO sign-in. Documented here so it isn't later misdiagnosed as a metering bug. Dedupe-by-(identity, path) in a mOS surface workflow is the fix if it's ever worth doing.
 
 **Ignore paths:** leave empty (see D5). If you find yourself adding a path here, check first whether it belongs in the edge Worker's router instead — that's where non-HTML exclusions live, and having both lists is how they drift.
 

@@ -1,0 +1,27 @@
+---
+// Dedicated landing spot for the OAuth/SSO round trip (see CLAUDE.md, Session
+// 3.5). Its only job is to let Clerk finish the handshake and then navigate
+// away. Resolving on a controlled, single-purpose page — rather than
+// wherever the sign-in flow happened to be triggered from — shrinks, but
+// does not eliminate, the window in which a reader lands on HTML that was
+// rendered before their session cookie existed. `../lib/auth-reconcile.ts`
+// is what closes the remainder of that gap.
+//
+// Deliberately not wrapped in `Layout.astro`: this page has no content of
+// its own and doesn't need the Sanity-backed header/footer. It still reads
+// no server-side auth signal of any kind — nothing about this route makes
+// the origin's HTML vary by reader.
+import { AuthenticateWithRedirectCallback } from "@clerk/astro/components";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Signing you in… — PULSE</title>
+  </head>
+  <body>
+    <AuthenticateWithRedirectCallback />
+  </body>
+</html>
