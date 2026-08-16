@@ -5,7 +5,7 @@ Rules for this repo. These are constraints, not suggestions — violating any of
 ## Target architecture
 
 ```
-reader ──► www.pulse.today ──► EDGE WORKER  "pulse-edge"   (apps/edge)  cache: DISABLED
+reader ──► pulse.derweili.de ──► EDGE WORKER  "pulse-edge"   (apps/edge)  cache: DISABLED
                                  │
                                  ├─ /api/**                 → env.SITE.fetch(request)            cookies KEPT
                                  ├─ static/feeds/robots     → env.SITE.fetch(anonymize(request))  cookies STRIPPED
