@@ -1,0 +1,14 @@
+---
+// Origin-agnostic replacement for Clerk's <Show>. The origin renders both
+// branches unconditionally (byte-identical for every reader, per CLAUDE.md) —
+// mOS removes the branch that doesn't match the reader's plan via
+// [data-mos-show] on the edge, using HTMLRewriter. See docs/mos-selectors.md.
+interface Props {
+  when: "signed-out" | "signed-in" | "premium-only" | "no-premium";
+}
+const { when } = Astro.props;
+---
+
+<div data-mos-show={when} class="contents">
+  <slot />
+</div>
