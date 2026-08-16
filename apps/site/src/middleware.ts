@@ -25,7 +25,10 @@ function resolveCachePolicy(pathname: string): CachePolicy {
   if (pathname.startsWith("/api/")) {
     return { cacheControl: NO_STORE, cacheable: false };
   }
-  if (pathname === "/saved" || pathname === "/subscription") {
+  if (pathname === "/saved" || pathname === "/subscription" || pathname === "/sso-callback") {
+    // /sso-callback carries the OAuth handshake state in the URL/hash and
+    // renders per-visit, transient content (see Session 3.5) — never
+    // shareable across readers, same reasoning as /saved and /subscription.
     return { cacheControl: NO_STORE, cacheable: false };
   }
   if (pathname === "/") {

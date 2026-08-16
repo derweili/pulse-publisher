@@ -108,11 +108,49 @@ const organizationSchema = {
     )}
     <Header activeSection={activeSection} />
     <div data-mos="meter-strip"></div>
+    <!--
+      Runtime contract, not cosmetic — see docs/mos-selectors.md. Default
+      value "unproxied" means no mOS behaviour has touched this element yet
+      (local dev, a direct origin request, or a missing/misconfigured
+      behaviour); it must stay reader-independent here in the origin HTML,
+      same as every other data-mos hook. mOS overwrites the text content per
+      plan; ../lib/auth-reconcile.ts mirrors these three string values.
+    -->
+    <div data-mos="auth-state" hidden>unproxied</div>
     <main id="main">
       <slot />
     </main>
     <Footer />
     <StickyAd />
     <CookieConsent />
+    <script>
+      import { $clerkStore, $userStore } from "@clerk/astro/client";
+      import { clearGuard, reconcile, readGuard, writeGuard, type ServerAuthState } from "../lib/auth-reconcile";
+
+      const raw = document.querySelector('[data-mos="auth-state"]')?.textContent?.trim();
+      const serverState: ServerAuthState = raw === "anonymous" || raw === "signed-in" ? raw : "unproxied";
+
+      if (serverState === "unproxied" && import.meta.env.DEV) {
+        console.info(
+          '[mos] auth-state marker is "unproxied" — no mOS proxy in front of this ' +
+            "response, so auth reconciliation is disabled. Expected in local dev."
+        );
+      }
+
+      $clerkStore.subscribe((clerk) => {
+        if (!clerk?.loaded) return;
+
+        $userStore.subscribe((user) => {
+          const action = reconcile({
+            serverState,
+            clientSignedIn: !!user,
+            alreadyRetried: readGuard(),
+          });
+
+          if (action === "rearm") clearGuard();
+          if (action === "reload" && writeGuard()) location.reload();
+        });
+      });
+    </script>
   </body>
 </html>
