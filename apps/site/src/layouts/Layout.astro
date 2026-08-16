@@ -15,6 +15,16 @@ interface Props {
   description?: string;
   activeSection?: string;
   ogImageUrl?: string;
+  /** mOS targeting: what kind of page this is. Omitted on pages mOS doesn't target (static pages, tag listings, live blogs). */
+  pageType?: "homepage" | "category" | "author" | "article";
+  /** mOS targeting: only set on `pageType="article"`. */
+  articleType?: "standard" | "premium";
+  /** mOS targeting: tags assigned to the current article. */
+  tags?: string[];
+  /** mOS targeting: categories (sections) the current page belongs to. */
+  categories?: string[];
+  /** mOS targeting: authors assigned to the current article. */
+  authors?: string[];
 }
 
 const {
@@ -22,6 +32,11 @@ const {
   description = "PULSE is a young, bold publisher covering tech, culture, science, sports and business.",
   activeSection,
   ogImageUrl,
+  pageType,
+  articleType,
+  tags,
+  categories,
+  authors,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
@@ -55,6 +70,12 @@ const organizationSchema = {
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
     <link rel="alternate" type="application/rss+xml" title={title} href="/rss.xml" />
+
+    {pageType && <meta name="mos-page-type" content={pageType} />}
+    {articleType && <meta name="mos-article-type" content={articleType} />}
+    {categories && categories.length > 0 && <meta name="mos-categories" content={categories.join(",")} />}
+    {tags && tags.length > 0 && <meta name="mos-tags" content={tags.join(",")} />}
+    {authors && authors.length > 0 && <meta name="mos-authors" content={authors.join(",")} />}
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />

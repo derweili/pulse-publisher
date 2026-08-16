@@ -20,6 +20,18 @@ The `data-mos` contract between this repo and the mOS console configuration. Eve
 
 Untouched, on purpose: `[data-ad-slot]` (`AdSlot.astro`) — already the right shape.
 
+## Meta tag contract (page-level targeting)
+
+Unlike the `data-mos` selectors above (removal/injection targets for `HTMLRewriter`), these are read-only signals in `<head>` that the mOS Decision API call reads to pick a plan/surface decision *before* any rewriting happens. Set once in `Layout.astro` via typed `Props`, populated per-page. Comma-separated values follow the same convention as the `Cache-Tag` header in `articles/[slug].astro`.
+
+| Meta tag | Values | Set on |
+|---|---|---|
+| `<meta name="mos-page-type">` | `homepage` \| `category` \| `author` \| `article` | `index.astro`, `sections/[section]/[...page].astro`, `authors/[author].astro`, `articles/[slug].astro`. Omitted on pages mOS doesn't target (static pages, tag listings, live blogs). |
+| `<meta name="mos-article-type">` | `standard` \| `premium` | `articles/[slug].astro` only, from `article.premium`. |
+| `<meta name="mos-categories">` | comma-separated section slug(s) | `sections/[section]/[...page].astro` (the section itself), `articles/[slug].astro` (the article's section). |
+| `<meta name="mos-tags">` | comma-separated `article.tags` | `articles/[slug].astro` only. Omitted when the article has no tags. |
+| `<meta name="mos-authors">` | comma-separated author slug(s) | `authors/[author].astro` (the author themself), `articles/[slug].astro` (the article's authors). |
+
 ## Constraints (see `CLAUDE.md`)
 
 - Never `:last-child`/`:nth-*` in a selector meant for mOS — `HTMLRewriter` silently skips rules using them.
