@@ -1,0 +1,16 @@
+---
+// Dedicated, linkable registration page, counterpart to `/sign-in`. Catch-all
+// route (`[[...index]]`) for the same reason as `/sign-in`: `routing="path"`
+// drives Clerk's multi-step sign-up flow through nested sub-paths.
+import { SignUp } from "@clerk/astro/components";
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Register — PULSE"
+  description="Create a PULSE account to save articles and manage your subscription."
+>
+  <section class="container-page flex justify-center py-14 max-[720px]:py-10">
+    <SignUp path="/register" routing="path" signInUrl="/sign-in" />
+  </section>
+</Layout>

@@ -38,6 +38,28 @@ Content values, exactly three, lowercase, hyphen not underscore, no surrounding 
 
 These strings are mirrored in `apps/site/src/lib/auth-reconcile.ts`'s `ServerAuthState` type. Nothing type-checks the link between this doc, the mOS console config, and that file — there's a comment at each end pointing back here; keep all three in sync by hand.
 
+## `data-mos-action` — behaviour the app exposes *to* injected creative
+
+Distinct from every `data-mos` selector above: those are elements mOS targets and manipulates from the outside. `data-mos-action` runs the other direction — it's how creative injected into `[data-mos="paywall-slot"]` (or any other mOS-controlled surface) asks the app to do something, without shipping any JavaScript of its own.
+
+The creative is a plain link carrying the attribute, with its normal navigation `href` as a fallback:
+
+```html
+<a href="/sign-in" data-mos-action="sign-in">Sign in to keep reading</a>
+<a href="/sign-up" data-mos-action="sign-up">Create a free account</a>
+<a href="/sign-in" data-mos-action="sign-out">Sign out</a>
+```
+
+A single document-level click listener in `apps/site/src/layouts/Layout.astro` (backed by the pure `resolveAction`/`dispatchMosAction` in `apps/site/src/lib/mos-actions.ts`) intercepts clicks on `[data-mos-action]` elements and opens the matching Clerk modal instead of letting the link navigate. If the action value is unrecognized, or Clerk hasn't loaded yet, the listener does nothing and the `href` navigation proceeds — same markup either way, no separate no-JS configuration path.
+
+| Value | Effect | `href` fallback |
+|---|---|---|
+| `sign-in` | Opens Clerk's sign-in modal (`clerk.openSignIn()`). | `/sign-in` |
+| `sign-up` | Opens Clerk's sign-up modal (`clerk.openSignUp()`). | `/sign-up` |
+| `sign-out` | Signs the reader out (`clerk.signOut()`). | `/sign-in` (or wherever a signed-out reader should land) |
+
+These three strings are a runtime contract mirrored in mOS console creative — nothing type-checks that link, same caveat as the `auth-state` values above. The values are whitelisted in `mos-actions.ts`; an unrecognized `data-mos-action` can never dispatch an arbitrary Clerk method, and nothing on `window` is exposed for creative to call directly.
+
 ## Meta tag contract (page-level targeting)
 
 Unlike the `data-mos` selectors above (removal/injection targets for `HTMLRewriter`), these are read-only signals in `<head>` that the mOS Decision API call reads to pick a plan/surface decision *before* any rewriting happens. Set once in `Layout.astro` via typed `Props`, populated per-page. Comma-separated values follow the same convention as the `Cache-Tag` header in `articles/[slug].astro`.
