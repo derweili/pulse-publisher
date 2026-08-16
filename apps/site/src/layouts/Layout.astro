@@ -124,8 +124,26 @@ const organizationSchema = {
     <StickyAd />
     <CookieConsent />
     <script>
-      import { $userStore } from "@clerk/astro/client";
+      import { $clerkStore, $userStore } from "@clerk/astro/client";
       import { clearGuard, reconcile, readGuard, writeGuard, type ServerAuthState } from "../lib/auth-reconcile";
+      import { dispatchMosAction, resolveAction } from "../lib/mos-actions";
+
+      // Delegated listener for injected mOS creative — see docs/mos-selectors.md's
+      // `data-mos-action` section. No script ships inside the creative itself
+      // (load order + CSP); this is the one document-level handler that opens
+      // the Clerk modal on its behalf, falling back to the link's own `href`
+      // whenever the action is unknown or Clerk hasn't loaded yet.
+      document.addEventListener("click", (e) => {
+        const el = e.target as Element | null;
+        if (!el) return;
+
+        const clerk = $clerkStore.get();
+        const action = resolveAction(el, !!clerk?.loaded);
+        if (!action || !clerk) return;
+
+        e.preventDefault();
+        dispatchMosAction(action, clerk);
+      });
 
       const raw = document.querySelector('[data-mos="auth-state"]')?.textContent?.trim();
       const serverState: ServerAuthState = raw === "anonymous" || raw === "signed-in" ? raw : "unproxied";
