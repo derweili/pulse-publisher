@@ -1,5 +1,7 @@
 # Cache-purge spike
 
+> **Implemented.** The sketch below became the real thing — see `docs/cache-revalidation.md` for the shipped `/api/revalidate` endpoint, webhook filter/projection, and tag-resolution table. Left as-is otherwise; it's the record of the spike, not the current design doc.
+
 Timeboxed to 30 minutes, per `docs/mos-integration-plan.md` Session 3. Goal: is `ctx.cache.purge({ tags })` reachable from Astro code via `Astro.locals.runtime.ctx`? Findings, not a shipped feature.
 
 ## Answer: yes, reachable — confirmed at the type level

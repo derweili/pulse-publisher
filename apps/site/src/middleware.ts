@@ -1,4 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
+import { articleTag, authorTag, FEED_TAG, HOME_TAG, liveTag, sectionTag, STATIC_TAG, tagTag } from "./lib/cache/tags";
 
 // The single source of truth for what's cacheable on this Worker (see
 // CLAUDE.md: "Cacheable routes are defined in apps/site/src/middleware.ts").
@@ -32,14 +33,14 @@ function resolveCachePolicy(pathname: string): CachePolicy {
     return { cacheControl: NO_STORE, cacheable: false };
   }
   if (pathname === "/") {
-    return { cacheControl: "public, max-age=30, stale-while-revalidate=3600", cacheable: true, tags: ["home"] };
+    return { cacheControl: "public, max-age=30, stale-while-revalidate=3600", cacheable: true, tags: [HOME_TAG] };
   }
   if (pathname.startsWith("/articles/")) {
     const slug = slugFromSegment(pathname, "/articles/");
     return {
       cacheControl: "public, max-age=60, stale-while-revalidate=86400",
       cacheable: true,
-      tags: [`article:${slug}`],
+      tags: [articleTag(slug)],
     };
   }
   if (pathname.startsWith("/live/")) {
@@ -49,20 +50,20 @@ function resolveCachePolicy(pathname: string): CachePolicy {
     return {
       cacheControl: "public, max-age=15, stale-while-revalidate=60",
       cacheable: true,
-      tags: [`live:${slug}`],
+      tags: [liveTag(slug)],
     };
   }
   if (pathname.startsWith("/sections/")) {
     const slug = slugFromSegment(pathname, "/sections/");
-    return { cacheControl: LISTING_CACHE_CONTROL, cacheable: true, tags: [`section:${slug}`] };
+    return { cacheControl: LISTING_CACHE_CONTROL, cacheable: true, tags: [sectionTag(slug)] };
   }
   if (pathname.startsWith("/tags/")) {
     const slug = slugFromSegment(pathname, "/tags/");
-    return { cacheControl: LISTING_CACHE_CONTROL, cacheable: true, tags: [`tag:${slug}`] };
+    return { cacheControl: LISTING_CACHE_CONTROL, cacheable: true, tags: [tagTag(slug)] };
   }
   if (pathname.startsWith("/authors/")) {
     const slug = slugFromSegment(pathname, "/authors/");
-    return { cacheControl: LISTING_CACHE_CONTROL, cacheable: true, tags: [`author:${slug}`] };
+    return { cacheControl: LISTING_CACHE_CONTROL, cacheable: true, tags: [authorTag(slug)] };
   }
   if (
     pathname === "/search-index.json" ||
@@ -70,13 +71,13 @@ function resolveCachePolicy(pathname: string): CachePolicy {
     pathname === "/sitemap.xml" ||
     pathname === "/robots.txt"
   ) {
-    return { cacheControl: "public, max-age=300, stale-while-revalidate=86400", cacheable: true, tags: ["feed"] };
+    return { cacheControl: "public, max-age=300, stale-while-revalidate=86400", cacheable: true, tags: [FEED_TAG] };
   }
   if (pathname === "/about" || pathname === "/contact" || pathname === "/corrections" || pathname === "/standards") {
     return {
       cacheControl: "public, max-age=3600, stale-while-revalidate=86400",
       cacheable: true,
-      tags: ["static"],
+      tags: [STATIC_TAG],
     };
   }
 
