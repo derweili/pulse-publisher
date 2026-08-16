@@ -11,6 +11,7 @@
     "check": "astro check",
     "check:auth-blindness": "node scripts/check-auth-blindness.mjs",
     "cf:preview": "npm run build && wrangler dev",
+    "wrangler:dev": "wrangler dev",
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^5.2.5",
     "groq": "^6.9.2",
+    "lucide-react": "^1.31.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.3.3"

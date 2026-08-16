@@ -27,9 +27,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # apps/edge has no wrangler.toml or buildable Worker yet — that lands
-      # in mOS integration session 4. This workflow exists now so the
-      # path-filtered CI split is in place ahead of that; replace this step
-      # with a real build + `cloudflare/wrangler-action@v4` deploy then.
-      - name: No-op (edge Worker not implemented yet)
-        run: echo "apps/edge has no wrangler.toml yet — nothing to deploy. Implemented in mOS integration session 4."
+      - name: Test
+        run: npm run test -w apps/edge
+
+      - name: Type check
+        run: npm run check -w apps/edge
+
+      # MOS_SECRET_KEY is a Cloudflare Worker runtime secret, not a build-time
+      # env var — set once per environment with `wrangler secret put`, not on
+      # every deploy. Same pattern as SANITY_API_READ_TOKEN in deploy-site.yml.
+      #
+      # No separate build step: `wrangler deploy` bundles the Worker's TS
+      # directly, unlike apps/site which needs `astro build` first.
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/edge

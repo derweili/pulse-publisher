@@ -15,10 +15,23 @@ The `data-mos` contract between this repo and the mOS console configuration. Eve
 | `[data-mos="related"]` | `RelatedRail.astro`'s root `<aside>` (article sidebar) and the "Keep reading" footer `<section>` on `articles/[slug].astro`. | Informational/targeting hook. A free reader's related rail is not filtered by `premium` today (see Session 6 in `mos-integration-plan.md`) — decide there whether that's upsell bait or a leak to close. |
 | `[data-mos="newsletter"]` | `Newsletter.astro`'s root `<section>`, alongside the existing `data-newsletter` attribute used by its own inline script. | None by default; available for plan-based hide/show. |
 | `[data-mos="auth-actions"]` | Wraps the header's sign-in and signed-in (`Saved` link + `UserButton`) regions in `Header.astro`. Uses `class="contents"` so it doesn't affect the parent flex layout. | None by default; landing spot if mOS ever needs to inject/replace auth CTAs. |
+| `[data-mos-show="<condition>"]` | `MosShow.astro` — the origin-agnostic replacement for Clerk's `<Show>`. The origin renders every branch unconditionally (both are present in the byte-identical HTML), each wrapped in its own `[data-mos-show]` div with `class="contents"`. Used in `Header.astro` for `when="signed-out"` (wraps `SignInButton`), `when="signed-in"` (wraps the `Saved` link + `UserButton`), and `when="no-premium"` (wraps each CMS-driven `mainNav` pill CTA, e.g. "Subscribe"). `when="premium-only"` is supported but not yet wired up anywhere. | **Remove** the branch that doesn't match the reader's actual state — `[data-mos-show="signed-out"]` removed for signed-in readers, `[data-mos-show="signed-in"]` removed for anonymous/signed-out readers, `[data-mos-show="premium-only"]` removed for readers without a premium/subscriber plan, `[data-mos-show="no-premium"]` removed for readers with a premium/subscriber plan (so an existing subscriber doesn't see a CTA to buy what they already have). |
 | `[data-mos="comments"]` | The `<section>` wrapping `<Comments />` on `articles/[slug].astro`. | **Remove** for anonymous readers. |
 | `[data-mos="meter-strip"]` | Empty `<div>` in `Layout.astro`, directly below the header. Renders nothing today. | **Set content** — shows quota/plan state, for all readers. |
 
 Untouched, on purpose: `[data-ad-slot]` (`AdSlot.astro`) — already the right shape.
+
+## Meta tag contract (page-level targeting)
+
+Unlike the `data-mos` selectors above (removal/injection targets for `HTMLRewriter`), these are read-only signals in `<head>` that the mOS Decision API call reads to pick a plan/surface decision *before* any rewriting happens. Set once in `Layout.astro` via typed `Props`, populated per-page. Comma-separated values follow the same convention as the `Cache-Tag` header in `articles/[slug].astro`.
+
+| Meta tag | Values | Set on |
+|---|---|---|
+| `<meta name="mos-page-type">` | `homepage` \| `category` \| `author` \| `article` | `index.astro`, `sections/[section]/[...page].astro`, `authors/[author].astro`, `articles/[slug].astro`. Omitted on pages mOS doesn't target (static pages, tag listings, live blogs). |
+| `<meta name="mos-article-type">` | `standard` \| `premium` | `articles/[slug].astro` only, from `article.premium`. |
+| `<meta name="mos-categories">` | comma-separated section slug(s) | `sections/[section]/[...page].astro` (the section itself), `articles/[slug].astro` (the article's section). |
+| `<meta name="mos-tags">` | comma-separated `article.tags` | `articles/[slug].astro` only. Omitted when the article has no tags. |
+| `<meta name="mos-authors">` | comma-separated author slug(s) | `authors/[author].astro` (the author themself), `articles/[slug].astro` (the article's authors). |
 
 ## Constraints (see `CLAUDE.md`)
 

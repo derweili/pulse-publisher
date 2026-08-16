@@ -51,7 +51,13 @@ const breadcrumbSchema = {
 };
 ---
 
-<Layout title={`${section.title} — PULSE`} description={section.tagline} activeSection={section.slug}>
+<Layout
+  title={`${section.title} — PULSE`}
+  description={section.tagline}
+  activeSection={section.slug}
+  pageType="category"
+  categories={[section.slug]}
+>
   <StructuredData data={breadcrumbSchema} />
 
   <div class="container-page-wide flex justify-center pt-4 pb-2">

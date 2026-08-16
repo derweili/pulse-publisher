@@ -114,6 +114,11 @@ const breadcrumbSchema = {
   description={article.seo?.metaDescription || article.dek}
   activeSection={section.slug}
   ogImageUrl={ogImageUrl}
+  pageType="article"
+  articleType={isPremium ? "premium" : "standard"}
+  tags={article.tags ?? undefined}
+  categories={[section.slug]}
+  authors={articleAuthors.map((a) => a.slug)}
 >
   <StructuredData data={[newsArticleSchema, breadcrumbSchema]} />
 
