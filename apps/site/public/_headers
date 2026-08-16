@@ -1,0 +1,9 @@
+# Astro's own build output, not proxied through any route — content-hashed
+# filenames mean a given URL's bytes never change, so both the browser and
+# Cloudflare's edge (Workers Cache, enabled via `[cache]` in wrangler.toml)
+# can hold it indefinitely. Read by Cloudflare's static-asset layer directly
+# (bypasses the Worker entirely for these paths), so this is the only place
+# that can set headers for them — see CLAUDE.md and apps/site/src/middleware.ts
+# for the SSR-route cache policy, which this file does not touch.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
