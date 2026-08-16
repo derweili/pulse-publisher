@@ -213,7 +213,7 @@ async function migrateSiteSettings() {
         "PULSE is a young, bold publisher covering tech, culture, science, sports and business.",
     },
     mainNav: [
-      { _type: "navLink", _key: randomUUID(), label: "Subscribe", linkType: "external", externalUrl: "/subscribe" },
+      { _type: "navLink", _key: randomUUID(), label: "Subscribe", linkType: "external", externalUrl: "/subscription" },
     ],
     footerLinkGroups: [
       {
@@ -224,7 +224,7 @@ async function migrateSiteSettings() {
           { _type: "navLink", _key: randomUUID(), label: "About", linkType: "external", externalUrl: "/about" },
           { _type: "navLink", _key: randomUUID(), label: "Contact", linkType: "external", externalUrl: "/contact" },
           { _type: "navLink", _key: randomUUID(), label: "Advertise", linkType: "external", externalUrl: "/advertise" },
-          { _type: "navLink", _key: randomUUID(), label: "Subscribe", linkType: "external", externalUrl: "/subscribe" },
+          { _type: "navLink", _key: randomUUID(), label: "Subscribe", linkType: "external", externalUrl: "/subscription" },
         ],
       },
       {

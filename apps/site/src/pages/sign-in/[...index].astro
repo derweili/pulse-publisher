@@ -1,0 +1,17 @@
+---
+// Dedicated, linkable sign-in page (as opposed to the header's
+// `SignInButton mode="modal"`, which stays a modal). Catch-all route
+// (`[[...index]]`) because Clerk's `routing="path"` drives multi-step flows
+// (2FA, SSO callback, etc.) through nested sub-paths under `/sign-in/*`.
+import { SignIn } from "@clerk/astro/components";
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Sign in — PULSE"
+  description="Sign in to your PULSE account to save articles and manage your subscription."
+>
+  <section class="container-page flex justify-center py-14 max-[720px]:py-10">
+    <SignIn path="/sign-in" routing="path" signUpUrl="/register" />
+  </section>
+</Layout>

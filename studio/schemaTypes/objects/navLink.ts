@@ -45,7 +45,7 @@ export const navLink = defineType({
       name: 'externalUrl',
       title: 'URL',
       type: 'string',
-      description: 'An absolute URL (https://...) or a site-relative path (/subscribe).',
+      description: 'An absolute URL (https://...) or a site-relative path (/subscription).',
       hidden: ({parent}) => parent?.linkType !== 'external',
       validation: (Rule) =>
         Rule.custom((value, context) => {

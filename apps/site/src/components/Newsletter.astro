@@ -45,10 +45,10 @@ const innerClasses: Record<string, string> = {
         </div>
       </div>
     )}
-    <div class="flex w-full flex-col gap-2.5">
-      <form class="flex w-full gap-2 max-[720px]:flex-col" data-nl-form>
+    <div class="flex w-full flex-col gap-2.5 @container">
+      <form class="flex w-full gap-2 @max-[400px]:flex-col" data-nl-form>
         {variant === "compact" && (
-          <p class="mb-2 text-[13px] font-bold text-white">{title}</p>
+          <p class="mb-2 text-[13px] font-bold text-white @max-[400px]:self-start self-center">{title}</p>
         )}
         <input
           type="email"
@@ -61,7 +61,7 @@ const innerClasses: Record<string, string> = {
           aria-label="Email address"
           required
         />
-        <button type="submit" class="rounded-full bg-primary px-5 py-[13px] text-sm font-extrabold tracking-[0.02em] whitespace-nowrap text-white transition-all duration-200 ease-brand hover:-translate-y-px hover:bg-primary-dark max-[720px]:w-full">Subscribe</button>
+        <button type="submit" class="rounded-full bg-primary px-5 py-[13px] text-sm font-extrabold tracking-[0.02em] whitespace-nowrap text-white transition-all duration-200 ease-brand hover:-translate-y-px hover:bg-primary-dark @max-[400px]:w-full">Subscribe</button>
       </form>
       {topics.length > 0 && (
         <fieldset class="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-0 p-0" data-nl-topics>

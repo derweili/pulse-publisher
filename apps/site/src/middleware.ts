@@ -25,10 +25,22 @@ function resolveCachePolicy(pathname: string): CachePolicy {
   if (pathname.startsWith("/api/")) {
     return { cacheControl: NO_STORE, cacheable: false };
   }
-  if (pathname === "/saved" || pathname === "/subscription" || pathname === "/sso-callback") {
+  if (
+    pathname === "/saved" ||
+    pathname === "/subscription" ||
+    pathname === "/sso-callback" ||
+    pathname === "/sign-in" ||
+    pathname.startsWith("/sign-in/") ||
+    pathname === "/register" ||
+    pathname.startsWith("/register/")
+  ) {
     // /sso-callback carries the OAuth handshake state in the URL/hash and
     // renders per-visit, transient content (see Session 3.5) — never
     // shareable across readers, same reasoning as /saved and /subscription.
+    // /sign-in and /register are Clerk's mounted `<SignIn />`/`<SignUp />`
+    // widgets with `routing="path"`, which drive multi-step flows (2FA, SSO
+    // callback) through nested sub-paths — same per-reader, transient
+    // reasoning applies to the whole subtree, not just the bare path.
     return { cacheControl: NO_STORE, cacheable: false };
   }
   if (pathname === "/") {
