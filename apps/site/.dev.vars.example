@@ -10,3 +10,9 @@
 # Sanity read token, required because the dataset is private. Generate at
 # sanity.io/manage → API → Tokens with "Viewer" permission.
 SANITY_API_READ_TOKEN=
+
+# Shared secret for the Sanity webhook that hits POST /api/revalidate.
+# Same value goes in the webhook's "Secret" field in sanity.io/manage → API →
+# Webhooks — Sanity uses it to sign the `sanity-webhook-signature` header,
+# which the endpoint verifies. See docs/cache-revalidation.md.
+SANITY_API_WEBHOOK_SECRET=

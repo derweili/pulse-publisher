@@ -17,6 +17,8 @@ interface ImportMeta {
 // these are read per-request at runtime, not inlined at build time.
 type CloudflareEnv = {
   SANITY_API_READ_TOKEN: string;
+  /** Shared secret configured on the Sanity webhook — verifies `sanity-webhook-signature` on POST /api/revalidate. See docs/cache-revalidation.md. */
+  SANITY_API_WEBHOOK_SECRET: string;
 };
 
 type Runtime = import('@astrojs/cloudflare').Runtime<CloudflareEnv>;
