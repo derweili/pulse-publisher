@@ -124,7 +124,7 @@ const organizationSchema = {
     <StickyAd />
     <CookieConsent />
     <script>
-      import { $clerkStore, $userStore } from "@clerk/astro/client";
+      import { $userStore } from "@clerk/astro/client";
       import { clearGuard, reconcile, readGuard, writeGuard, type ServerAuthState } from "../lib/auth-reconcile";
 
       const raw = document.querySelector('[data-mos="auth-state"]')?.textContent?.trim();
@@ -137,19 +137,32 @@ const organizationSchema = {
         );
       }
 
-      $clerkStore.subscribe((clerk) => {
-        if (!clerk?.loaded) return;
+      // $userStore is `undefined` until Clerk has resolved the session — only
+      // `null` (resolved, signed out) or a UserResource (resolved, signed in)
+      // are trustworthy. Coercing `undefined` straight to `!!user === false`
+      // was the actual cause of a signed-in-only reload loop: every
+      // unresolved reading looked identical to "signed out", so it kept
+      // mismatching a `signed-in` server state and re-triggering reconcile()
+      // (which itself never unsubscribed) long after the real answer had
+      // already arrived. Reconciliation is a page-load-time concern — it
+      // must run once, against the first settled reading, then stop; a
+      // reader signing out later via UserButton must not cause this to
+      // re-fire mid-page.
+      let settled = false;
+      let unsubscribe: (() => void) | undefined;
+      unsubscribe = $userStore.subscribe((user) => {
+        if (settled || user === undefined) return;
+        settled = true;
+        unsubscribe?.();
 
-        $userStore.subscribe((user) => {
-          const action = reconcile({
-            serverState,
-            clientSignedIn: !!user,
-            alreadyRetried: readGuard(),
-          });
-
-          if (action === "rearm") clearGuard();
-          if (action === "reload" && writeGuard()) location.reload();
+        const action = reconcile({
+          serverState,
+          clientSignedIn: !!user,
+          alreadyRetried: readGuard(),
         });
+
+        if (action === "rearm") clearGuard();
+        if (action === "reload" && writeGuard()) location.reload();
       });
     </script>
   </body>
