@@ -24,6 +24,7 @@ import {
   getSiteSettings,
   getTrendingArticles,
 } from "../../lib/sanity/fetch";
+import MosShow from "../../components/MosShow.astro";
 
 const { slug } = Astro.params;
 const client = getSanityClient(Astro.locals.runtime.env);
@@ -135,8 +136,15 @@ const breadcrumbSchema = {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.5L21 9.2l-5 4.3 1.6 6.8L12 16.9 6.4 20.3 8 13.5 3 9.2l6.6-.7L12 2z"/></svg>
             PULSE+ Premium
           </span>
-          <span class="min-w-[200px] flex-1 text-sm font-semibold">This is in-depth reporting for subscribers. Unlock the full archive with PULSE+.</span>
-          <a href="/subscription" class="rounded-full bg-[#2a1d00] px-4 py-2 text-[13px] font-extrabold text-premium-gold">Subscribe</a>
+          <span class="min-w-[200px] flex-1 text-sm font-semibold">
+            This is in-depth reporting for subscribers.
+            <MosShow when="no-premium">
+              Unlock the full archive with PULSE+.
+            </MosShow>
+          </span>
+          <MosShow when="no-premium">
+            <a href="/subscription" class="rounded-full bg-[#2a1d00] px-4 py-2 text-[13px] font-extrabold text-premium-gold">Subscribe</a>
+          </MosShow>
         </div>
       </div>
     )}
