@@ -21,6 +21,7 @@ import { urlFor } from "../../lib/sanity/image";
 import {
   getArticleBySlug,
   getArticlesInSection,
+  getPremiumArticles,
   getSiteSettings,
   getTrendingArticles,
 } from "../../lib/sanity/fetch";
@@ -35,6 +36,7 @@ if (!article) {
 
 const section = article.section;
 const articleAuthors = article.authors ?? [];
+const isPremium = article.premium ?? false;
 // Streaming-safe way to hand extra Cache-Tag values up to middleware.ts,
 // which merges these with the path-derived `article:<slug>` tag and sets
 // the final header — see docs/mos-integration-plan.md Session 3.
@@ -42,13 +44,14 @@ Astro.response.headers.set(
   "Cache-Tag",
   [`section:${section.slug}`, ...articleAuthors.map((a) => `author:${a.slug}`)].join(",")
 );
-const [sameSectionAll, settings, trending] = await Promise.all([
+const [sameSectionAll, settings, trending, premiumAll] = await Promise.all([
   getArticlesInSection(client, section.slug),
   getSiteSettings(client),
   getTrendingArticles(client),
+  isPremium ? getPremiumArticles(client) : Promise.resolve([]),
 ]);
 const sameSection = sameSectionAll.filter((a) => a.slug !== article.slug).slice(0, 4);
-const isPremium = article.premium ?? false;
+const morePremium = premiumAll.filter((a) => a.slug !== article.slug).slice(0, 4);
 
 const blocks = article.body;
 // Paywall cut: how many blocks are free to read. Snapped forward past any
@@ -261,8 +264,29 @@ const breadcrumbSchema = {
       </aside>
     </div>
 
+    <!-- More premium -->
+    {isPremium && morePremium.length > 0 && (
+      <section class="container-page mt-[72px] rounded-xl bg-ink p-10 text-white max-[960px]:p-6 max-sm:rounded-lg max-sm:p-5" data-mos="more-premium">
+        <div class="section-head !border-b-[#2a2b33]">
+          <div>
+            <span class="eyebrow inline-flex items-center gap-1.5" style="color: var(--color-premium-gold)">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.5L21 9.2l-5 4.3 1.6 6.8L12 16.9 6.4 20.3 8 13.5 3 9.2l6.6-.7L12 2z"/></svg>
+              More from PULSE+ Premium
+            </span>
+            <h2 class="section-title">Keep reading with PULSE+</h2>
+          </div>
+          <a href="/subscription" class="more-link !text-premium-gold">Unlock all of PULSE+ →</a>
+        </div>
+        <div class="grid grid-cols-4 gap-6 max-[960px]:grid-cols-2 max-sm:grid-cols-1">
+          {morePremium.map((a) => (
+            <ArticleCard article={a} variant="premium" />
+          ))}
+        </div>
+      </section>
+    )}
+
     <!-- Footer related -->
-    <section class="container-page mt-[72px]" data-mos="related">
+    <section class="container-page mt-16" data-mos="related">
       <div class="section-head">
         <div>
           <span class="eyebrow eyebrow-accent">Keep reading</span>
