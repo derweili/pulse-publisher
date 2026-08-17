@@ -275,7 +275,9 @@ const breadcrumbSchema = {
             </span>
             <h2 class="section-title">Keep reading with PULSE+</h2>
           </div>
-          <a href="/subscription" class="more-link !text-premium-gold">Unlock all of PULSE+ →</a>
+          <MosShow when="no-premium">
+            <a href="/subscription" class="more-link !text-premium-gold">Unlock all of PULSE+ →</a>
+          </MosShow>
         </div>
         <div class="grid grid-cols-4 gap-6 max-[960px]:grid-cols-2 max-sm:grid-cols-1">
           {morePremium.map((a) => (
