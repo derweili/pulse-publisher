@@ -139,7 +139,7 @@ const sectionArticleLists = new Map(
             ))}
           </div>
         </div>
-        {idx === 1 && (
+        {! (idx%2) && (
           <div class="mt-6 border-y border-border py-3">
             <AdSlot slot="native-in-feed" format="native-in-feed" label="Sponsored content" />
           </div>
