@@ -112,6 +112,8 @@ const sectionArticleLists = new Map(
     />
   </section>
 
+  <ForYouRail client:visible />
+
   <!-- Featured by section -->
   {sectionsForHome.map((section, idx) => {
     const sectionArticles = sectionArticleLists.get(section.slug) ?? [];
@@ -184,8 +186,6 @@ const sectionArticleLists = new Map(
       </div>
     </section>
   )}
-
-  <ForYouRail client:visible />
 
   <section class="container-page mt-16">
     <Newsletter
