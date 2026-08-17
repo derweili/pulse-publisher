@@ -1,6 +1,6 @@
 /**
  * One-off content migration: reads the hardcoded mock data from
- * src/data/content.ts and writes it into Sanity as real documents.
+ * scripts/data/content.ts and writes it into Sanity as real documents.
  *
  * Idempotent and safe to re-run: documents use deterministic `_id`s and are
  * written via `createIfNotExists`, and uploaded image assets are cached by
@@ -18,7 +18,7 @@ import {
   authors as mockAuthors,
   sections as mockSections,
   type ArticleBlock,
-} from "../../src/data/content";
+} from "./data/content";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CACHE_PATH = path.join(__dirname, ".migration-cache.json");

@@ -121,7 +121,7 @@ npm run studio:typegen
 
 ### One-off content migration
 
-`studio/scripts/migrate-content.ts` imports the original mock data from `src/data/content.ts` and writes it into Sanity as real documents (uploading each image as a Sanity asset in the process). It's idempotent — safe to re-run — and only needed once per new dataset:
+`studio/scripts/migrate-content.ts` imports the original mock data from `studio/scripts/data/content.ts` and writes it into Sanity as real documents (uploading each image as a Sanity asset in the process). It's idempotent — safe to re-run — and only needed once per new dataset:
 
 ```sh
 cd studio

@@ -10,7 +10,7 @@
     "deploy": "sanity deploy",
     "schema:extract": "sanity schema extract --path=./schema.json --enforce-required-fields",
     "typegen": "npm run schema:extract && sanity typegen generate",
-    "migrate": "tsx scripts/migrate-content.ts"
+    "migrate": "tsx --env-file=.env scripts/migrate-content.ts"
   },
   "dependencies": {
     "@sanity/client": "^7.26.2",
