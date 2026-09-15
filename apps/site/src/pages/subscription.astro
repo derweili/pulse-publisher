@@ -1,6 +1,36 @@
 ---
-import { PricingTable } from "@clerk/astro/components";
 import Layout from "../layouts/Layout.astro";
+
+// Testing tool, not real billing — see CLAUDE.md / mos-readiness.md. Sets
+// `unsafeMetadata.active_plan` on the Clerk user so plans can be switched
+// without touching Clerk billing. Real reader entitlement in production is
+// decided by mOS from the Clerk session JWT, independent of this metadata.
+const PLANS = [
+  {
+    id: "free",
+    name: "Free",
+    price: "—",
+    description: "The standard PULSE experience, with ads.",
+    features: ["Standard article access", "Ads shown"],
+    highlight: false,
+  },
+  {
+    id: "ad_free",
+    name: "Ad-Free",
+    price: "test plan",
+    description: "Enjoy PULSE without any ads or sponsored placements.",
+    features: ["Everything in Free", "No banner or sticky ads", "No sponsored placements"],
+    highlight: false,
+  },
+  {
+    id: "pulse_premium",
+    name: "PULSE+ Premium",
+    price: "test plan",
+    description: "Unlimited access to premium reporting, investigations and analysis.",
+    features: ["Everything in Ad-Free", "Unlimited premium articles", "Exclusive investigations & analysis"],
+    highlight: true,
+  },
+] as const;
 ---
 
 <Layout
@@ -15,10 +45,120 @@ import Layout from "../layouts/Layout.astro";
         Long-form reporting, exclusive investigations and the analysis our subscribers pay for.
         Pick the plan that works for you.
       </p>
+      <p class="mt-3 text-[12px] font-bold uppercase tracking-[0.08em] text-ink-3">
+        Testing tool — switches your account's test plan. No payment involved.
+      </p>
     </div>
 
-    <div class="mx-auto mt-10 max-w-[880px]">
-      <PricingTable />
+    <div class="mx-auto mt-10 grid max-w-[960px] gap-6 sm:grid-cols-3">
+      {
+        PLANS.map((plan) => (
+          <div
+            class={`flex flex-col rounded-lg border p-6 transition-shadow duration-200 ease-brand ${
+              plan.highlight ? "border-[#22232a] bg-premium text-white" : "border-border bg-surface"
+            }`}
+            data-plan-card
+            data-plan-id={plan.id}
+          >
+            <h2 class={`text-[18px] font-extrabold ${plan.highlight ? "text-premium-gold" : ""}`}>{plan.name}</h2>
+            <p class={`mt-1 text-[13px] ${plan.highlight ? "text-white/70" : "text-ink-3"}`}>{plan.description}</p>
+            <p class={`mt-4 text-[13px] font-bold uppercase tracking-[0.06em] ${plan.highlight ? "text-premium-gold" : "text-ink-3"}`}>
+              {plan.price}
+            </p>
+            <ul class={`mt-4 flex flex-1 flex-col gap-2 text-[13px] ${plan.highlight ? "text-white/90" : "text-ink-2"}`}>
+              {plan.features.map((feature) => (
+                <li class="flex items-start gap-2">
+                  <span aria-hidden="true">✓</span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              class={`mt-6 rounded-full px-4 py-2.5 text-[13px] font-bold tracking-[0.02em] transition-all duration-200 ease-brand hover:-translate-y-px disabled:pointer-events-none disabled:opacity-60 ${
+                plan.highlight
+                  ? "bg-premium-gold text-[#2a1d00] hover:brightness-105"
+                  : "border border-border text-ink hover:border-ink"
+              }`}
+              data-plan-button
+              data-plan-id={plan.id}
+            >
+              Switch to {plan.name}
+            </button>
+          </div>
+        ))
+      }
     </div>
   </section>
+
+  <script>
+    import { $clerkStore, $userStore } from "@clerk/astro/client";
+
+    const METADATA_KEY = "active_plan";
+
+    function getActivePlan(): string {
+      const user = $userStore.get();
+      const plan = (user?.unsafeMetadata as Record<string, unknown> | undefined)?.[METADATA_KEY];
+      return typeof plan === "string" ? plan : "free";
+    }
+
+    function syncCards() {
+      // $userStore is `undefined` until Clerk resolves the session (see
+      // Layout.astro's reconcile comment) — bail out rather than falling
+      // through to the "free" default, which would flash the Free card as
+      // active for a moment on every load, including for paying plans.
+      if ($userStore.get() === undefined) return;
+
+      const active = getActivePlan();
+      document.querySelectorAll<HTMLElement>("[data-plan-card]").forEach((card) => {
+        const isActive = card.dataset.planId === active;
+        card.classList.toggle("ring-2", isActive);
+        card.classList.toggle("ring-primary", isActive);
+        card.classList.toggle("ring-offset-2", isActive);
+
+        const button = card.querySelector<HTMLButtonElement>("[data-plan-button]");
+        if (!button) return;
+        button.dataset.defaultLabel ??= button.textContent ?? "";
+        button.textContent = isActive ? "Current plan" : button.dataset.defaultLabel;
+        button.disabled = isActive;
+      });
+    }
+
+    async function switchPlan(planId: string, button: HTMLButtonElement) {
+      const clerk = $clerkStore.get();
+      const user = $userStore.get();
+      if (!clerk) return;
+      if (!user) {
+        clerk.openSignIn();
+        return;
+      }
+
+      // Clerk merges unsafeMetadata updates server-side rather than replacing
+      // the object wholesale, so `delete`-ing a key here and sending the rest
+      // is a no-op — the old value survives on the server. Always write an
+      // explicit value, "free" included, so switching back actually clears it.
+      const nextMetadata = { ...(user.unsafeMetadata as Record<string, unknown>), [METADATA_KEY]: planId };
+
+      button.disabled = true;
+      try {
+        await user.updateMetadata({ unsafeMetadata: nextMetadata });
+        // Full reload (not just syncCards()) so the edge Worker re-runs the
+        // mOS pipeline — including the data-mos HTMLRewriter surfaces — against
+        // the newly saved plan, rather than just updating this page's client state.
+        window.location.reload();
+      } catch (err) {
+        button.disabled = getActivePlan() === planId;
+        throw err;
+      }
+    }
+
+    document.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-plan-button]");
+      if (!btn || btn.disabled) return;
+      void switchPlan(btn.dataset.planId ?? "free", btn);
+    });
+
+    syncCards();
+    $userStore.subscribe(syncCards);
+  </script>
 </Layout>

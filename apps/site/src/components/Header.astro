@@ -22,6 +22,9 @@ const searchSections = navSections.map((s) => ({ slug: s.slug, name: s.title }))
   class="sticky top-0 z-[100] border-b border-border bg-white/92 backdrop-blur-[14px] backdrop-saturate-[180%]"
   id="site-header"
 >
+  <MosShow when="premium-only">
+    <div class="bg-premium-gold h-2 w-full"></div>
+  </MosShow>
   <div
     class="container-page-wide flex h-header items-center gap-5"
   >
@@ -29,6 +32,9 @@ const searchSections = navSections.map((s) => ({ slug: s.slug, name: s.title }))
       <a href="/" class="inline-flex items-center gap-2 font-display text-[26px] leading-none tracking-[0.02em]" aria-label={`${settings.title} home`}>
         <span class="grid size-[30px] max-[480px]:size-[26px] place-items-center rounded-sm bg-primary text-[20px] max-[480px]:text-[17px] text-white">{settings.title.charAt(0)}</span>
         <span class="text-ink max-[480px]:text-[22px]">{settings.title}</span>
+        <MosShow when="premium-only">
+          <span class="text-premium-gold max-[480px]:text-[22px]">Plus</span>
+        </MosShow>
       </a>
     </div>
 
@@ -72,7 +78,25 @@ const searchSections = navSections.map((s) => ({ slug: s.slug, name: s.title }))
             <Bookmark size={20} strokeWidth={2.2} />
           </a>
           <div class="size-7 shrink-0">
-            <UserButton />
+            <UserButton>
+              <UserButton.MenuItems>
+                <UserButton.Link label="Manage subscription" href="/subscription">
+                  <svg
+                    slot="label-icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
+                    <path d="M5 21h14" />
+                  </svg>
+                </UserButton.Link>
+              </UserButton.MenuItems>
+            </UserButton>
           </div>
         </MosShow>
       </div>

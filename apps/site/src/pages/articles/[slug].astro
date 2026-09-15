@@ -134,15 +134,18 @@ const breadcrumbSchema = {
     <!-- Premium banner -->
     {isPremium && (
       <div class="bg-premium-gold text-[#2a1d00]" data-mos="premium-banner">
-        <div class="container-page flex flex-wrap items-center gap-4 py-3">
+        <div class="container-page flex flex-wrap items-center justify-center gap-4 py-3">
           <span class="inline-flex items-center gap-1.5 rounded-sm bg-[#2a1d00] px-2.5 py-[5px] text-xs font-extrabold tracking-[0.08em] text-premium-gold uppercase">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.5L21 9.2l-5 4.3 1.6 6.8L12 16.9 6.4 20.3 8 13.5 3 9.2l6.6-.7L12 2z"/></svg>
             PULSE+ Premium
           </span>
-          <span class="min-w-[200px] flex-1 text-sm font-semibold">
-            This is in-depth reporting for subscribers.
+          <span class="min-w-[200px] text-sm font-semibold inline-flex">
             <MosShow when="no-premium">
+              This is in-depth reporting for subscribers.
               Unlock the full archive with PULSE+.
+            </MosShow>
+            <MosShow when="premium-only">
+              This is an exclusive article for you as a PULSE+ subscriber.
             </MosShow>
           </span>
           <MosShow when="no-premium">

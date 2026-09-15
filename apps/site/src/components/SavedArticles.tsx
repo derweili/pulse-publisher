@@ -15,6 +15,27 @@ function getSavedSlugs(user: ReturnType<typeof $userStore.get>): string[] {
   return Array.isArray(saved) ? (saved as string[]) : [];
 }
 
+function SavedArticlesSkeleton() {
+  return (
+    <div className="grid grid-cols-3 gap-6 max-[960px]:grid-cols-2 max-sm:grid-cols-1" aria-hidden="true">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex animate-pulse flex-col overflow-hidden rounded-lg border border-border bg-surface"
+        >
+          <div className="aspect-[16/10] bg-bg-muted" />
+          <div className="flex flex-1 flex-col gap-2.5 px-5 pt-[18px] pb-5">
+            <div className="h-[11px] w-1/3 rounded bg-bg-muted" />
+            <div className="h-[23px] w-full rounded bg-bg-muted" />
+            <div className="h-[23px] w-2/3 rounded bg-bg-muted" />
+            <div className="mt-auto h-3 w-1/2 rounded bg-bg-muted" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function SavedArticles() {
   const user = useNanostore($userStore);
   const clerk = useNanostore($clerkStore);
@@ -45,7 +66,7 @@ export default function SavedArticles() {
   }, [user, slugsKey]);
 
   if (user === undefined || (user && articles === null)) {
-    return <p className="py-16 text-center text-sm text-ink-4">Loading your saved articles…</p>;
+    return <SavedArticlesSkeleton />;
   }
 
   if (!user) {

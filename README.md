@@ -46,6 +46,8 @@ All commands below are run from the repo root unless noted. Requires Node 22 (`.
 
 Three ways to run this locally, from fastest/least-faithful to slowest/most-faithful — `npm run dev` (site only), `npm run dev:full` (site + edge, HTTP-linked), `npm run preview:full` (site + edge, real Workers service binding). Full walkthrough, including why two edge-inclusive modes exist and the gotchas of running two `wrangler dev` processes at once, is in [`docs/local-dev.md`](./docs/local-dev.md).
 
+With `npm run dev:full`, `apps/site` (`astro dev`) runs at `http://localhost:4321` and `apps/edge` (`wrangler dev`, the mOS proxy) runs at its default `http://localhost:8787` — hit **`:8787`** as a reader, since that's the Worker that actually runs the auth read, surface-decisions call, and `HTMLRewriter` pipeline; `:4321` bypasses all of it.
+
 ## ☁️ Deploying to Cloudflare Workers
 
 Two Workers, service-bound together — see `CLAUDE.md` for the full architecture:
