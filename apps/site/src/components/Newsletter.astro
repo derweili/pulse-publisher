@@ -86,12 +86,28 @@ const innerClasses: Record<string, string> = {
 </section>
 
 <script>
+  import { $userStore } from "@clerk/astro/client";
+
   function initNewsletter(root: HTMLElement) {
     const form = root.querySelector<HTMLFormElement>("[data-nl-form]");
     const topicsField = root.querySelector<HTMLElement>("[data-nl-topics]");
     const success = root.querySelector<HTMLElement>("[data-nl-success]");
     const error = root.querySelector<HTMLElement>("[data-nl-error]");
     if (!form || !success || !error) return;
+
+    const input = form.querySelector<HTMLInputElement>("input[type=email]");
+    if (input) {
+      let userEdited = false;
+      input.addEventListener("input", () => {
+        userEdited = true;
+      });
+      $userStore.subscribe((user) => {
+        if (userEdited || input.value) return;
+        const email = user?.primaryEmailAddress?.emailAddress;
+        if (email) input.value = email;
+      });
+    }
+
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const input = form.querySelector<HTMLInputElement>("input[type=email]");
