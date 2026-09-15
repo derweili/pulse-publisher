@@ -5,10 +5,10 @@ import ForYouRail from "../components/ForYouRail.tsx";
 import Newsletter from "../components/Newsletter.astro";
 import TrendingList from "../components/TrendingList.astro";
 import Layout from "../layouts/Layout.astro";
-import { sectionPath } from "../lib/paths";
+import { formatDate, timeAgo } from "../lib/format";
+import { articlePath, authorPath, liveBlogPath, sectionPath } from "../lib/paths";
 import { getSanityClient } from "../lib/sanity/client";
-import { timeAgo } from "../lib/format";
-import { liveBlogPath } from "../lib/paths";
+import { urlFor } from "../lib/sanity/image";
 import {
   getActiveLiveBlogs,
   getAllArticles,
@@ -33,8 +33,25 @@ const [featured, premiumsAll, allSections, allArticles, trending, activeLiveBlog
 const heroArticle = featured[0] ?? allArticles[0];
 
 const featuredPool = featured.filter((a) => a._id !== heroArticle?._id);
-const heroSecondary = featuredPool.slice(0, 2);
-const editorsPicksFeatured = featuredPool.slice(2, 4);
+
+// The hero rundown always wants 4 stories — backfill from the full article
+// pool when there aren't enough featured ones so the rail never looks sparse.
+const heroSecondaryFeatured = featuredPool.slice(0, 4);
+const heroSecondaryIds = new Set(
+  [heroArticle, ...heroSecondaryFeatured]
+    .filter((a): a is NonNullable<typeof a> => Boolean(a))
+    .map((a) => a._id)
+);
+const heroSecondary = [
+  ...heroSecondaryFeatured,
+  ...allArticles
+    .filter((a) => !heroSecondaryIds.has(a._id))
+    .slice(0, 4 - heroSecondaryFeatured.length),
+];
+
+const editorsPicksFeatured = featuredPool
+  .filter((a) => !heroSecondaryFeatured.some((h) => h._id === a._id))
+  .slice(0, 4);
 
 const pickedIds = new Set(
   [heroArticle, ...heroSecondary, ...editorsPicksFeatured]
@@ -81,15 +98,118 @@ const sectionArticleLists = new Map(
 
   <!-- HERO -->
   {heroArticle && (
-    <section class="container-page pt-6">
-      <div class="grid grid-cols-[1.5fr_1fr] items-start gap-8 max-[960px]:grid-cols-1 max-[960px]:gap-6">
-        <div>
-          <ArticleCard article={heroArticle} variant="hero" />
-        </div>
-        <div class="grid grid-cols-1 gap-5 max-[960px]:grid-cols-2 max-[560px]:grid-cols-1">
-          {heroSecondary.map((a) => (
-            <ArticleCard article={a} variant="default" showDek={false} />
-          ))}
+    <section class="relative mt-6 bg-ink">
+      <div class="container-page-wide grid grid-cols-[1.65fr_1fr] gap-0 max-[960px]:grid-cols-1">
+        <!-- Lead story -->
+        <article
+          class="group relative isolate flex min-h-[580px] flex-col justify-end overflow-hidden max-[960px]:min-h-[440px]"
+          data-mos="article-card"
+          data-premium={heroArticle.premium ? "true" : "false"}
+        >
+          <a href={articlePath(heroArticle.slug)} class="absolute inset-0" tabindex="-1" aria-hidden="true">
+            <img
+              src={urlFor(heroArticle.hero).width(1400).height(900).fit("crop").url()}
+              alt=""
+              loading="eager"
+              width="1400"
+              height="900"
+              class="h-full w-full object-cover transition-transform duration-[800ms] ease-brand group-hover:scale-[1.04]"
+            />
+          </a>
+          <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,11,0)_20%,rgba(10,10,11,0.35)_55%,rgba(10,10,11,0.92)_100%)]"></div>
+
+          <div class="relative z-10 px-7 pt-24 pb-9 max-[640px]:px-5 max-[640px]:pb-7">
+            <span class="mb-3 inline-flex items-center gap-1.5 text-[11px] font-extrabold tracking-[0.18em] text-accent uppercase">
+              ◆ Top Story
+            </span>
+            <div class="flex flex-wrap items-center gap-2.5">
+              {heroArticle.section && (
+                <a href={sectionPath(heroArticle.section.slug)} class="rounded-sm bg-primary px-3 py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-white uppercase hover:bg-primary-dark">
+                  {heroArticle.section.title}
+                </a>
+              )}
+              {heroArticle.premium && (
+                <span class="inline-flex items-center gap-1.5 rounded-sm bg-premium-gold px-3 py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-[#2a1d00] uppercase" data-mos="premium-badge">
+                  Premium
+                </span>
+              )}
+            </div>
+            <h1 class="mt-4 font-display text-[clamp(30px,4.4vw,58px)] font-normal leading-[1.02] tracking-[-0.01em] text-white">
+              <a href={articlePath(heroArticle.slug)} class="hover:text-white/85">{heroArticle.title}</a>
+            </h1>
+            <p class="mt-4 max-w-[56ch] text-[16px] leading-relaxed text-white/70 max-[640px]:text-[15px]">
+              {heroArticle.dek}
+            </p>
+            <div class="mt-6 inline-flex flex-wrap items-center gap-2 text-xs font-medium text-white/55">
+              {heroArticle.authors?.[0] && (
+                <a href={authorPath(heroArticle.authors[0].slug)} class="inline-flex items-center gap-2">
+                  <img
+                    src={urlFor(heroArticle.authors[0].avatar).width(56).height(56).fit("crop").url()}
+                    alt=""
+                    class="size-7 rounded-full bg-white/10 object-cover"
+                    width="28"
+                    height="28"
+                    loading="lazy"
+                  />
+                  <span class="text-[13px] font-bold text-white/85 hover:text-white">{heroArticle.authors[0].name}</span>
+                </a>
+              )}
+              <span class="dot"></span>
+              <span>{formatDate(heroArticle.publishedAt)}</span>
+              <span class="dot"></span>
+              <span>{heroArticle.readTime} min read</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Rundown -->
+        <div class="flex flex-col border-l border-white/10 bg-[#111216] max-[960px]:border-l-0 max-[960px]:border-t">
+          <div class="flex items-center justify-between px-6 py-4">
+            <span class="text-[11px] font-extrabold tracking-[0.16em] text-white/45 uppercase">Right Now</span>
+            <span class="relative flex size-1.5">
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+              <span class="relative inline-flex size-1.5 rounded-full bg-primary"></span>
+            </span>
+          </div>
+          <div class="flex flex-1 flex-col divide-y divide-white/10 border-t border-white/10">
+            {heroSecondary.map((a, i) => (
+              <a
+                href={articlePath(a.slug)}
+                class="group flex items-center gap-4 px-6 py-5 transition-colors duration-200 hover:bg-white/[0.06] max-[640px]:px-5 max-[640px]:py-4"
+                data-mos="article-card"
+                data-premium={a.premium ? "true" : "false"}
+              >
+                <span class="shrink-0 font-display text-[26px] leading-none text-white/15 transition-colors duration-200 group-hover:text-primary">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div class="min-w-0 flex-1">
+                  {a.section && (
+                    <span class="text-[10px] font-extrabold tracking-[0.1em] uppercase" style={`color:${a.section.accentColor}`}>
+                      {a.section.title}
+                    </span>
+                  )}
+                  <h3 class="mt-1 text-[15px] leading-[1.32] text-white/90 group-hover:text-white">{a.title}</h3>
+                  <div class="mt-2 flex items-center gap-2 text-[11px] font-medium text-white/40">
+                    {a.premium && (
+                      <span class="inline-flex items-center gap-2">
+                        <span class="font-extrabold tracking-[0.06em] text-premium-gold uppercase" data-mos="premium-badge">Premium</span>
+                        <span class="dot"></span>
+                      </span>
+                    )}
+                    <span>{a.readTime} min read</span>
+                  </div>
+                </div>
+                <img
+                  src={urlFor(a.hero).width(160).height(160).fit("crop").url()}
+                  alt=""
+                  width="72"
+                  height="72"
+                  loading="lazy"
+                  class="size-[72px] shrink-0 rounded-md object-cover max-[420px]:hidden"
+                />
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </section>
