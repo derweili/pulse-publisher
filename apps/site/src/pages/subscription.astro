@@ -96,6 +96,12 @@ const PLANS = [
 
     const METADATA_KEY = "active_plan";
 
+    // Set while a switch is in flight so syncCards() (subscribed to
+    // $userStore below) doesn't optimistically re-render the cards the
+    // moment updateMetadata() resolves — the only UI change until the
+    // reload should be the loading state on the clicked button.
+    let switching = false;
+
     function getActivePlan(): string {
       const user = $userStore.get();
       const plan = (user?.unsafeMetadata as Record<string, unknown> | undefined)?.[METADATA_KEY];
@@ -108,6 +114,7 @@ const PLANS = [
       // through to the "free" default, which would flash the Free card as
       // active for a moment on every load, including for paying plans.
       if ($userStore.get() === undefined) return;
+      if (switching) return;
 
       const active = getActivePlan();
       document.querySelectorAll<HTMLElement>("[data-plan-card]").forEach((card) => {
@@ -139,7 +146,10 @@ const PLANS = [
       // explicit value, "free" included, so switching back actually clears it.
       const nextMetadata = { ...(user.unsafeMetadata as Record<string, unknown>), [METADATA_KEY]: planId };
 
+      switching = true;
+      button.dataset.defaultLabel ??= button.textContent ?? "";
       button.disabled = true;
+      button.textContent = "Switching…";
       try {
         await user.updateMetadata({ unsafeMetadata: nextMetadata });
         // Full reload (not just syncCards()) so the edge Worker re-runs the
@@ -147,6 +157,8 @@ const PLANS = [
         // the newly saved plan, rather than just updating this page's client state.
         window.location.reload();
       } catch (err) {
+        switching = false;
+        button.textContent = button.dataset.defaultLabel;
         button.disabled = getActivePlan() === planId;
         throw err;
       }
