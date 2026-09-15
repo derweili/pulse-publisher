@@ -74,8 +74,8 @@ const sectionArticleLists = new Map(
 ---
 
 <Layout pageType="homepage">
-  <div class="container-page-wide flex justify-center pt-4 pb-2">
-    <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" />
+  <div class="container-page-wide flex justify-center">
+    <AdSlot slot="leaderboard-top" format="leaderboard" label="Advertisement" class="my-6" />
   </div>
 
   {activeLiveBlogs.length > 0 && (
@@ -98,7 +98,7 @@ const sectionArticleLists = new Map(
 
   <!-- HERO -->
   {heroArticle && (
-    <section class="relative mt-6 bg-ink">
+    <section class="relative bg-ink">
       <div class="container-page-wide grid grid-cols-[1.65fr_1fr] gap-0 max-[960px]:grid-cols-1">
         <!-- Lead story -->
         <article
