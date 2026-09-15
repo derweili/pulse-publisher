@@ -25,10 +25,10 @@ All three are run from the repo root.
 |---|---|---|---|
 | `npm run dev` | `http://localhost:4321` (astro dev) | — | — |
 | `npm run dev:full` | `http://localhost:4321` (astro dev) | `http://localhost:8787` (wrangler dev, default port) | — |
-| `npm run preview:full` | `http://localhost:8787` (wrangler dev, `--port 8787`) | `http://localhost:8788` (wrangler dev, `--port 8788`) | — |
+| `npm run preview:full` | `http://localhost:8788` (wrangler dev, `--port 8788`) | `http://localhost:8787` (wrangler dev, `--port 8787`) | — |
 | `npm run studio:dev` | — | — | `http://localhost:3333` |
 
-In every mode, **the edge Worker's URL is the one to hit as a reader** (`http://localhost:8787` or `:8788` depending on mode) — it's the proxy, so it's what actually exercises the router/anonymize/mOS pipeline. Hitting the site's URL directly bypasses all of that; useful for isolating "is this a site bug or an edge bug," not for a realistic request.
+In every mode, **the edge Worker's URL is the one to hit as a reader**, and it's always `http://localhost:8787` — it's the proxy, so it's what actually exercises the router/anonymize/mOS pipeline. Hitting the site's URL directly bypasses all of that; useful for isolating "is this a site bug or an edge bug," not for a realistic request.
 
 `preview:full` also opens debugger/inspector ports `9229` (site) and `9230` (edge) — irrelevant unless you're attaching DevTools/a debugger, but it's *why* the two processes need distinct `--inspector-port`s (see gotchas below).
 
@@ -44,7 +44,7 @@ In every mode, **the edge Worker's URL is the one to hit as a reader** (`http://
 
 This runs two independent `wrangler dev` processes, which surfaces two things worth knowing:
 
-- **Inspector port collision.** Every `wrangler dev` instance defaults to debugger/inspector port `9229`. Two at once collide, and the second one crashes with `Address already in use (127.0.0.1:9229)`. `preview:full` already gives each process its own `--port`/`--inspector-port` (site: `8787`/`9229`, edge: `8788`/`9230`) — if you're composing your own commands instead of using the script, set these explicitly.
+- **Inspector port collision.** Every `wrangler dev` instance defaults to debugger/inspector port `9229`. Two at once collide, and the second one crashes with `Address already in use (127.0.0.1:9229)`. `preview:full` already gives each process its own `--port`/`--inspector-port` (edge: `8787`/`9229`, site: `8788`/`9230`) — if you're composing your own commands instead of using the script, set these explicitly.
 - **Stray processes hold ports across runs.** If a previous run didn't shut down cleanly, a leftover `wrangler`/`workerd` process can keep holding `9229` (or `8787`/`8788`) even after you think you've stopped it. If you hit the error above with nothing obviously running, check `lsof -i :9229` and kill whatever's listed — a plain `Ctrl-C` doesn't always fully clean up `workerd` child processes; `pkill -9 -f workerd` is a blunter but reliable fallback.
 - **`compatibility_date` vs. local `workerd`.** Cloudflare allows setting a `compatibility_date` slightly ahead of what the locally-installed `workerd` binary (wrangler's dependency, not a separate install) actually supports yet. If `wrangler dev` fails with `This Worker requires compatibility date "...", but the newest date supported by this server binary is "..."`, either `npm update wrangler` (pulls a newer `workerd` if one's been published) or add `--compatibility-date=<a-day-or-two-earlier>` to the command for that local run only — never commit that flag, it's purely a local-tooling lag, not a real config change.
 
@@ -52,12 +52,12 @@ This runs two independent `wrangler dev` processes, which surfaces two things wo
 
 Useful when you want to run one side under a debugger, or don't want the other one at all.
 
-**Site, real Workers runtime** (needed as a bind target for edge, or for `Astro.locals.runtime.*` beyond what `astro dev`'s `platformProxy` simulates):
+**Site, real Workers runtime** (needed as a bind target for edge, or for `Astro.locals.runtime.*` beyond what `astro dev`'s `platformProxy` simulates). `wrangler dev` defaults to port `8787`, which is reserved for edge — give site a different port explicitly:
 
 ```sh
 cd apps/site
 npm run build
-npx wrangler dev            # http://localhost:8787 — or: npm run cf:preview, which does build + this in one step
+npx wrangler dev --port 8788   # or: npm run cf:preview, which does build + this in one step (but keeps the 8787 default — pass --port yourself if edge is also running)
 ```
 
 **Site, fast loop:**
@@ -67,11 +67,11 @@ cd apps/site
 npm run dev                 # astro dev, localhost:4321
 ```
 
-**Edge, against a real local site** (site must already be running via `wrangler dev`, not `astro dev`). Both default to port `8787`, so if site is already running there, give edge a different one — see "Both at once" below for the fully explicit form:
+**Edge, against a real local site** (site must already be running via `wrangler dev` on a non-default port, not `astro dev`) — see "Both at once" below for the fully explicit form:
 
 ```sh
 cd apps/edge
-npm run dev                 # wrangler dev, http://localhost:8787 by default — only if nothing else is on 8787
+npm run dev                 # wrangler dev, http://localhost:8787 by default
 ```
 
 **Edge, against `astro dev`:**
@@ -85,10 +85,10 @@ npx wrangler dev --var SITE_DEV_ORIGIN:http://localhost:4321   # http://localhos
 
 ```sh
 # terminal 1
-cd apps/site && npx wrangler dev --port 8787 --inspector-port 9229
+cd apps/edge && npx wrangler dev --port 8787 --inspector-port 9229
 
 # terminal 2
-cd apps/edge && npx wrangler dev --port 8788 --inspector-port 9230
+cd apps/site && npx wrangler dev --port 8788 --inspector-port 9230
 ```
 
 ## Testing and type-checking (no servers needed)

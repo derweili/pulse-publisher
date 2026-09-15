@@ -15,7 +15,7 @@
     "cf:preview": "npm run cf:preview -w apps/site",
     "deploy": "npm run deploy -w apps/site",
     "dev:full": "concurrently -n site,edge -c blue,green \"npm run dev -w apps/site\" \"npm run dev -w apps/edge -- --var SITE_DEV_ORIGIN:http://localhost:4321\"",
-    "preview:full": "npm run build -w apps/site && concurrently -n site,edge -c blue,green \"npm run wrangler:dev -w apps/site -- --port 8787 --inspector-port 9229\" \"npm run dev -w apps/edge -- --port 8788 --inspector-port 9230\"",
+    "preview:full": "npm run build -w apps/site && concurrently -n site,edge -c blue,green \"npm run wrangler:dev -w apps/site -- --port 8788 --inspector-port 9230\" \"npm run dev -w apps/edge -- --port 8787 --inspector-port 9229\"",
     "studio:dev": "npm --prefix studio run dev",
     "studio:deploy": "npm --prefix studio run deploy",
     "studio:typegen": "npm --prefix studio run typegen",
