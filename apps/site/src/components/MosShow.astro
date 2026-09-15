@@ -4,7 +4,7 @@
 // mOS removes the branch that doesn't match the reader's plan via
 // [data-mos-show] on the edge, using HTMLRewriter. See docs/mos-selectors.md.
 interface Props {
-  when: "signed-out" | "signed-in" | "premium-only" | "no-premium";
+  when: "signed-out" | "signed-in" | "premium-only" | "no-premium" | "has-subscription" | "no-subscription";
 }
 const { when } = Astro.props;
 ---
