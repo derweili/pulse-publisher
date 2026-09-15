@@ -289,6 +289,37 @@ const breadcrumbSchema = {
             subtitle="One email. Every weekday. Free."
             variant="compact"
           />
+
+          <!--
+            Ad-free readers who aren't premium yet: paid tiers are Ad-Free <
+            Premium (Premium includes everything Ad-Free has), so
+            has-subscription + no-premium == "ad-free, not premium". Styled
+            like the dashed AdSlot placeholders to sit naturally in the ad
+            rhythm, but deliberately NOT an AdSlot/[data-ad-slot] — that gets
+            stripped for ad-free readers, who are exactly this banner's
+            audience.
+          -->
+          <MosShow when="has-subscription">
+            <MosShow when="no-premium">
+              <div
+                class="flex flex-col items-center gap-2.5 rounded-lg border border-dashed border-border-strong bg-bg-soft p-5 text-center"
+                data-mos="ad-free-premium-upsell"
+              >
+                <span class="inline-flex items-center gap-1.5 rounded-sm bg-premium-gold px-2.5 py-[5px] text-xs font-extrabold tracking-[0.08em] text-[#2a1d00] uppercase">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.5L21 9.2l-5 4.3 1.6 6.8L12 16.9 6.4 20.3 8 13.5 3 9.2l6.6-.7L12 2z"/></svg>
+                  PULSE+ Premium
+                </span>
+                <p class="text-sm font-bold text-ink">You're already ad-free. Go further with PULSE+.</p>
+                <p class="text-[13px] leading-snug text-ink-3">Unlimited premium reporting, exclusive investigations and analysis.</p>
+                <a
+                  href="/subscription"
+                  class="mt-1.5 rounded-full bg-premium-gold px-4 py-2 text-[13px] font-extrabold text-[#2a1d00] transition-all duration-200 ease-brand hover:-translate-y-px hover:brightness-105"
+                >
+                  Upgrade to PULSE+
+                </a>
+              </div>
+            </MosShow>
+          </MosShow>
         </div>
       </aside>
     </div>
