@@ -54,7 +54,7 @@ const searchSections = navSections.map((s) => ({ slug: s.slug, name: s.title }))
     <div class="flex shrink-0 items-center gap-2.5">
       <SearchTrigger sections={searchSections} client:idle />
       {extraNavLinks.map((link) => (
-        <MosShow when="no-premium">
+        <MosShow when="no-subscription">
           <a
             href={link.href}
             class="rounded-full bg-ink px-4 py-2.5 text-[13px] font-bold tracking-[0.02em] text-white transition-all duration-200 ease-brand hover:-translate-y-px hover:bg-primary max-[960px]:hidden"
@@ -62,6 +62,14 @@ const searchSections = navSections.map((s) => ({ slug: s.slug, name: s.title }))
           >
         </MosShow>
       ))}
+        <MosShow when="has-subscription">
+          <MosShow when="no-premium">
+            <a
+              href={'/subscription'}
+              class="rounded-full bg-premium-gold text-[#2a1d00] hover:brightness-105 px-4 py-2.5 text-[13px] font-bold tracking-[0.02em] transition-all duration-200 ease-brand hover:-translate-y-px max-[960px]:hidden"
+              >Upgrade to PULSE+</a>
+          </MosShow>
+        </MosShow>
       <div data-mos="auth-actions" class="contents">
         <MosShow when="signed-out">
           <SignInButton
