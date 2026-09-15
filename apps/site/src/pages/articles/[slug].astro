@@ -1,7 +1,8 @@
 ---
 import AdSlot from "../../components/AdSlot.astro";
 import ArticleCard from "../../components/ArticleCard.astro";
-import Comments from "../../components/Comments.tsx";
+import CommentForm from "../../components/CommentForm.tsx";
+import CommentsList from "../../components/CommentsList.tsx";
 import Newsletter from "../../components/Newsletter.astro";
 import Lightbox from "../../components/Lightbox.astro";
 import PortableText from "../../components/portable-text/PortableText.astro";
@@ -26,6 +27,7 @@ import {
   getTrendingArticles,
 } from "../../lib/sanity/fetch";
 import MosShow from "../../components/MosShow.astro";
+import { FAKE_COMMENTS } from "../../lib/fake-comments";
 
 const { slug } = Astro.params;
 const client = getSanityClient(Astro.locals.runtime.env);
@@ -248,8 +250,33 @@ const breadcrumbSchema = {
         </div>
 
         <!-- Comments placeholder -->
-        <section class="mt-12" data-mos="comments">
-          <Comments articleTitle={article.title} client:idle />
+        <section class="mt-12 flex flex-col gap-8" data-mos="comments">
+          <div>
+            <h3 class="text-xl">
+              {FAKE_COMMENTS.length} responses to "{article.title}"
+            </h3>
+            <p class="mt-1.5 text-sm text-ink-3">Join the conversation. Be kind, be specific, be brave.</p>
+          </div>
+
+          <div class="border-b border-border pb-8">
+            <MosShow when="signed-out">
+              <div class="flex flex-col items-center gap-3 rounded-lg border border-border bg-surface-2 px-6 py-6 text-center">
+                <p class="text-sm text-ink-3">Sign in to join the conversation and leave a comment.</p>
+                <a
+                  href="/sign-in"
+                  data-mos-action="sign-in"
+                  class="rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold text-white transition-colors duration-200 hover:bg-primary"
+                >
+                  Sign in
+                </a>
+              </div>
+            </MosShow>
+            <MosShow when="signed-in">
+              <CommentForm client:idle />
+            </MosShow>
+          </div>
+
+          <CommentsList client:idle />
         </section>
       </div>
 
