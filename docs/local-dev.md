@@ -5,8 +5,9 @@ How to run `apps/site` (pulse-today) and `apps/edge` (pulse-edge) locally, alone
 ## Prerequisites
 
 - **Node 22** — `wrangler` and `@monetizationos/proxy` both require it (`engines.node: ">=22"`). `.nvmrc` pins `22`; run `nvm use` (or `nvm use 22`) before any command below if your shell defaults to something older.
-- `npm install` from the repo root (installs all three workspaces: `apps/site`, `apps/edge`, `studio`).
-- `apps/site/.dev.vars` — copy from `apps/site/.dev.vars.example`, fill in `SANITY_API_READ_TOKEN`.
+- `npm install` from the repo root (installs every workspace: `apps/site`, `apps/edge`, `apps/cms`, `packages/emdash-revalidate-plugin`).
+- `apps/cms/.dev.vars` — copy from `apps/cms/.dev.vars.example`, and `apps/cms/.env` via `npx emdash secrets generate --write .env` (from `apps/cms`). Run `npm run cms:dev` and complete `/_emdash/admin/setup` once.
+- `apps/site/.dev.vars` — copy from `apps/site/.dev.vars.example`, fill in `EMDASH_URL` (pulse-cms's local URL), `EMDASH_API_TOKEN` (a personal access token from pulse-cms, scoped to `content:read`), and `REVALIDATE_SECRET`.
 - `apps/edge/.dev.vars` — copy from `apps/edge/.dev.vars.example`, set `MOS_SECRET_KEY` to *anything* non-empty (e.g. `sk_test_placeholder`) for local testing. `@monetizationos/proxy` fails open when the mOS API call fails — a placeholder key is enough to exercise the whole pass-through pipeline; you only need a real key to see actual surface decisions (Session 5 of `docs/mos-integration-plan.md`).
 
 ## Three ways to run this
@@ -21,12 +22,14 @@ All three are run from the repo root.
 
 ## Local URLs at a glance
 
-| Mode | Site | Edge | Studio |
+| Mode | Site | Edge | CMS |
 |---|---|---|---|
 | `npm run dev` | `http://localhost:4321` (astro dev) | — | — |
 | `npm run dev:full` | `http://localhost:4321` (astro dev) | `http://localhost:8787` (wrangler dev, default port) | — |
 | `npm run preview:full` | `http://localhost:8788` (wrangler dev, `--port 8788`) | `http://localhost:8787` (wrangler dev, `--port 8787`) | — |
-| `npm run studio:dev` | — | — | `http://localhost:3333` |
+| `npm run cms:dev` | — | — | `http://localhost:4322` (astro dev, EmDash's default second port) |
+
+`apps/site` needs pulse-cms reachable in every mode above — run `npm run cms:dev` in its own terminal alongside whichever site/edge combination you're using, and make sure `apps/site/.dev.vars`'s `EMDASH_URL` points at it. Unlike the edge↔site relationship, this is a plain HTTP fetch (see `apps/site/src/lib/emdash/client.ts`), not a service binding — no special wiring needed to reach it from `astro dev` or `wrangler dev`.
 
 In every mode, **the edge Worker's URL is the one to hit as a reader**, and it's always `http://localhost:8787` — it's the proxy, so it's what actually exercises the router/anonymize/mOS pipeline. Hitting the site's URL directly bypasses all of that; useful for isolating "is this a site bug or an edge bug," not for a realistic request.
 

@@ -5,14 +5,20 @@
 # mirrors what you'd set in production with `wrangler secret put` or the
 # Workers dashboard. Unlike `.env`, this is NOT inlined at build time: it's
 # read per-request through `Astro.locals.runtime.env`, matching how the
-# deployed Worker reads it. See `src/lib/sanity/client.ts`.
+# deployed Worker reads it. See `src/lib/emdash/client.ts`.
 
-# Sanity read token, required because the dataset is private. Generate at
-# sanity.io/manage → API → Tokens with "Viewer" permission.
-SANITY_API_READ_TOKEN=
+# Base URL of your local/deployed apps/cms ("pulse-cms"). Local dev:
+# http://localhost:4322 (or whatever port `npm run cms:dev` picks — see
+# apps/cms's astro dev output). Not a secret.
+EMDASH_URL=http://localhost:4322
 
-# Shared secret for the Sanity webhook that hits POST /api/revalidate.
-# Same value goes in the webhook's "Secret" field in sanity.io/manage → API →
-# Webhooks — Sanity uses it to sign the `sanity-webhook-signature` header,
-# which the endpoint verifies. See docs/cache-revalidation.md.
-SANITY_API_WEBHOOK_SECRET=
+# pulse-cms personal access token. Create one in pulse-cms's admin
+# (Settings → API tokens, or via `npx emdash` from apps/cms) scoped to
+# content:read — apps/site only ever reads published content.
+EMDASH_API_TOKEN=
+
+# Shared secret for packages/emdash-revalidate-plugin's POSTs to
+# POST /api/revalidate. Same value goes in apps/cms's REVALIDATE_SECRET
+# (see apps/cms/.dev.vars.example) — this app checks it as
+# `Authorization: Bearer <value>`. See docs/emdash-migration-plan.md.
+REVALIDATE_SECRET=

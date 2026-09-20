@@ -6,12 +6,12 @@ import StructuredData from "../../components/StructuredData.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatTime, timeAgo } from "../../lib/format";
 import { authorPath, liveBlogPath, sectionPath } from "../../lib/paths";
-import { getSanityClient } from "../../lib/sanity/client";
-import { urlFor } from "../../lib/sanity/image";
-import { getLiveBlogBySlug } from "../../lib/sanity/fetch";
+import { getEmdashClient } from "../../lib/emdash/client";
+import { urlFor } from "../../lib/emdash/image";
+import { getLiveBlogBySlug } from "../../lib/emdash/content";
 
 const { slug } = Astro.params;
-const client = getSanityClient(Astro.locals.runtime.env);
+const client = getEmdashClient(Astro.locals.runtime.env);
 const liveBlog = slug ? await getLiveBlogBySlug(client, slug) : null;
 if (!liveBlog) {
   return new Response(null, { status: 404 });

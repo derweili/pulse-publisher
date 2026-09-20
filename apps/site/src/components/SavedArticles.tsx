@@ -1,8 +1,8 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { $clerkStore, $userStore } from "@clerk/astro/client";
 import { articlePath, authorPath, sectionPath } from "../lib/paths";
-import { urlFor } from "../lib/sanity/image";
-import type { ArticleCardData } from "../lib/sanity/fetch";
+import { urlFor } from "../lib/emdash/image";
+import type { ArticleCardData } from "../lib/emdash/content";
 
 function useNanostore<T>(store: { get: () => T; subscribe: (cb: () => void) => () => void }): T {
   return useSyncExternalStore(store.subscribe, store.get, store.get);

@@ -1,0 +1,52 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "pulse-cms",
+  // @astrojs/cloudflare's build validates this path exists BEFORE `astro
+  // build` produces it (a chicken-and-egg gap in its Vite-plugin-based
+  // architecture) — package.json's `prebuild` script touches a placeholder
+  // here first so a from-scratch `npm run build` doesn't fail on that check.
+  "main": "./dist/_worker.js/index.js",
+  "compatibility_date": "2026-08-12",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Publicly reachable by design — this is where editors sign in
+  // (/_emdash/admin) to manage content. Unrelated to the mOS reader
+  // pipeline; see CLAUDE.md and docs/emdash-migration-plan.md.
+  //
+  // Point this at your own subdomain once DNS is set up, e.g.:
+  // "routes": [{ "pattern": "cms.pulse.derweili.de/*", "custom_domain": true }]
+  "workers_dev": true,
+
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+
+  // Cloudflare Images transform binding — required for on-the-fly image
+  // resizing of R2-stored media (see the "image" field type and the
+  // `urlFor()` helper in apps/site/src/lib/emdash/image.ts). @astrojs/cloudflare
+  // also injects this automatically when `imageService` is
+  // "cloudflare-binding" (the default set in astro.config.mjs); declaring it
+  // here keeps the intent visible in source control.
+  "images": {
+    "binding": "IMAGES"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pulse-cms",
+      // Fill in after running:
+      //   wrangler d1 create pulse-cms
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "pulse-cms-media"
+      // Create with: wrangler r2 bucket create pulse-cms-media
+    }
+  ]
+}

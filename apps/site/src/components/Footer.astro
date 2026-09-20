@@ -1,10 +1,10 @@
 ---
 import { authorPath, sectionPath } from "../lib/paths";
-import { getSanityClient } from "../lib/sanity/client";
-import { getAuthors, getSections, getSiteSettings } from "../lib/sanity/fetch";
+import { getEmdashClient } from "../lib/emdash/client";
+import { getAuthors, getSections, getSiteSettings } from "../lib/emdash/content";
 import Newsletter from "./Newsletter.astro";
 
-const client = getSanityClient(Astro.locals.runtime.env);
+const client = getEmdashClient(Astro.locals.runtime.env);
 const [sections, authors, settings] = await Promise.all([
   getSections(client),
   getAuthors(client),

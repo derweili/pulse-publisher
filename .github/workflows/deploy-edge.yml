@@ -35,7 +35,7 @@ jobs:
 
       # MOS_SECRET_KEY is a Cloudflare Worker runtime secret, not a build-time
       # env var — set once per environment with `wrangler secret put`, not on
-      # every deploy. Same pattern as SANITY_API_READ_TOKEN in deploy-site.yml.
+      # every deploy. Same pattern as EMDASH_API_TOKEN in deploy-site.yml.
       #
       # No separate build step: `wrangler deploy` bundles the Worker's TS
       # directly, unlike apps/site which needs `astro build` first.

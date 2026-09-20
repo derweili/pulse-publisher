@@ -18,15 +18,15 @@ reader ──► pulse.derweili.de ──► EDGE WORKER  "pulse-edge"   (apps/e
                                        ▼
                                SITE WORKER  "pulse-today"   (apps/site)  cache: ENABLED
                                  · Astro SSR, renders identical HTML for every reader
-                                 · queries Sanity live
+                                 · reads published content from pulse-cms's REST API
                                  · NOT publicly reachable (service binding only)
 
-editor ──► Sanity Studio (studio/) — separate deploy, unrelated to the proxy
+editor ──► pulse-cms (apps/cms) — separate deploy, unrelated to the proxy
 ```
 
 - **`apps/site` ("pulse-today")** renders. It is auth-blind and reader-blind. It must never be publicly reachable — no `routes`, no `custom_domain`, `workers_dev = false`. It ships full premium article bodies in its response; if it is ever publicly reachable, the paywall is bypassed.
 - **`apps/edge` ("pulse-edge")** is the only public entry point. It reads the reader's identity, calls the mOS Decision API, and rewrites HTML via `HTMLRewriter`. It reaches the site only through the `SITE` service binding.
-- **`studio/`** is Sanity Studio, a separate deploy target, untouched by any of the above.
+- **`apps/cms` ("pulse-cms")** is the EmDash CMS — admin panel, database-backed content, and media, all in one app per EmDash's normal architecture. A separate deploy target, publicly reachable by design (editors sign in there), untouched by any of the above and unrelated to the mOS proxy split. `apps/site` never embeds EmDash itself — see `docs/emdash-migration-plan.md` for why, and how `apps/site` reads content from it instead.
 
 ## Hard rules
 
@@ -50,8 +50,8 @@ editor ──► Sanity Studio (studio/) — separate deploy, unrelated to the p
 - dev: `wrangler dev` from `apps/edge`
 - deploy: `wrangler deploy` from `apps/edge`
 
-**Studio** (`studio/`):
-- dev: `npm run studio:dev`
-- build: `npm --prefix studio run build`
-- deploy: `npm run studio:deploy`
-- typegen: `npm run studio:typegen`
+**CMS** (`apps/cms`, `pulse-cms`):
+- dev: `npm run dev` from `apps/cms` (or `npm run cms:dev` from the root)
+- build: `npm run build` from `apps/cms`
+- deploy: `npm run deploy` from `apps/cms` (or `npm run cms:deploy` from the root)
+- seed: `npm run seed` from `apps/cms` (or `npm run cms:seed` from the root)

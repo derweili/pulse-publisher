@@ -2,72 +2,50 @@ import { describe, expect, it } from "vitest";
 import { resolveRevalidationTags } from "./resolveRevalidationTags";
 
 describe("resolveRevalidationTags", () => {
-  it("tags an article change: article, home, section, authors, tags", () => {
-    const plan = resolveRevalidationTags({
-      type: "article",
-      slug: "some-story",
-      sectionSlug: "tech",
-      authorSlugs: ["mara-okafor", "j-lee"],
-      tags: ["ai", "policy"],
-    });
-
-    expect(plan).toEqual({
-      purgeEverything: false,
-      tags: expect.arrayContaining([
-        "article:some-story",
-        "home",
-        "section:tech",
-        "author:mara-okafor",
-        "author:j-lee",
-        "tag:ai",
-        "tag:policy",
-      ]),
-    });
-    if (!plan.purgeEverything) expect(plan.tags).toHaveLength(7);
-  });
-
-  it("dedupes tags when an article has no extra section/authors/tags", () => {
-    const plan = resolveRevalidationTags({ type: "article", slug: "bare-story" });
-    expect(plan).toEqual({ purgeEverything: false, tags: ["article:bare-story", "home"] });
+  it("tags an article change: article and home", () => {
+    const plan = resolveRevalidationTags({ collection: "articles", slug: "some-story" });
+    expect(plan).toEqual({ purgeEverything: false, tags: ["article:some-story", "home"] });
   });
 
   it("falls back to home when an article payload has no slug", () => {
-    const plan = resolveRevalidationTags({ type: "article", slug: null });
+    const plan = resolveRevalidationTags({ collection: "articles", slug: null });
     expect(plan).toEqual({ purgeEverything: false, tags: ["home"] });
   });
 
-  it("tags a liveBlog change: live, home, and section if present", () => {
-    const plan = resolveRevalidationTags({ type: "liveBlog", slug: "election-night", sectionSlug: "politics" });
-    expect(plan).toEqual({
-      purgeEverything: false,
-      tags: ["live:election-night", "home", "section:politics"],
-    });
-  });
-
-  it("tags a liveBlog change without a section", () => {
-    const plan = resolveRevalidationTags({ type: "liveBlog", slug: "election-night" });
+  it("tags a live_blogs change: live and home", () => {
+    const plan = resolveRevalidationTags({ collection: "live_blogs", slug: "election-night" });
     expect(plan).toEqual({ purgeEverything: false, tags: ["live:election-night", "home"] });
   });
 
-  it("tags a section change: section and home", () => {
-    const plan = resolveRevalidationTags({ type: "section", slug: "tech" });
-    expect(plan).toEqual({ purgeEverything: false, tags: ["section:tech", "home"] });
+  it("falls back to home when a live_blogs payload has no slug", () => {
+    const plan = resolveRevalidationTags({ collection: "live_blogs", slug: null });
+    expect(plan).toEqual({ purgeEverything: false, tags: ["home"] });
   });
 
-  it("purges everything for a section change with no slug", () => {
-    expect(resolveRevalidationTags({ type: "section", slug: null })).toEqual({ purgeEverything: true });
+  it("tags a live_blog_entries change via the resolved parent slug", () => {
+    const plan = resolveRevalidationTags({ collection: "live_blog_entries", parentSlug: "election-night" });
+    expect(plan).toEqual({ purgeEverything: false, tags: ["live:election-night", "home"] });
   });
 
-  it("tags an author change: author only", () => {
-    const plan = resolveRevalidationTags({ type: "author", slug: "mara-okafor" });
-    expect(plan).toEqual({ purgeEverything: false, tags: ["author:mara-okafor"] });
+  it("purges everything for a live_blog_entries change when the parent slug couldn't be resolved", () => {
+    expect(resolveRevalidationTags({ collection: "live_blog_entries" })).toEqual({ purgeEverything: true });
   });
 
-  it("purges everything for siteSettings — it renders into every page's nav/footer", () => {
-    expect(resolveRevalidationTags({ type: "siteSettings" })).toEqual({ purgeEverything: true });
+  it("purges everything for a sections change — it renders into nav/footer/listings", () => {
+    expect(resolveRevalidationTags({ collection: "sections", slug: "tech" })).toEqual({ purgeEverything: true });
   });
 
-  it("purges everything for an unrecognized document type", () => {
-    expect(resolveRevalidationTags({ type: "somethingNew" })).toEqual({ purgeEverything: true });
+  it("purges everything for an authors change", () => {
+    expect(resolveRevalidationTags({ collection: "authors", slug: "mara-okafor" })).toEqual({
+      purgeEverything: true,
+    });
+  });
+
+  it("purges everything for site_extras — it renders into every page's nav/footer/banner", () => {
+    expect(resolveRevalidationTags({ collection: "site_extras" })).toEqual({ purgeEverything: true });
+  });
+
+  it("purges everything for an unrecognized collection", () => {
+    expect(resolveRevalidationTags({ collection: "somethingNew" })).toEqual({ purgeEverything: true });
   });
 });

@@ -1,6 +1,6 @@
 import type { APIContext } from "astro";
-import { getSanityClient } from "../../lib/sanity/client";
-import { getForYouArticles } from "../../lib/sanity/fetch";
+import { getEmdashClient } from "../../lib/emdash/client";
+import { getForYouArticles } from "../../lib/emdash/content";
 
 function parseList(value: string | null): string[] {
   return (value ?? "")
@@ -19,7 +19,7 @@ export async function GET(context: APIContext) {
     });
   }
 
-  const client = getSanityClient(context.locals.runtime.env);
+  const client = getEmdashClient(context.locals.runtime.env);
   const articles = await getForYouArticles(client, sections, tags);
 
   return new Response(JSON.stringify(articles), {

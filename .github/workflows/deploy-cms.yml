@@ -1,0 +1,51 @@
+name: Deploy CMS to Cloudflare Workers
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/cms/**'
+      - 'packages/emdash-revalidate-plugin/**'
+      - '.github/workflows/deploy-cms.yml'
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # SITE_REVALIDATE_URL / REVALIDATE_SECRET are read by astro.config.mjs
+      # at build time (packages/emdash-revalidate-plugin has no runtime env
+      # access — see that package's own comment) and baked into the built
+      # Worker bundle, unlike EMDASH_ENCRYPTION_KEY below.
+      - name: Build
+        run: npm run build -w apps/cms
+        env:
+          SITE_REVALIDATE_URL: ${{ secrets.SITE_REVALIDATE_URL }}
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+
+      # EMDASH_ENCRYPTION_KEY is a Cloudflare Worker runtime secret — set once
+      # per environment with `wrangler secret put` (from apps/cms), not on
+      # every deploy. The D1 database and R2 bucket referenced in
+      # wrangler.jsonc must already exist (see the README's "Deploying
+      # pulse-cms" section) before the first deploy.
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/cms

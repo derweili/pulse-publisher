@@ -6,9 +6,9 @@ import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import StickyAd from "../components/StickyAd.astro";
 import StructuredData from "../components/StructuredData.astro";
-import { getSanityClient } from "../lib/sanity/client";
-import { urlFor } from "../lib/sanity/image";
-import { getSiteSettings } from "../lib/sanity/fetch";
+import { getEmdashClient } from "../lib/emdash/client";
+import { urlFor } from "../lib/emdash/image";
+import { getSiteSettings } from "../lib/emdash/content";
 
 interface Props {
   title?: string;
@@ -41,7 +41,7 @@ const {
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
 
-const client = getSanityClient(Astro.locals.runtime.env);
+const client = getEmdashClient(Astro.locals.runtime.env);
 const settings = await getSiteSettings(client);
 const siteOrigin = (Astro.site ?? Astro.url).origin;
 const websiteSchema = {

@@ -1,0 +1,35 @@
+{
+  "name": "pulse-cms",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "prebuild": "mkdir -p dist/_worker.js && touch dist/_worker.js/index.js",
+    "build": "astro build",
+    "check": "astro check",
+    "cf:preview": "npm run build && wrangler dev",
+    "wrangler:dev": "wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
+    "seed": "emdash seed --apply ./seed/seed.json",
+    "seed:validate": "emdash seed --validate ./seed/seed.json",
+    "secrets:generate": "emdash secrets generate --write .env"
+  },
+  "dependencies": {
+    "astro": "^7.3.2",
+    "@astrojs/cloudflare": "^14.3.1",
+    "@astrojs/react": "^5.0.7",
+    "emdash": "0.38.0",
+    "@emdash-cms/cloudflare": "0.38.0",
+    "@pulse/emdash-revalidate-plugin": "*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.125.0"
+  }
+}

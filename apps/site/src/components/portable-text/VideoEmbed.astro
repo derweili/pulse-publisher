@@ -7,11 +7,26 @@ interface Props {
 }
 
 const { block, index } = Astro.props;
+
+// EmDash's embed block stores whatever URL an editor pastes — a normal
+// YouTube/Vimeo share/watch link, not necessarily a pre-formatted `/embed/`
+// URL — so this extracts the video ID the same way EmDash's own renderer
+// does (src/components/Embed.astro) rather than assuming `block.url` is
+// already iframe-ready.
+const YOUTUBE_ID_PATTERN = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+const VIMEO_ID_PATTERN = /vimeo\.com\/(\d+)/;
+const youtubeId = block.url.match(YOUTUBE_ID_PATTERN)?.[1];
+const vimeoId = block.url.match(VIMEO_ID_PATTERN)?.[1];
+const embedSrc = youtubeId
+  ? `https://www.youtube.com/embed/${youtubeId}`
+  : vimeoId
+    ? `https://player.vimeo.com/video/${vimeoId}`
+    : block.url;
 ---
 
 <div class="relative my-[1.8em] aspect-video overflow-hidden rounded bg-ink" data-mos-block={index}>
   <iframe
-    src={block.url}
+    src={embedSrc}
     title="Embedded video"
     loading="lazy"
     allowfullscreen

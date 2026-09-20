@@ -1,7 +1,7 @@
 import type { APIContext } from "astro";
 import { articlePath, authorPath, liveBlogPath, sectionPath } from "../lib/paths";
-import { getSanityClient } from "../lib/sanity/client";
-import { getAllArticles, getAllLiveBlogs, getAuthors, getSections } from "../lib/sanity/fetch";
+import { getEmdashClient } from "../lib/emdash/client";
+import { getAllArticles, getAllLiveBlogs, getAuthors, getSections } from "../lib/emdash/content";
 
 export interface SearchIndexEntry {
   kind: "Article" | "Author" | "Section" | "Live blog";
@@ -11,7 +11,7 @@ export interface SearchIndexEntry {
 }
 
 export async function GET(context: APIContext) {
-  const client = getSanityClient(context.locals.runtime.env);
+  const client = getEmdashClient(context.locals.runtime.env);
   const [articles, authors, sections, liveBlogs] = await Promise.all([
     getAllArticles(client),
     getAuthors(client),

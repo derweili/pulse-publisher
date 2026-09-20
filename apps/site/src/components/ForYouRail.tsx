@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { articlePath, authorPath, sectionPath } from "../lib/paths";
-import { urlFor } from "../lib/sanity/image";
-import type { ArticleCardData } from "../lib/sanity/fetch";
+import { urlFor } from "../lib/emdash/image";
+import type { ArticleCardData } from "../lib/emdash/content";
 
 interface HistoryEntry {
   section?: string;
