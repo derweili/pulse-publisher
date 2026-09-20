@@ -18,15 +18,15 @@ reader ──► pulse.derweili.de ──► EDGE WORKER  "pulse-edge"   (apps/e
                                        ▼
                                SITE WORKER  "pulse-today"   (apps/site)  cache: ENABLED
                                  · Astro SSR, renders identical HTML for every reader
-                                 · queries Sanity live
+                                 · queries apps/cms (Payload) live
                                  · NOT publicly reachable (service binding only)
 
-editor ──► Sanity Studio (studio/) — separate deploy, unrelated to the proxy
+editor ──► PULSE CMS (apps/cms, Payload) — separate deploy, unrelated to the proxy
 ```
 
 - **`apps/site` ("pulse-today")** renders. It is auth-blind and reader-blind. It must never be publicly reachable — no `routes`, no `custom_domain`, `workers_dev = false`. It ships full premium article bodies in its response; if it is ever publicly reachable, the paywall is bypassed.
 - **`apps/edge` ("pulse-edge")** is the only public entry point. It reads the reader's identity, calls the mOS Decision API, and rewrites HTML via `HTMLRewriter`. It reaches the site only through the `SITE` service binding.
-- **`studio/`** is Sanity Studio, a separate deploy target, untouched by any of the above.
+- **`apps/cms`** is the Payload CMS — a separate Next.js deploy target (not part of the Cloudflare Workers pair above), untouched by any of the above. See `apps/cms/README.md`.
 
 ## Hard rules
 
@@ -50,8 +50,8 @@ editor ──► Sanity Studio (studio/) — separate deploy, unrelated to the p
 - dev: `wrangler dev` from `apps/edge`
 - deploy: `wrangler deploy` from `apps/edge`
 
-**Studio** (`studio/`):
-- dev: `npm run studio:dev`
-- build: `npm --prefix studio run build`
-- deploy: `npm run studio:deploy`
-- typegen: `npm run studio:typegen`
+**CMS** (`apps/cms`, Payload):
+- dev: `npm run cms:dev` (or `npm run dev` from `apps/cms`)
+- build: `npm run cms:build`
+- deploy: see `apps/cms/README.md` (a standard Next.js app — Vercel is the path of least resistance)
+- seed demo content: `npm run cms:seed`

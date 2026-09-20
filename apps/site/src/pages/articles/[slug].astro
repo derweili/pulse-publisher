@@ -5,8 +5,7 @@ import CommentForm from "../../components/CommentForm.tsx";
 import CommentsList from "../../components/CommentsList.tsx";
 import Newsletter from "../../components/Newsletter.astro";
 import Lightbox from "../../components/Lightbox.astro";
-import PortableText from "../../components/portable-text/PortableText.astro";
-import { snapToListBoundary } from "../../components/portable-text/types";
+import RichText from "../../components/richtext/RichText.astro";
 import ReadingControls from "../../components/ReadingControls.astro";
 import ReadingHistoryTracker from "../../components/ReadingHistoryTracker.astro";
 import RelatedRail from "../../components/RelatedRail.astro";
@@ -17,21 +16,20 @@ import TrendingList from "../../components/TrendingList.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate } from "../../lib/format";
 import { articlePath, authorPath, sectionPath, tagPath } from "../../lib/paths";
-import { getSanityClient } from "../../lib/sanity/client";
-import { urlFor } from "../../lib/sanity/image";
+import { imageUrl } from "../../lib/payload/image";
 import {
   getArticleBySlug,
   getArticlesInSection,
   getPremiumArticles,
   getSiteSettings,
   getTrendingArticles,
-} from "../../lib/sanity/fetch";
+} from "../../lib/payload/fetch";
 import MosShow from "../../components/MosShow.astro";
 import { FAKE_COMMENTS } from "../../lib/fake-comments";
 
 const { slug } = Astro.params;
-const client = getSanityClient(Astro.locals.runtime.env);
-const article = slug ? await getArticleBySlug(client, slug) : null;
+const env = Astro.locals.runtime.env;
+const article = slug ? await getArticleBySlug(env, slug) : null;
 if (!article) {
   return new Response(null, { status: 404 });
 }
@@ -47,21 +45,21 @@ Astro.response.headers.set(
   [`section:${section.slug}`, ...articleAuthors.map((a) => `author:${a.slug}`)].join(",")
 );
 const [sameSectionAll, settings, trending, premiumAll] = await Promise.all([
-  getArticlesInSection(client, section.slug),
-  getSiteSettings(client),
-  getTrendingArticles(client),
-  isPremium ? getPremiumArticles(client) : Promise.resolve([]),
+  getArticlesInSection(env, section.slug),
+  getSiteSettings(env),
+  getTrendingArticles(env),
+  isPremium ? getPremiumArticles(env) : Promise.resolve([]),
 ]);
 const sameSection = sameSectionAll.filter((a) => a.slug !== article.slug).slice(0, 4);
 const morePremium = premiumAll.filter((a) => a.slug !== article.slug).slice(0, 4);
 
-const blocks = article.body;
-// Paywall cut: how many blocks are free to read. Snapped forward past any
-// list run it would otherwise split in two.
-const freePreviewCount = snapToListBoundary(
-  blocks,
-  Math.min(Math.max(article.freePreviewBlocks ?? 3, 0), blocks.length)
-);
+// Each top-level Lexical node (paragraph, heading, list, image, video…) is
+// one "block" for paywall/ad-cut purposes — a whole list counts as one,
+// since Lexical (unlike the old Portable Text body) already groups list
+// items into a single node, so there's no risk of a slice boundary
+// splitting a list in two.
+const blocks = article.body.root.children;
+const freePreviewCount = Math.min(Math.max(article.freePreviewBlocks ?? 3, 0), blocks.length);
 // Ad cut: unrelated to the paywall, kept at the article midpoint as before.
 const adSplitIdx = Math.floor(blocks.length / 2);
 // The two cuts are independent, so the ad usually lands inside the locked
@@ -73,10 +71,8 @@ const adInPreview = adSplitIdx <= freePreviewCount;
 
 const siteOrigin = (Astro.site ?? Astro.url).origin;
 const articleUrl = new URL(articlePath(article.slug), Astro.url).toString();
-const heroImageUrl = urlFor(article.hero).width(1600).height(900).fit("crop").url();
-const ogImageUrl = article.seo?.ogImage
-  ? urlFor(article.seo.ogImage).width(1200).height(630).fit("crop").url()
-  : urlFor(article.hero).width(1200).height(630).fit("crop").url();
+const heroImageUrl = imageUrl(article.hero, "hero");
+const ogImageUrl = article.seo?.ogImage ? imageUrl(article.seo.ogImage, "og") : imageUrl(article.hero, "og");
 
 const newsArticleSchema = {
   "@context": "https://schema.org",
@@ -168,7 +164,7 @@ const breadcrumbSchema = {
         <div class="flex flex-wrap gap-4">
           {articleAuthors.map((a) => (
             <a href={authorPath(a.slug)} class="byline">
-              <img src={urlFor(a.avatar).width(64).height(64).fit("crop").url()} alt="" class="avatar size-8" width="32" height="32" loading="lazy" />
+              <img src={imageUrl(a.avatar, "avatarMd")} alt="" class="avatar size-8" width="32" height="32" loading="lazy" />
               <span class="name">{a.name}</span>
             </a>
           ))}
@@ -200,23 +196,23 @@ const breadcrumbSchema = {
           <AdSlot slot="in-article-1" format="in-article" label="Advertisement" class="my-[2em]" />
 
           <div data-mos="article-preview">
-            <PortableText
+            <RichText
               value={adInPreview ? blocks.slice(0, adSplitIdx) : blocks.slice(0, freePreviewCount)}
               startIndex={0}
             />
             {adInPreview && <AdSlot slot="in-article-2" format="in-article" label="Advertisement" class="my-[2em]" />}
             {adInPreview && (
-              <PortableText value={blocks.slice(adSplitIdx, freePreviewCount)} startIndex={adSplitIdx} />
+              <RichText value={blocks.slice(adSplitIdx, freePreviewCount)} startIndex={adSplitIdx} />
             )}
           </div>
 
           <div data-mos="article-locked">
-            <PortableText
+            <RichText
               value={adInPreview ? blocks.slice(freePreviewCount) : blocks.slice(freePreviewCount, adSplitIdx)}
               startIndex={freePreviewCount}
             />
             {!adInPreview && <AdSlot slot="in-article-2" format="in-article" label="Advertisement" class="my-[2em]" />}
-            {!adInPreview && <PortableText value={blocks.slice(adSplitIdx)} startIndex={adSplitIdx} />}
+            {!adInPreview && <RichText value={blocks.slice(adSplitIdx)} startIndex={adSplitIdx} />}
           </div>
 
           <div data-mos="paywall-slot"></div>
@@ -238,7 +234,7 @@ const breadcrumbSchema = {
         <div class="mt-10 flex flex-col gap-6 border-t border-border pt-8">
           {articleAuthors.map((a) => (
             <div class="grid grid-cols-[64px_1fr] items-start gap-4">
-              <img src={urlFor(a.avatar).width(128).height(128).fit("crop").url()} alt={a.name} class="size-16 rounded-full object-cover" width="64" height="64" loading="lazy" />
+              <img src={imageUrl(a.avatar, "avatarLg")} alt={a.name} class="size-16 rounded-full object-cover" width="64" height="64" loading="lazy" />
               <div>
                 <a href={authorPath(a.slug)} class="block text-base font-extrabold text-ink hover:text-primary">{a.name}</a>
                 <span class="mb-1.5 block text-xs text-ink-4">{a.role}</span>

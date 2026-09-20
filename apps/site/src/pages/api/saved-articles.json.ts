@@ -1,6 +1,5 @@
 import type { APIContext } from "astro";
-import { getSanityClient } from "../../lib/sanity/client";
-import { getArticlesBySlugs } from "../../lib/sanity/fetch";
+import { getArticlesBySlugs } from "../../lib/payload/fetch";
 
 export async function GET(context: APIContext) {
   const slugsParam = context.url.searchParams.get("slugs") ?? "";
@@ -15,8 +14,8 @@ export async function GET(context: APIContext) {
     });
   }
 
-  const client = getSanityClient(context.locals.runtime.env);
-  const articles = await getArticlesBySlugs(client, slugs);
+  const env = context.locals.runtime.env;
+  const articles = await getArticlesBySlugs(env, slugs);
 
   return new Response(JSON.stringify(articles), {
     headers: { "Content-Type": "application/json; charset=utf-8" },

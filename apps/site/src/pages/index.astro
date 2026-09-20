@@ -7,8 +7,7 @@ import TrendingList from "../components/TrendingList.astro";
 import Layout from "../layouts/Layout.astro";
 import { formatDate, timeAgo } from "../lib/format";
 import { articlePath, authorPath, liveBlogPath, sectionPath } from "../lib/paths";
-import { getSanityClient } from "../lib/sanity/client";
-import { urlFor } from "../lib/sanity/image";
+import { imageUrl } from "../lib/payload/image";
 import {
   getActiveLiveBlogs,
   getAllArticles,
@@ -16,23 +15,23 @@ import {
   getPremiumArticles,
   getSections,
   getTrendingArticles,
-} from "../lib/sanity/fetch";
+} from "../lib/payload/fetch";
 
-const client = getSanityClient(Astro.locals.runtime.env);
+const env = Astro.locals.runtime.env;
 const [featured, premiumsAll, allSections, allArticles, trending, activeLiveBlogs] = await Promise.all([
-  getFeaturedArticles(client),
-  getPremiumArticles(client),
-  getSections(client),
-  getAllArticles(client),
-  getTrendingArticles(client),
-  getActiveLiveBlogs(client),
+  getFeaturedArticles(env),
+  getPremiumArticles(env),
+  getSections(env),
+  getAllArticles(env),
+  getTrendingArticles(env),
+  getActiveLiveBlogs(env),
 ]);
 
 // Curation counts vary with real content, so this degrades gracefully
 // instead of assuming a fixed number of featured/premium articles exist.
 const heroArticle = featured[0] ?? allArticles[0];
 
-const featuredPool = featured.filter((a) => a._id !== heroArticle?._id);
+const featuredPool = featured.filter((a) => a.id !== heroArticle?.id);
 
 // The hero rundown always wants 4 stories — backfill from the full article
 // pool when there aren't enough featured ones so the rail never looks sparse.
@@ -40,26 +39,26 @@ const heroSecondaryFeatured = featuredPool.slice(0, 4);
 const heroSecondaryIds = new Set(
   [heroArticle, ...heroSecondaryFeatured]
     .filter((a): a is NonNullable<typeof a> => Boolean(a))
-    .map((a) => a._id)
+    .map((a) => a.id)
 );
 const heroSecondary = [
   ...heroSecondaryFeatured,
   ...allArticles
-    .filter((a) => !heroSecondaryIds.has(a._id))
+    .filter((a) => !heroSecondaryIds.has(a.id))
     .slice(0, 4 - heroSecondaryFeatured.length),
 ];
 
 const editorsPicksFeatured = featuredPool
-  .filter((a) => !heroSecondaryFeatured.some((h) => h._id === a._id))
+  .filter((a) => !heroSecondaryFeatured.some((h) => h.id === a.id))
   .slice(0, 4);
 
 const pickedIds = new Set(
   [heroArticle, ...heroSecondary, ...editorsPicksFeatured]
     .filter((a): a is NonNullable<typeof a> => Boolean(a))
-    .map((a) => a._id)
+    .map((a) => a.id)
 );
 const editorsPicksBackfill = allArticles
-  .filter((a) => !pickedIds.has(a._id))
+  .filter((a) => !pickedIds.has(a.id))
   .slice(0, 4 - editorsPicksFeatured.length);
 const editorsPicks = [...editorsPicksFeatured, ...editorsPicksBackfill];
 
@@ -108,10 +107,10 @@ const sectionArticleLists = new Map(
         >
           <a href={articlePath(heroArticle.slug)} class="absolute inset-0" tabindex="-1" aria-hidden="true">
             <img
-              src={urlFor(heroArticle.hero).width(1400).height(900).fit("crop").url()}
+              src={imageUrl(heroArticle.hero, "hero")}
               alt=""
               loading="eager"
-              width="1400"
+              width="1600"
               height="900"
               class="h-full w-full object-cover transition-transform duration-[800ms] ease-brand group-hover:scale-[1.04]"
             />
@@ -144,7 +143,7 @@ const sectionArticleLists = new Map(
               {heroArticle.authors?.[0] && (
                 <a href={authorPath(heroArticle.authors[0].slug)} class="inline-flex items-center gap-2">
                   <img
-                    src={urlFor(heroArticle.authors[0].avatar).width(56).height(56).fit("crop").url()}
+                    src={imageUrl(heroArticle.authors[0].avatar, "avatarSm")}
                     alt=""
                     class="size-7 rounded-full bg-white/10 object-cover"
                     width="28"
@@ -200,7 +199,7 @@ const sectionArticleLists = new Map(
                   </div>
                 </div>
                 <img
-                  src={urlFor(a.hero).width(160).height(160).fit("crop").url()}
+                  src={imageUrl(a.hero, "thumbRail")}
                   alt=""
                   width="72"
                   height="72"

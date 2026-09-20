@@ -6,8 +6,7 @@ import Pagination from "../../components/Pagination.astro";
 import Layout from "../../layouts/Layout.astro";
 import { PER_PAGE, paginate } from "../../lib/format";
 import { tagPath } from "../../lib/paths";
-import { getSanityClient } from "../../lib/sanity/client";
-import { getArticlesByTag } from "../../lib/sanity/fetch";
+import { getArticlesByTag } from "../../lib/payload/fetch";
 
 const tagParam = Astro.params.tag;
 const tag = tagParam ? decodeURIComponent(tagParam) : undefined;
@@ -15,8 +14,8 @@ if (!tag) {
   return new Response(null, { status: 404 });
 }
 
-const client = getSanityClient(Astro.locals.runtime.env);
-const all = await getArticlesByTag(client, tag);
+const env = Astro.locals.runtime.env;
+const all = await getArticlesByTag(env, tag);
 if (all.length === 0) {
   return new Response(null, { status: 404 });
 }

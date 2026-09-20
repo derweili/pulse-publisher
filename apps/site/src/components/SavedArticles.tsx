@@ -1,8 +1,8 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { $clerkStore, $userStore } from "@clerk/astro/client";
 import { articlePath, authorPath, sectionPath } from "../lib/paths";
-import { urlFor } from "../lib/sanity/image";
-import type { ArticleCardData } from "../lib/sanity/fetch";
+import { imageUrl } from "../lib/payload/image";
+import type { ArticleCardData } from "../lib/payload/fetch";
 
 function useNanostore<T>(store: { get: () => T; subscribe: (cb: () => void) => () => void }): T {
   return useSyncExternalStore(store.subscribe, store.get, store.get);
@@ -100,14 +100,14 @@ export default function SavedArticles() {
         const primaryAuthor = article.authors?.[0];
         return (
           <article
-            key={article._id}
+            key={article.id}
             className="group flex flex-col overflow-hidden rounded-lg border border-border bg-surface transition-all duration-200 ease-brand hover:-translate-y-1 hover:border-border-strong hover:shadow-lg"
             data-mos="article-card"
             data-premium={article.premium ? "true" : "false"}
           >
             <a href={articlePath(article.slug)} className="relative block aspect-[16/10] overflow-hidden bg-bg-muted">
               <img
-                src={urlFor(article.hero).width(800).height(500).fit("crop").url()}
+                src={imageUrl(article.hero, "card")}
                 alt={article.hero.alt ?? ""}
                 loading="lazy"
                 width={800}

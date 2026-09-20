@@ -2,12 +2,11 @@
 import AdSlot from "../components/AdSlot.astro";
 import Layout from "../layouts/Layout.astro";
 import { authorPath } from "../lib/paths";
-import { getSanityClient } from "../lib/sanity/client";
-import { urlFor } from "../lib/sanity/image";
-import { getAuthors } from "../lib/sanity/fetch";
+import { imageUrl } from "../lib/payload/image";
+import { getAuthors } from "../lib/payload/fetch";
 
-const client = getSanityClient(Astro.locals.runtime.env);
-const authors = await getAuthors(client);
+const env = Astro.locals.runtime.env;
+const authors = await getAuthors(env);
 ---
 
 <Layout
@@ -45,7 +44,7 @@ const authors = await getAuthors(client);
       <div class="grid grid-cols-3 gap-7 max-[860px]:grid-cols-2 max-sm:grid-cols-1">
         {authors.map((a) => (
           <a href={authorPath(a.slug)} class="group flex items-start gap-4 rounded-lg border border-border p-5 transition-all duration-200 ease-brand hover:-translate-y-1 hover:border-border-strong hover:shadow-lg">
-            <img src={urlFor(a.avatar).width(112).height(112).fit("crop").url()} alt={a.name} class="size-14 shrink-0 rounded-full object-cover" width="56" height="56" loading="lazy" />
+            <img src={imageUrl(a.avatar, "avatarMd")} alt={a.name} class="size-14 shrink-0 rounded-full object-cover" width="56" height="56" loading="lazy" />
             <div class="min-w-0">
               <span class="block text-base font-extrabold text-ink group-hover:text-primary">{a.name}</span>
               <span class="mt-0.5 block text-xs font-bold tracking-[0.04em] text-ink-4 uppercase">{a.role}</span>

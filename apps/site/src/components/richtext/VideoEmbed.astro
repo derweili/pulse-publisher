@@ -1,0 +1,30 @@
+---
+import type { LexicalNode } from "../../lib/payload/types";
+
+interface Props {
+  node: LexicalNode;
+  index: number;
+}
+
+const { node, index } = Astro.props;
+const fields = node.fields as { url: string };
+---
+
+<div class="relative my-[1.8em] aspect-video overflow-hidden rounded bg-ink" data-mos-block={index}>
+  <iframe
+    src={fields.url}
+    title="Embedded video"
+    loading="lazy"
+    allowfullscreen
+    class="absolute inset-0 h-full w-full border-0"></iframe>
+  <button
+    type="button"
+    class="absolute top-2.5 right-2.5 z-2 grid size-8 place-items-center rounded-full bg-ink/70 text-white transition-colors duration-200 hover:bg-ink"
+    data-lightbox-trigger="video"
+    data-src={fields.url}
+    aria-label="Expand video"
+    title="Expand video"
+  >
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" /></svg>
+  </button>
+</div>

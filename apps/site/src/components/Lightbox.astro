@@ -1,8 +1,9 @@
 ---
-// Single shared overlay for portable-text imageBlock/videoEmbed content.
+// Single shared overlay for rich-text imageBlock/videoEmbed content.
 // The DOM is built lazily on first trigger click rather than rendered here,
-// so this only needs to be included once per page (see ImageBlock.astro /
-// VideoEmbed.astro, which mark their triggers with data-lightbox-trigger).
+// so this only needs to be included once per page (see
+// components/richtext/ImageBlock.astro / VideoEmbed.astro, which mark their
+// triggers with data-lightbox-trigger).
 ---
 
 <script>

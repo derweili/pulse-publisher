@@ -17,3 +17,9 @@ binding = "ASSETS"
 
 [cache]
 enabled = true
+
+[vars]
+# apps/cms's public URL. Not a secret — PAYLOAD_API_KEY and
+# PAYLOAD_WEBHOOK_SECRET are (see `wrangler secret put`, documented in the
+# root README's deploy section).
+PAYLOAD_API_URL = "https://cms.pulse.derweili.de"

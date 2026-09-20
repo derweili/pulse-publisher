@@ -1,12 +1,11 @@
 import type { APIContext } from "astro";
 import { articlePath, authorPath, liveBlogPath, sectionPath } from "../lib/paths";
-import { getSanityClient } from "../lib/sanity/client";
-import { getAllArticles, getAuthors, getAllLiveBlogs, getSections } from "../lib/sanity/fetch";
+import { getAllArticles, getAllLiveBlogs, getAuthors, getSections } from "../lib/payload/fetch";
 
 // A hand-written endpoint rather than @astrojs/sitemap: that integration
-// enumerates routes at build time from getStaticPaths, which no longer
-// applies now that articles/authors/sections resolve per-request (SSR).
-// This queries Sanity directly for the same slugs instead.
+// enumerates routes at build time from getStaticPaths, which doesn't apply
+// here since articles/authors/sections resolve per-request (SSR). This
+// queries Payload directly for the same slugs instead.
 
 interface UrlEntry {
   loc: string;
@@ -31,12 +30,12 @@ function escapeXml(value: string) {
 }
 
 export async function GET(context: APIContext) {
-  const client = getSanityClient(context.locals.runtime.env);
+  const env = context.locals.runtime.env;
   const [articles, authors, sections, liveBlogs] = await Promise.all([
-    getAllArticles(client),
-    getAuthors(client),
-    getSections(client),
-    getAllLiveBlogs(client),
+    getAllArticles(env),
+    getAuthors(env),
+    getSections(env),
+    getAllLiveBlogs(env),
   ]);
 
   const origin = context.site?.origin ?? context.url.origin;
