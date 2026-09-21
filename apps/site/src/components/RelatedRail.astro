@@ -1,8 +1,8 @@
 ---
 import { articlePath } from "../lib/paths";
-import { getSanityClient } from "../lib/sanity/client";
-import { urlFor } from "../lib/sanity/image";
-import { getRelatedArticles, type ArticleDetail } from "../lib/sanity/fetch";
+import { getEmdashClient } from "../lib/emdash/client";
+import { urlFor } from "../lib/emdash/image";
+import { getRelatedArticles, type ArticleDetail } from "../lib/emdash/content";
 
 interface Props {
   article: Pick<ArticleDetail, "slug" | "section" | "tags">;
@@ -10,7 +10,7 @@ interface Props {
   limit?: number;
 }
 const { article, title = "More from this section", limit = 4 } = Astro.props;
-const client = getSanityClient(Astro.locals.runtime.env);
+const client = getEmdashClient(Astro.locals.runtime.env);
 const related = await getRelatedArticles(client, article, limit);
 ---
 

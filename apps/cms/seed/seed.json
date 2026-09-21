@@ -1,0 +1,387 @@
+{
+  "version": "1",
+  "collections": [
+    {
+      "slug": "sections",
+      "label": "Sections",
+      "labelSingular": "Section",
+      "description": "News verticals (Tech, Culture, Science, Sports, Business, ...) used for navigation and article grouping.",
+      "icon": "folder",
+      "urlPattern": "/sections/{slug}",
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "searchable": true,
+          "indexed": true,
+          "validation": { "maxLength": 40 }
+        },
+        {
+          "slug": "tagline",
+          "label": "Tagline",
+          "type": "text",
+          "required": true,
+          "options": { "rows": 2 }
+        },
+        {
+          "slug": "accent_color",
+          "label": "Accent color",
+          "type": "string",
+          "required": true,
+          "validation": { "pattern": "^#([0-9A-Fa-f]{6})$" }
+        },
+        {
+          "slug": "display_order",
+          "label": "Display order",
+          "type": "integer",
+          "required": true,
+          "indexed": true
+        },
+        { "slug": "seo_meta_title", "label": "SEO: meta title", "type": "string", "required": false },
+        { "slug": "seo_meta_description", "label": "SEO: meta description", "type": "text", "required": false },
+        { "slug": "seo_og_image", "label": "SEO: social share image", "type": "image", "required": false }
+      ]
+    },
+    {
+      "slug": "authors",
+      "label": "Authors",
+      "labelSingular": "Author",
+      "description": "Staff and contributing writers. A custom collection rather than EmDash's built-in Bylines, so each author can carry a job title, Twitter/X handle and explicit SEO fields alongside their bio.",
+      "icon": "user",
+      "urlPattern": "/authors/{slug}",
+      "fields": [
+        {
+          "slug": "name",
+          "label": "Name",
+          "type": "string",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "role",
+          "label": "Role",
+          "type": "string",
+          "required": true
+        },
+        {
+          "slug": "bio",
+          "label": "Bio",
+          "type": "text",
+          "required": true,
+          "searchable": true,
+          "options": { "rows": 4 }
+        },
+        {
+          "slug": "avatar",
+          "label": "Avatar",
+          "type": "image",
+          "required": true,
+          "validation": { "allowedMimeTypes": ["image/jpeg", "image/png", "image/webp"] }
+        },
+        {
+          "slug": "twitter",
+          "label": "Twitter / X handle",
+          "type": "string",
+          "required": false
+        },
+        { "slug": "seo_meta_title", "label": "SEO: meta title", "type": "string", "required": false },
+        { "slug": "seo_meta_description", "label": "SEO: meta description", "type": "text", "required": false },
+        { "slug": "seo_og_image", "label": "SEO: social share image", "type": "image", "required": false }
+      ]
+    },
+    {
+      "slug": "articles",
+      "label": "Articles",
+      "labelSingular": "Article",
+      "icon": "file_text",
+      "supports": ["drafts", "revisions", "preview", "scheduling", "search"],
+      "urlPattern": "/articles/{slug}",
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "searchable": true,
+          "validation": { "maxLength": 120 }
+        },
+        {
+          "slug": "dek",
+          "label": "Dek (standfirst)",
+          "type": "text",
+          "required": true,
+          "searchable": true,
+          "options": { "rows": 3 },
+          "validation": { "maxLength": 240 }
+        },
+        {
+          "slug": "section",
+          "label": "Section",
+          "type": "reference",
+          "required": true,
+          "indexed": true,
+          "options": { "collection": "sections" }
+        },
+        {
+          "slug": "author",
+          "label": "Author",
+          "type": "reference",
+          "required": true,
+          "indexed": true,
+          "options": { "collection": "authors" }
+        },
+        {
+          "slug": "hero",
+          "label": "Hero image",
+          "type": "image",
+          "required": true,
+          "validation": { "allowedMimeTypes": ["image/jpeg", "image/png", "image/webp"] }
+        },
+        {
+          "slug": "body",
+          "label": "Body",
+          "type": "portableText",
+          "required": true
+        },
+        {
+          "slug": "free_preview_blocks",
+          "label": "Free preview blocks",
+          "type": "integer",
+          "required": false,
+          "defaultValue": 3,
+          "validation": { "min": 0 }
+        },
+        {
+          "slug": "read_time",
+          "label": "Read time (minutes)",
+          "type": "integer",
+          "required": true,
+          "validation": { "min": 1 }
+        },
+        {
+          "slug": "premium",
+          "label": "Premium",
+          "type": "boolean",
+          "required": false,
+          "defaultValue": false,
+          "indexed": true
+        },
+        {
+          "slug": "featured",
+          "label": "Featured",
+          "type": "boolean",
+          "required": false,
+          "defaultValue": false,
+          "indexed": true
+        },
+        {
+          "slug": "trending_rank",
+          "label": "Trending rank",
+          "type": "integer",
+          "required": false,
+          "indexed": true,
+          "validation": { "min": 1 }
+        },
+        { "slug": "seo_meta_title", "label": "SEO: meta title", "type": "string", "required": false },
+        { "slug": "seo_meta_description", "label": "SEO: meta description", "type": "text", "required": false },
+        { "slug": "seo_og_image", "label": "SEO: social share image", "type": "image", "required": false }
+      ]
+    },
+    {
+      "slug": "live_blogs",
+      "label": "Live blogs",
+      "labelSingular": "Live blog",
+      "icon": "clock",
+      "urlPattern": "/live/{slug}",
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "searchable": true,
+          "validation": { "maxLength": 120 }
+        },
+        {
+          "slug": "dek",
+          "label": "Dek (standfirst)",
+          "type": "text",
+          "required": true,
+          "options": { "rows": 3 },
+          "validation": { "maxLength": 240 }
+        },
+        {
+          "slug": "section",
+          "label": "Section",
+          "type": "reference",
+          "required": false,
+          "indexed": true,
+          "options": { "collection": "sections" }
+        },
+        {
+          "slug": "hero",
+          "label": "Hero image",
+          "type": "image",
+          "required": true
+        },
+        {
+          "slug": "status",
+          "label": "Status",
+          "type": "select",
+          "required": true,
+          "indexed": true,
+          "defaultValue": "live",
+          "validation": { "options": ["live", "ended"] }
+        },
+        {
+          "slug": "started_at",
+          "label": "Started at",
+          "type": "datetime",
+          "required": true,
+          "indexed": true
+        },
+        { "slug": "seo_meta_title", "label": "SEO: meta title", "type": "string", "required": false },
+        { "slug": "seo_meta_description", "label": "SEO: meta description", "type": "text", "required": false },
+        { "slug": "seo_og_image", "label": "SEO: social share image", "type": "image", "required": false }
+      ]
+    },
+    {
+      "slug": "live_blog_entries",
+      "label": "Live blog updates",
+      "labelSingular": "Update",
+      "description": "One row per live-blog update. Modeled as its own collection (rather than a repeater field on live_blogs) because repeater sub-fields cannot hold Portable Text or reference fields. Not given a urlPattern, so it has no public route of its own.",
+      "icon": "clock",
+      "fields": [
+        {
+          "slug": "live_blog",
+          "label": "Live blog",
+          "type": "reference",
+          "required": true,
+          "indexed": true,
+          "options": { "collection": "live_blogs" }
+        },
+        {
+          "slug": "timestamp",
+          "label": "Posted at",
+          "type": "datetime",
+          "required": true,
+          "indexed": true
+        },
+        {
+          "slug": "headline",
+          "label": "Headline",
+          "type": "string",
+          "required": false
+        },
+        {
+          "slug": "body",
+          "label": "Body",
+          "type": "portableText",
+          "required": true
+        },
+        {
+          "slug": "author",
+          "label": "Posted by",
+          "type": "reference",
+          "required": false,
+          "options": { "collection": "authors" }
+        }
+      ]
+    },
+    {
+      "slug": "site_extras",
+      "label": "Site extras",
+      "labelSingular": "Site extras",
+      "description": "Single-entry collection for site-wide values that don't fit EmDash's built-in General settings (title/tagline/logo, kept there): the breaking-news banner, social links, the footer copyright override, and the default SEO fallback. Create exactly one entry; apps/site always reads the most recently updated one. Not given a urlPattern, so it has no public route of its own.",
+      "icon": "megaphone",
+      "fields": [
+        {
+          "slug": "active",
+          "label": "Show breaking news banner",
+          "type": "boolean",
+          "required": false,
+          "defaultValue": false
+        },
+        {
+          "slug": "headline",
+          "label": "Breaking news headline",
+          "type": "string",
+          "required": false,
+          "validation": { "maxLength": 140 }
+        },
+        {
+          "slug": "href",
+          "label": "Breaking news link (optional)",
+          "type": "string",
+          "required": false
+        },
+        {
+          "slug": "copyright_text",
+          "label": "Copyright text override",
+          "type": "string",
+          "required": false,
+          "description": "Leave empty to fall back to \"© {year} {title}. All rights reserved.\""
+        },
+        {
+          "slug": "default_seo_title",
+          "label": "Default SEO: meta title",
+          "type": "string",
+          "required": false
+        },
+        {
+          "slug": "default_seo_description",
+          "label": "Default SEO: meta description",
+          "type": "text",
+          "required": false
+        },
+        {
+          "slug": "default_seo_image",
+          "label": "Default SEO: social share image",
+          "type": "image",
+          "required": false
+        },
+        {
+          "slug": "social_links",
+          "label": "Social links",
+          "type": "repeater",
+          "required": false,
+          "validation": {
+            "subFields": [
+              {
+                "slug": "platform",
+                "label": "Platform",
+                "type": "select",
+                "required": true,
+                "options": ["twitter", "instagram", "linkedin", "youtube", "tiktok", "facebook"]
+              },
+              { "slug": "url", "label": "URL", "type": "url", "required": true }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "taxonomies": [
+    {
+      "name": "tag",
+      "label": "Tags",
+      "labelSingular": "Tag",
+      "hierarchical": false,
+      "collections": ["articles"]
+    }
+  ],
+  "menus": [
+    {
+      "name": "primary",
+      "label": "Primary navigation",
+      "items": []
+    },
+    {
+      "name": "footer",
+      "label": "Footer links",
+      "items": []
+    }
+  ]
+}

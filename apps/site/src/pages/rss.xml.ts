@@ -1,11 +1,11 @@
 import rss from "@astrojs/rss";
 import type { APIContext } from "astro";
 import { articlePath } from "../lib/paths";
-import { getSanityClient } from "../lib/sanity/client";
-import { getAllArticles, getSiteSettings } from "../lib/sanity/fetch";
+import { getEmdashClient } from "../lib/emdash/client";
+import { getAllArticles, getSiteSettings } from "../lib/emdash/content";
 
 export async function GET(context: APIContext) {
-  const client = getSanityClient(context.locals.runtime.env);
+  const client = getEmdashClient(context.locals.runtime.env);
   const [articles, settings] = await Promise.all([
     getAllArticles(client),
     getSiteSettings(client),

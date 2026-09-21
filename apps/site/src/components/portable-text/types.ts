@@ -1,4 +1,4 @@
-import type { ArticleDetail } from "../../lib/sanity/fetch";
+import type { ArticleDetail } from "../../lib/emdash/content";
 
 export type BodyBlock = ArticleDetail["body"][number];
 export type TextBlock = Extract<BodyBlock, { _type: "block" }>;

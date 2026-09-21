@@ -17,20 +17,20 @@ import TrendingList from "../../components/TrendingList.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate } from "../../lib/format";
 import { articlePath, authorPath, sectionPath, tagPath } from "../../lib/paths";
-import { getSanityClient } from "../../lib/sanity/client";
-import { urlFor } from "../../lib/sanity/image";
+import { getEmdashClient } from "../../lib/emdash/client";
+import { urlFor } from "../../lib/emdash/image";
 import {
   getArticleBySlug,
   getArticlesInSection,
   getPremiumArticles,
   getSiteSettings,
   getTrendingArticles,
-} from "../../lib/sanity/fetch";
+} from "../../lib/emdash/content";
 import MosShow from "../../components/MosShow.astro";
 import { FAKE_COMMENTS } from "../../lib/fake-comments";
 
 const { slug } = Astro.params;
-const client = getSanityClient(Astro.locals.runtime.env);
+const client = getEmdashClient(Astro.locals.runtime.env);
 const article = slug ? await getArticleBySlug(client, slug) : null;
 if (!article) {
   return new Response(null, { status: 404 });

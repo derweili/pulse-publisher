@@ -1,24 +1,18 @@
 /// <reference path="../.astro/types.d.ts" />
 /// <reference types="astro/client" />
 
-interface ImportMetaEnv {
-  readonly PUBLIC_SANITY_PROJECT_ID: string;
-  readonly PUBLIC_SANITY_DATASET: string;
-  readonly PUBLIC_SANITY_API_VERSION: string;
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
-
 // Cloudflare Worker runtime bindings/secrets — populated from `.dev.vars`
 // locally (via the adapter's `platformProxy`) and from `wrangler secret put`
-// / the Workers dashboard in production. Distinct from `ImportMetaEnv` above:
-// these are read per-request at runtime, not inlined at build time.
+// / the Workers dashboard in production. Read per-request, not inlined at
+// build time (unlike Sanity's PUBLIC_ vars, EmDash needs no build-time
+// config at all — see lib/emdash/client.ts).
 type CloudflareEnv = {
-  SANITY_API_READ_TOKEN: string;
-  /** Shared secret configured on the Sanity webhook — verifies `sanity-webhook-signature` on POST /api/revalidate. See docs/cache-revalidation.md. */
-  SANITY_API_WEBHOOK_SECRET: string;
+  /** Base URL of the deployed apps/cms ("pulse-cms") Worker, e.g. https://cms.pulse.derweili.de. Not a secret. */
+  EMDASH_URL: string;
+  /** pulse-cms personal access token, scoped to `content:read`. See docs/emdash-migration-plan.md. */
+  EMDASH_API_TOKEN: string;
+  /** Shared secret packages/emdash-revalidate-plugin sends as `Authorization: Bearer <value>` on POST /api/revalidate. */
+  REVALIDATE_SECRET: string;
 };
 
 type Runtime = import('@astrojs/cloudflare').Runtime<CloudflareEnv>;

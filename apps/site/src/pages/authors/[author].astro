@@ -6,12 +6,12 @@ import Pagination from "../../components/Pagination.astro";
 import Layout from "../../layouts/Layout.astro";
 import { PER_PAGE } from "../../lib/format";
 import { authorPath } from "../../lib/paths";
-import { getSanityClient } from "../../lib/sanity/client";
-import { urlFor } from "../../lib/sanity/image";
-import { getArticlesByAuthor, getAuthors } from "../../lib/sanity/fetch";
+import { getEmdashClient } from "../../lib/emdash/client";
+import { urlFor } from "../../lib/emdash/image";
+import { getArticlesByAuthor, getAuthors } from "../../lib/emdash/content";
 
 const authorSlug = Astro.params.author;
-const client = getSanityClient(Astro.locals.runtime.env);
+const client = getEmdashClient(Astro.locals.runtime.env);
 const authors = await getAuthors(client);
 const author = authorSlug ? authors.find((a) => a.slug === authorSlug) : undefined;
 if (!author) {

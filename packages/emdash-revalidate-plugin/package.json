@@ -1,0 +1,14 @@
+{
+  "name": "@pulse/emdash-revalidate-plugin",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Native EmDash plugin: notifies apps/site's /api/revalidate endpoint after a content lifecycle change, replacing the old Sanity webhook (see docs/emdash-migration-plan.md).",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "peerDependencies": {
+    "emdash": "*"
+  }
+}

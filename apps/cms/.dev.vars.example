@@ -1,0 +1,12 @@
+# Cloudflare Worker runtime secrets for local dev.
+#
+# Copy to `.dev.vars` and fill it in. Mirrors what you'd set in production
+# with `wrangler secret put`.
+#
+# NOTE: SITE_REVALIDATE_URL / REVALIDATE_SECRET are NOT here — they're
+# build-time values for packages/emdash-revalidate-plugin, read from `.env`
+# instead. See .env.example's comment for why.
+
+# See apps/cms/.env.example — same key, but as a Worker secret rather than a
+# Node .env value once this runs on `wrangler dev` / the deployed Worker.
+EMDASH_ENCRYPTION_KEY=

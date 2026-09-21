@@ -7,7 +7,7 @@ WaPo, WSJ) rather than cloning one house style.
 Two build passes have shipped so far:
 
 - **SSR migration** — the site now renders on Cloudflare Workers via `@astrojs/cloudflare`
-  (`output: 'server'`), querying Sanity live per request instead of only at build time.
+  (`output: 'server'`), querying the CMS live per request instead of only at build time.
 - **Tier 1**: RSS feed, XML sitemap, JSON-LD structured data, tag archive pages, a
   live-editable breaking news banner, real (non-fake) search, social share buttons, a
   Clerk-metadata-backed reading list, and a broken-link fix.
@@ -49,7 +49,7 @@ What's below is the **backlog** — explicitly deferred items, not yet scheduled
 - Newsletter/comments were deliberately kept simulated (no D1/KV, no API routes) per
   an earlier product decision — swapping in a real backend for either is a deliberate
   architecture change, not just "wire up the existing form."
-- The site is fully SSR now (see `src/lib/sanity/client.ts`'s `getSanityClient`
+- The site is fully SSR now (see `src/lib/emdash/client.ts`'s `getEmdashClient`
   factory and `Astro.locals.runtime.env`), so any backlog item that needs its own
   backend can add Cloudflare Worker bindings (KV/D1) or new API routes the same way
   `src/pages/api/saved-articles.json.ts` and `src/pages/api/for-you.json.ts` already

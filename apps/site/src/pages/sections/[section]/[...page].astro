@@ -7,10 +7,10 @@ import StructuredData from "../../../components/StructuredData.astro";
 import Layout from "../../../layouts/Layout.astro";
 import { PER_PAGE, paginate } from "../../../lib/format";
 import { sectionPath } from "../../../lib/paths";
-import { getSanityClient } from "../../../lib/sanity/client";
-import { getArticlesInSection, getSections } from "../../../lib/sanity/fetch";
+import { getEmdashClient } from "../../../lib/emdash/client";
+import { getArticlesInSection, getSections } from "../../../lib/emdash/content";
 
-const client = getSanityClient(Astro.locals.runtime.env);
+const client = getEmdashClient(Astro.locals.runtime.env);
 const sectionSlug = Astro.params.section;
 const pageParam = Astro.params.page;
 const requestedPage = pageParam ? Number(pageParam) : 1;

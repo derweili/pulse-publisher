@@ -2,13 +2,13 @@
 import { SignInButton, UserButton } from "@clerk/astro/components";
 import { Bookmark } from "lucide-react";
 import { sectionPath } from "../lib/paths";
-import { getSanityClient } from "../lib/sanity/client";
-import { getSections, getSiteSettings } from "../lib/sanity/fetch";
+import { getEmdashClient } from "../lib/emdash/client";
+import { getSections, getSiteSettings } from "../lib/emdash/content";
 import MobileMenu from "./MobileMenu.tsx";
 import MosShow from "./MosShow.astro";
 import SearchTrigger from "./SearchTrigger.tsx";
 
-const client = getSanityClient(Astro.locals.runtime.env);
+const client = getEmdashClient(Astro.locals.runtime.env);
 const navSections = await getSections(client);
 const settings = await getSiteSettings(client);
 const extraNavLinks = (settings.mainNav ?? []).map((link) => ({
