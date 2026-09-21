@@ -1,0 +1,26 @@
+---
+import { renderInline } from "../../lib/richtext/render";
+import type { LexicalNode } from "../../lib/payload/types";
+
+interface Props {
+  node: LexicalNode;
+  index: number;
+}
+
+const { node, index } = Astro.props;
+const html = renderInline(node.children as LexicalNode[] | undefined);
+---
+
+{
+  node.type === "heading" ? (
+    <h2 class="mt-[1.8em] mb-[0.6em] text-[calc(1.5rem*var(--reading-scale,1))] tracking-[-0.01em]" data-mos-block={index} set:html={html} />
+  ) : node.type === "quote" ? (
+    <blockquote
+      class="my-[1.8em] border-l-4 border-primary pl-6 text-[calc(22px*var(--reading-scale,1))] leading-[1.4] font-semibold text-ink italic max-sm:text-[calc(19px*var(--reading-scale,1))]"
+      data-mos-block={index}
+      set:html={html}
+    />
+  ) : (
+    <p class="my-[1.2em] text-[calc(1.125rem*var(--reading-scale,1))] leading-[1.7] text-ink-2 max-sm:text-[calc(17px*var(--reading-scale,1))]" data-mos-block={index} set:html={html} />
+  )
+}

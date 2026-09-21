@@ -2,18 +2,17 @@
 import { SignInButton, UserButton } from "@clerk/astro/components";
 import { Bookmark } from "lucide-react";
 import { sectionPath } from "../lib/paths";
-import { getSanityClient } from "../lib/sanity/client";
-import { getSections, getSiteSettings } from "../lib/sanity/fetch";
+import { getSections, getSiteSettings } from "../lib/payload/fetch";
 import MobileMenu from "./MobileMenu.tsx";
 import MosShow from "./MosShow.astro";
 import SearchTrigger from "./SearchTrigger.tsx";
 
-const client = getSanityClient(Astro.locals.runtime.env);
-const navSections = await getSections(client);
-const settings = await getSiteSettings(client);
+const env = Astro.locals.runtime.env;
+const navSections = await getSections(env);
+const settings = await getSiteSettings(env);
 const extraNavLinks = (settings.mainNav ?? []).map((link) => ({
   label: link.label,
-  href: link.linkType === "internal" && link.internalHref ? sectionPath(link.internalHref) : (link.externalUrl ?? "#"),
+  href: link.linkType === "internal" && link.internalLink ? sectionPath(link.internalLink.slug) : (link.externalUrl ?? "#"),
 }));
 const searchSections = navSections.map((s) => ({ slug: s.slug, name: s.title }));
 ---

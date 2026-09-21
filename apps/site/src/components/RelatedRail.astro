@@ -1,8 +1,7 @@
 ---
 import { articlePath } from "../lib/paths";
-import { getSanityClient } from "../lib/sanity/client";
-import { urlFor } from "../lib/sanity/image";
-import { getRelatedArticles, type ArticleDetail } from "../lib/sanity/fetch";
+import { imageUrl } from "../lib/payload/image";
+import { getRelatedArticles, type ArticleDetail } from "../lib/payload/fetch";
 
 interface Props {
   article: Pick<ArticleDetail, "slug" | "section" | "tags">;
@@ -10,8 +9,8 @@ interface Props {
   limit?: number;
 }
 const { article, title = "More from this section", limit = 4 } = Astro.props;
-const client = getSanityClient(Astro.locals.runtime.env);
-const related = await getRelatedArticles(client, article, limit);
+const env = Astro.locals.runtime.env;
+const related = await getRelatedArticles(env, article, limit);
 ---
 
 {related.length > 0 && (
@@ -24,7 +23,7 @@ const related = await getRelatedArticles(client, article, limit);
           <li>
             <a href={articlePath(r.slug)} class="group grid grid-cols-[84px_1fr] items-start gap-3">
               <div class="relative aspect-[4/3] overflow-hidden rounded-[8px] bg-bg-muted">
-                <img src={urlFor(r.hero).width(120).height(90).fit("crop").url()} alt={r.hero.alt ?? ""} loading="lazy" width="120" height="80" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]" />
+                <img src={imageUrl(r.hero, "thumbRelated")} alt={r.hero.alt ?? ""} loading="lazy" width="120" height="80" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]" />
                 {r.premium && (
                   <span class="absolute top-1.5 right-1.5 inline-flex size-4 items-center justify-center rounded-[4px] bg-premium-gold text-[#2a1d00]" data-mos="premium-badge">
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>

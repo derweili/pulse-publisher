@@ -1,7 +1,0 @@
-node_modules
-dist
-.sanity
-.env
-schema.json
-*.log
-.migration-cache.json

@@ -1,6 +1,6 @@
 // Single source of truth for the `Cache-Tag` strings this app assigns.
 // `middleware.ts` (tagging responses) and `resolveRevalidationTags.ts`
-// (purging on the Sanity webhook) must produce byte-identical tags for the
+// (purging on the apps/cms webhook) must produce byte-identical tags for the
 // same document, or a purge silently misses the page it was meant to clear.
 
 export const HOME_TAG = "home";

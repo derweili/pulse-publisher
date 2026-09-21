@@ -1,21 +1,21 @@
 ---
 import { authorPath, sectionPath } from "../lib/paths";
-import { getSanityClient } from "../lib/sanity/client";
-import { getAuthors, getSections, getSiteSettings } from "../lib/sanity/fetch";
+import { getAuthors, getSections, getSiteSettings } from "../lib/payload/fetch";
+import type { NavLink } from "../lib/payload/types";
 import Newsletter from "./Newsletter.astro";
 
-const client = getSanityClient(Astro.locals.runtime.env);
+const env = Astro.locals.runtime.env;
 const [sections, authors, settings] = await Promise.all([
-  getSections(client),
-  getAuthors(client),
-  getSiteSettings(client),
+  getSections(env),
+  getAuthors(env),
+  getSiteSettings(env),
 ]);
 
 const year = new Date().getFullYear();
 const copyright = settings.copyrightText || `© ${year} ${settings.title}. All rights reserved.`;
 
-const resolveHref = (link: { linkType: "internal" | "external"; internalHref: string | null; externalUrl: string | null }) =>
-  link.linkType === "internal" && link.internalHref ? sectionPath(link.internalHref) : (link.externalUrl ?? "#");
+const resolveHref = (link: NavLink) =>
+  link.linkType === "internal" && link.internalLink ? sectionPath(link.internalLink.slug) : (link.externalUrl ?? "#");
 ---
 
 <footer class="mt-16 bg-ink text-[#d7dadf]">

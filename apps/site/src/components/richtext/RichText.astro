@@ -1,0 +1,40 @@
+---
+import TextBlock from "./TextBlock.astro";
+import ImageBlock from "./ImageBlock.astro";
+import VideoEmbed from "./VideoEmbed.astro";
+import { renderListNode } from "../../lib/richtext/render";
+import type { LexicalNode } from "../../lib/payload/types";
+
+// Renders a slice of `article.body.root.children` (or a live-blog entry's
+// body). `startIndex` keeps `data-mos-block` indices aligned to each node's
+// position in the original, unsliced array when a caller renders a slice
+// (e.g. the paywall/ad cut in articles/[slug].astro) — same contract the
+// old Portable Text renderer had, except a list is now always one top-level
+// node (Lexical groups list items itself), so there's no need for the old
+// groupBlocks/snapToListBoundary machinery: slicing by top-level node index
+// can never split a list in two.
+interface Props {
+  value: LexicalNode[];
+  startIndex?: number;
+}
+
+const { value, startIndex = 0 } = Astro.props;
+---
+
+{
+  value.map((node, i) => {
+    const index = startIndex + i;
+    if (node.type === "paragraph" || node.type === "heading" || node.type === "quote") {
+      return <TextBlock node={node} index={index} />;
+    }
+    if (node.type === "list") {
+      return <Fragment set:html={renderListNode(node, index)} />;
+    }
+    if (node.type === "block") {
+      const fields = node.fields as { blockType?: string } | undefined;
+      if (fields?.blockType === "imageBlock") return <ImageBlock node={node} index={index} />;
+      if (fields?.blockType === "videoEmbed") return <VideoEmbed node={node} index={index} />;
+    }
+    return null;
+  })
+}

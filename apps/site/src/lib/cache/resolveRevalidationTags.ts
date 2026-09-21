@@ -1,10 +1,10 @@
 import { articleTag, authorTag, HOME_TAG, liveTag, sectionTag, tagTag } from "./tags";
 
 /**
- * Shape of the Sanity webhook payload, produced by the GROQ projection
- * configured on the webhook (see docs/cache-revalidation.md). Fields absent
- * on a given `_type` simply come through as null/undefined — one projection
- * covers every document type the webhook is filtered to.
+ * Shape of the apps/cms webhook payload (see
+ * apps/cms/src/hooks/revalidate.ts and docs/cache-revalidation.md). Fields
+ * absent for a given `type` simply come through as null/undefined — one
+ * shape covers every collection/global that triggers this webhook.
  */
 export interface RevalidationPayload {
   type: string;
@@ -21,8 +21,8 @@ function dedupe(tags: string[]): string[] {
 }
 
 /**
- * Maps a changed Sanity document to the `Cache-Tag`s it affects, using the
- * exact same tag strings `middleware.ts` assigns via `./tags`. Falls back to
+ * Maps a changed document to the `Cache-Tag`s it affects, using the exact
+ * same tag strings `middleware.ts` assigns via `./tags`. Falls back to
  * `purgeEverything` whenever a document's blast radius isn't expressible as
  * a small tag set (e.g. `siteSettings`, which renders into the nav/footer of
  * every page) or the document type is one this endpoint doesn't recognize —

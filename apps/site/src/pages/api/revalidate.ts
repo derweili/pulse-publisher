@@ -1,11 +1,11 @@
 import type { APIContext } from "astro";
 import { resolveRevalidationTags, type RevalidationPayload } from "../../lib/cache/resolveRevalidationTags";
-import { isValidSanityWebhookSignature, SIGNATURE_HEADER } from "../../lib/sanity/webhookSignature";
+import { isValidWebhookSignature, SIGNATURE_HEADER } from "../../lib/payload/webhookSignature";
 
 /**
- * Sanity webhook target — purges the Workers Cache tags a changed document
- * affects. See docs/cache-revalidation.md for the webhook's GROQ filter/
- * projection and setup steps.
+ * apps/cms webhook target — purges the Workers Cache tags a changed
+ * document affects. See docs/cache-revalidation.md and
+ * apps/cms/src/hooks/revalidate.ts (the sender).
  *
  * Reachable only through apps/edge's `/api/**` passthrough (verbatim
  * forward, see apps/edge/src/router.ts) — this app is never publicly
@@ -14,14 +14,14 @@ import { isValidSanityWebhookSignature, SIGNATURE_HEADER } from "../../lib/sanit
  * though it bypasses the mOS pipeline like every other /api/ route.
  */
 export async function POST(context: APIContext): Promise<Response> {
-  const secret = context.locals.runtime.env.SANITY_API_WEBHOOK_SECRET;
+  const secret = context.locals.runtime.env.PAYLOAD_WEBHOOK_SECRET;
   if (!secret) {
-    console.error("[revalidate] SANITY_API_WEBHOOK_SECRET is not configured");
+    console.error("[revalidate] PAYLOAD_WEBHOOK_SECRET is not configured");
     return new Response("Not configured", { status: 500 });
   }
 
   const body = await context.request.text();
-  const valid = await isValidSanityWebhookSignature(
+  const valid = await isValidWebhookSignature(
     body,
     context.request.headers.get(SIGNATURE_HEADER),
     secret

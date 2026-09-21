@@ -1,18 +1,24 @@
-# Cloudflare Worker runtime secrets for local dev.
+# Cloudflare Worker runtime secrets/vars for local dev.
 #
 # Copy to `.dev.vars` and fill it in. Read by `astro dev` (via the Cloudflare
 # adapter's `platformProxy`) and by `wrangler dev`/`npm run cf:preview` — it
-# mirrors what you'd set in production with `wrangler secret put` or the
-# Workers dashboard. Unlike `.env`, this is NOT inlined at build time: it's
-# read per-request through `Astro.locals.runtime.env`, matching how the
-# deployed Worker reads it. See `src/lib/sanity/client.ts`.
+# mirrors what you'd set in production with `wrangler secret put` (for the
+# two secrets below) or `[vars]` in wrangler.toml (for PAYLOAD_API_URL).
+# Unlike `.env`, this is NOT inlined at build time: it's read per-request
+# through `Astro.locals.runtime.env`, matching how the deployed Worker reads
+# it. See `src/lib/payload/client.ts`.
 
-# Sanity read token, required because the dataset is private. Generate at
-# sanity.io/manage → API → Tokens with "Viewer" permission.
-SANITY_API_READ_TOKEN=
+# apps/cms's public URL (e.g. http://localhost:3000 while running apps/cms
+# locally, or its deployed URL). Not a secret — also set as a `[vars]` entry
+# in wrangler.toml for production.
+PAYLOAD_API_URL=http://localhost:3000
 
-# Shared secret for the Sanity webhook that hits POST /api/revalidate.
-# Same value goes in the webhook's "Secret" field in sanity.io/manage → API →
-# Webhooks — Sanity uses it to sign the `sanity-webhook-signature` header,
-# which the endpoint verifies. See docs/cache-revalidation.md.
-SANITY_API_WEBHOOK_SECRET=
+# Authenticates as the service account apps/cms's `onInit` bootstraps.
+# Same value as apps/cms's PAYLOAD_SERVICE_API_KEY. See
+# apps/cms/README.md ("Connecting apps/site").
+PAYLOAD_API_KEY=
+
+# Shared secret for the cache-purge webhook apps/cms sends to
+# POST /api/revalidate. Same value as apps/cms's REVALIDATE_WEBHOOK_SECRET.
+# See docs/cache-revalidation.md.
+PAYLOAD_WEBHOOK_SECRET=

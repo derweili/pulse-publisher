@@ -7,10 +7,9 @@ import StructuredData from "../../../components/StructuredData.astro";
 import Layout from "../../../layouts/Layout.astro";
 import { PER_PAGE, paginate } from "../../../lib/format";
 import { sectionPath } from "../../../lib/paths";
-import { getSanityClient } from "../../../lib/sanity/client";
-import { getArticlesInSection, getSections } from "../../../lib/sanity/fetch";
+import { getArticlesInSection, getSections } from "../../../lib/payload/fetch";
 
-const client = getSanityClient(Astro.locals.runtime.env);
+const env = Astro.locals.runtime.env;
 const sectionSlug = Astro.params.section;
 const pageParam = Astro.params.page;
 const requestedPage = pageParam ? Number(pageParam) : 1;
@@ -19,13 +18,13 @@ if (!sectionSlug || !Number.isInteger(requestedPage) || requestedPage < 1 || (pa
   return new Response(null, { status: 404 });
 }
 
-const sections = await getSections(client);
+const sections = await getSections(env);
 const section = sections.find((s) => s.slug === sectionSlug);
 if (!section) {
   return new Response(null, { status: 404 });
 }
 
-const all = await getArticlesInSection(client, sectionSlug);
+const all = await getArticlesInSection(env, sectionSlug);
 const { items, page, pages, total } = paginate(all, requestedPage, PER_PAGE);
 if (requestedPage > pages) {
   return new Response(null, { status: 404 });

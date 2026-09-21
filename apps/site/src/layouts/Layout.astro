@@ -6,9 +6,8 @@ import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import StickyAd from "../components/StickyAd.astro";
 import StructuredData from "../components/StructuredData.astro";
-import { getSanityClient } from "../lib/sanity/client";
-import { urlFor } from "../lib/sanity/image";
-import { getSiteSettings } from "../lib/sanity/fetch";
+import { imageUrl } from "../lib/payload/image";
+import { getSiteSettings } from "../lib/payload/fetch";
 
 interface Props {
   title?: string;
@@ -41,8 +40,8 @@ const {
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
 
-const client = getSanityClient(Astro.locals.runtime.env);
-const settings = await getSiteSettings(client);
+const env = Astro.locals.runtime.env;
+const settings = await getSiteSettings(env);
 const siteOrigin = (Astro.site ?? Astro.url).origin;
 const websiteSchema = {
   "@context": "https://schema.org",
@@ -56,7 +55,7 @@ const organizationSchema = {
   "@type": "Organization",
   name: settings.title,
   url: siteOrigin,
-  ...(settings.logo && { logo: urlFor(settings.logo).width(512).height(512).fit("crop").url() }),
+  ...(settings.logo && { logo: imageUrl(settings.logo) }),
 };
 ---
 

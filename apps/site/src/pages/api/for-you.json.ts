@@ -1,6 +1,5 @@
 import type { APIContext } from "astro";
-import { getSanityClient } from "../../lib/sanity/client";
-import { getForYouArticles } from "../../lib/sanity/fetch";
+import { getForYouArticles } from "../../lib/payload/fetch";
 
 function parseList(value: string | null): string[] {
   return (value ?? "")
@@ -19,8 +18,8 @@ export async function GET(context: APIContext) {
     });
   }
 
-  const client = getSanityClient(context.locals.runtime.env);
-  const articles = await getForYouArticles(client, sections, tags);
+  const env = context.locals.runtime.env;
+  const articles = await getForYouArticles(env, sections, tags);
 
   return new Response(JSON.stringify(articles), {
     headers: { "Content-Type": "application/json; charset=utf-8" },
